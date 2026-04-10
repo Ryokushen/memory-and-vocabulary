@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { playTick } from "@/lib/sounds";
 import type { ContextSentence } from "@/lib/types";
 
 interface ContextPromptProps {
@@ -38,6 +39,7 @@ export function ContextPrompt({
   const parts = sentence.sentence.split(`**${sentence.weakWord}**`);
 
   const handleSelect = (choice: string) => {
+    playTick();
     setSelected(choice);
     // Small delay so the user sees their selection
     setTimeout(() => onSubmit(choice), 300);

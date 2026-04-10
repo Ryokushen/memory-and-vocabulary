@@ -16,6 +16,13 @@ import {
   pickMode,
   getContextSentence,
 } from "@/lib/session-engine";
+import {
+  playCorrect,
+  playStreakCorrect,
+  playIncorrect,
+  playSessionComplete,
+  playLevelUp,
+} from "@/lib/sounds";
 
 export function useSession() {
   const [state, setState] = useState<SessionState>("idle");
@@ -80,10 +87,28 @@ export function useSession() {
         manualRating,
       );
 
+      // Play sound based on result
+      if (result.correct) {
+        // Count consecutive correct for streak sound
+        const prevCorrectStreak = results
+          .slice()
+          .reverse()
+          .findIndex((r) => !r.correct);
+        const streak =
+          prevCorrectStreak === -1 ? results.length : prevCorrectStreak;
+        if (streak >= 2) {
+          playStreakCorrect();
+        } else {
+          playCorrect();
+        }
+      } else {
+        playIncorrect();
+      }
+
       setResults((prev) => [...prev, result]);
       setState("reviewing");
     },
-    [currentWord, state, promptStartTime, currentMode, currentContextSentence],
+    [currentWord, state, promptStartTime, currentMode, currentContextSentence, results],
   );
 
   const nextWord = useCallback(async () => {
@@ -91,6 +116,11 @@ export function useSession() {
     if (nextIndex >= words.length) {
       const sessionSummary = await finalizeSession(results);
       setSummary(sessionSummary);
+      if (sessionSummary.leveledUp) {
+        playLevelUp();
+      } else {
+        playSessionComplete();
+      }
       setState("complete");
     } else {
       setCurrentIndex(nextIndex);
