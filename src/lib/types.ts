@@ -11,6 +11,7 @@ export interface Word {
   tier: 1 | 2 | 3 | "custom";
   synonyms: string[];
   association?: string;
+  contextSentences?: ContextSentence[];
   createdAt: Date;
 }
 
@@ -69,7 +70,10 @@ export interface SessionResult {
   correct: boolean;
   responseTimeMs: number;
   rating: 1 | 2 | 3 | 4;
+  mode: GameMode;
 }
+
+export type GameMode = "recall" | "context";
 
 export type SessionState =
   | "idle"
@@ -77,6 +81,15 @@ export type SessionState =
   | "active"
   | "reviewing"
   | "complete";
+
+// ── Context Mode ────────────────────────────────────────────────────────
+
+export interface ContextSentence {
+  sentence: string;     // Full sentence with the weak word
+  weakWord: string;     // The vague/weak word to replace
+  answer: string;       // The precise word (must be a word in the library)
+  distractors: string[]; // Wrong choices shown alongside the answer
+}
 
 export interface SessionSummary {
   results: SessionResult[];
@@ -97,4 +110,5 @@ export interface SeedWord {
   examples: string[];
   synonyms: string[];
   tier: 1 | 2 | 3;
+  contextSentences?: ContextSentence[];
 }

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import type {
+  ContextSentence,
+  GameMode,
   SessionState,
   SessionWord,
   SessionResult,
@@ -11,6 +13,8 @@ import {
   loadSessionWords,
   processAnswer,
   finalizeSession,
+  pickMode,
+  getContextSentence,
 } from "@/lib/session-engine";
 
 export function useSession() {
@@ -20,9 +24,22 @@ export function useSession() {
   const [results, setResults] = useState<SessionResult[]>([]);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [promptStartTime, setPromptStartTime] = useState<number>(0);
+  const [currentMode, setCurrentMode] = useState<GameMode>("recall");
+  const [currentContextSentence, setCurrentContextSentence] =
+    useState<ContextSentence | null>(null);
 
   const currentWord = words[currentIndex] ?? null;
   const progress = words.length > 0 ? currentIndex / words.length : 0;
+
+  const pickModeForWord = useCallback((word: SessionWord) => {
+    const mode = pickMode(word.word);
+    setCurrentMode(mode);
+    if (mode === "context") {
+      setCurrentContextSentence(getContextSentence(word.word));
+    } else {
+      setCurrentContextSentence(null);
+    }
+  }, []);
 
   const startSession = useCallback(async () => {
     setState("loading");
@@ -36,6 +53,16 @@ export function useSession() {
     setResults([]);
     setSummary(null);
     setPromptStartTime(Date.now());
+
+    // Pick mode for first word
+    const mode = pickMode(sessionWords[0].word);
+    setCurrentMode(mode);
+    if (mode === "context") {
+      setCurrentContextSentence(getContextSentence(sessionWords[0].word));
+    } else {
+      setCurrentContextSentence(null);
+    }
+
     setState("active");
   }, []);
 
@@ -48,28 +75,39 @@ export function useSession() {
         currentWord,
         answer,
         responseTimeMs,
+        currentMode,
+        currentContextSentence?.answer,
         manualRating,
       );
 
       setResults((prev) => [...prev, result]);
       setState("reviewing");
     },
-    [currentWord, state, promptStartTime],
+    [currentWord, state, promptStartTime, currentMode, currentContextSentence],
   );
 
   const nextWord = useCallback(async () => {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= words.length) {
-      // Session complete
       const sessionSummary = await finalizeSession(results);
       setSummary(sessionSummary);
       setState("complete");
     } else {
       setCurrentIndex(nextIndex);
       setPromptStartTime(Date.now());
+
+      // Pick mode for next word
+      const mode = pickMode(words[nextIndex].word);
+      setCurrentMode(mode);
+      if (mode === "context") {
+        setCurrentContextSentence(getContextSentence(words[nextIndex].word));
+      } else {
+        setCurrentContextSentence(null);
+      }
+
       setState("active");
     }
-  }, [currentIndex, words.length, results]);
+  }, [currentIndex, words, results]);
 
   const resetSession = useCallback(() => {
     setState("idle");
@@ -77,6 +115,8 @@ export function useSession() {
     setCurrentIndex(0);
     setResults([]);
     setSummary(null);
+    setCurrentMode("recall");
+    setCurrentContextSentence(null);
   }, []);
 
   return {
@@ -87,6 +127,8 @@ export function useSession() {
     progress,
     results,
     summary,
+    currentMode,
+    currentContextSentence,
     startSession,
     submitAnswer,
     nextWord,

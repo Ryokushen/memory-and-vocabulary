@@ -1,7 +1,10 @@
 import { db } from "./db";
 import { getDueCards, getNewCards, gradeCard, Rating } from "./scheduler";
 import { completeSession } from "./gamification";
+import { CONTEXT_SENTENCES } from "./context-sentences";
 import type {
+  ContextSentence,
+  GameMode,
   ReviewCard,
   ReviewLog,
   SessionResult,
@@ -46,6 +49,42 @@ export function autoGrade(
   return { rating: 1, correct: false }; // Again
 }
 
+/** Grade a context mode answer (multiple choice — exact match only). */
+export function gradeContextAnswer(
+  answer: string,
+  expected: string,
+): { rating: 1 | 2 | 3 | 4; correct: boolean } {
+  const a = answer.trim().toLowerCase();
+  const e = expected.trim().toLowerCase();
+  if (a === e) return { rating: 3, correct: true };
+  return { rating: 1, correct: false };
+}
+
+/** Get a random context sentence for a word, if available. */
+export function getContextSentence(word: Word): ContextSentence | null {
+  // Check word's own context sentences first
+  if (word.contextSentences && word.contextSentences.length > 0) {
+    return word.contextSentences[
+      Math.floor(Math.random() * word.contextSentences.length)
+    ];
+  }
+  // Fall back to the global context sentence bank
+  const sentences = CONTEXT_SENTENCES[word.word];
+  if (sentences && sentences.length > 0) {
+    return sentences[Math.floor(Math.random() * sentences.length)];
+  }
+  return null;
+}
+
+/** Decide game mode for a session word. Context if sentence available, else Recall. */
+export function pickMode(word: Word, forceMode?: GameMode): GameMode {
+  if (forceMode) return forceMode;
+  const hasContext = getContextSentence(word) !== null;
+  // Mix modes: ~40% context when available, 60% recall
+  if (hasContext && Math.random() < 0.4) return "context";
+  return "recall";
+}
+
 /** Load words for a session: due cards first, backfill with new. */
 export async function loadSessionWords(): Promise<SessionWord[]> {
   const dueCards = await getDueCards(SESSION_SIZE);
@@ -83,11 +122,21 @@ export async function processAnswer(
   sessionWord: SessionWord,
   answer: string,
   responseTimeMs: number,
+  mode: GameMode = "recall",
+  contextExpected?: string,
   manualRating?: 1 | 2 | 3 | 4,
 ): Promise<{ result: SessionResult; updatedCard: ReviewCard }> {
-  const { rating, correct } = manualRating
-    ? { rating: manualRating, correct: manualRating >= 2 }
-    : autoGrade(answer, sessionWord.word.word);
+  let gradeResult: { rating: 1 | 2 | 3 | 4; correct: boolean };
+
+  if (manualRating) {
+    gradeResult = { rating: manualRating, correct: manualRating >= 2 };
+  } else if (mode === "context" && contextExpected) {
+    gradeResult = gradeContextAnswer(answer, contextExpected);
+  } else {
+    gradeResult = autoGrade(answer, sessionWord.word.word);
+  }
+
+  const { rating, correct } = gradeResult;
 
   // Map our rating to ts-fsrs Rating
   const fsrsRating =
@@ -118,6 +167,7 @@ export async function processAnswer(
     correct,
     responseTimeMs,
     rating,
+    mode,
   };
 
   return { result, updatedCard };

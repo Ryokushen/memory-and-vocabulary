@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/hooks/use-session";
 import { RecallPrompt } from "@/components/session/recall-prompt";
+import { ContextPrompt } from "@/components/session/context-prompt";
 import { ReviewResult } from "@/components/session/review-result";
 import { SessionProgress } from "@/components/session/session-progress";
 import { XPAward } from "@/components/session/xp-award";
@@ -17,6 +18,8 @@ export default function SessionPage() {
     totalWords,
     results,
     summary,
+    currentMode,
+    currentContextSentence,
     startSession,
     submitAnswer,
     nextWord,
@@ -76,9 +79,19 @@ export default function SessionPage() {
     <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       <SessionProgress current={currentIndex} total={totalWords} />
 
-      {state === "active" && (
+      {state === "active" && currentMode === "recall" && (
         <RecallPrompt sessionWord={currentWord} onSubmit={submitAnswer} />
       )}
+
+      {state === "active" &&
+        currentMode === "context" &&
+        currentContextSentence && (
+          <ContextPrompt
+            sentence={currentContextSentence}
+            wordDisplay={currentWord.word.word}
+            onSubmit={submitAnswer}
+          />
+        )}
 
       {state === "reviewing" && lastResult && (
         <ReviewResult
