@@ -1,6 +1,6 @@
 "use client";
 
-import { Progress } from "@/components/ui/progress";
+import { motion } from "framer-motion";
 
 interface SessionProgressProps {
   current: number;
@@ -18,7 +18,14 @@ export function SessionProgress({ current, total }: SessionProgressProps) {
         </span>
         <span>{Math.round(pct)}%</span>
       </div>
-      <Progress value={pct} className="h-2" />
+      <div className="h-2 bg-muted rounded-full overflow-hidden">
+        <motion.div
+          className="h-full bg-primary rounded-full"
+          initial={false}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
+      </div>
     </div>
   );
 }

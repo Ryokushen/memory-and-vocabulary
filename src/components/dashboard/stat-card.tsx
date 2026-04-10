@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { RPGStats } from "@/lib/types";
@@ -16,7 +17,7 @@ const STAT_CONFIG = [
 ];
 
 export function StatCard({ stats }: StatCardProps) {
-  const maxStat = Math.max(...Object.values(stats), 10); // min scale of 10
+  const maxStat = Math.max(...Object.values(stats), 10);
 
   return (
     <Card>
@@ -24,8 +25,14 @@ export function StatCard({ stats }: StatCardProps) {
         <CardTitle className="text-lg">RPG Stats</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {STAT_CONFIG.map(({ key, label, color }) => (
-          <div key={key} className="space-y-1">
+        {STAT_CONFIG.map(({ key, label, color }, i) => (
+          <motion.div
+            key={key}
+            initial={{ opacity: 0, x: -15 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.08 }}
+            className="space-y-1"
+          >
             <div className="flex justify-between text-sm">
               <span>{label}</span>
               <span className="font-mono">{stats[key]}</span>
@@ -34,7 +41,7 @@ export function StatCard({ stats }: StatCardProps) {
               value={(stats[key] / maxStat) * 100}
               className={`h-2 ${color}`}
             />
-          </div>
+          </motion.div>
         ))}
       </CardContent>
     </Card>
