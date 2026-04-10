@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle2, XCircle, ArrowRight, Timer } from "lucide-react";
 import type { SessionWord, SessionResult } from "@/lib/types";
 
 interface ReviewResultProps {
@@ -18,6 +19,15 @@ export function ReviewResult({
 }: ReviewResultProps) {
   const { word } = sessionWord;
 
+  const ratingLabel =
+    result.rating === 1
+      ? "Again"
+      : result.rating === 2
+        ? "Hard"
+        : result.rating === 3
+          ? "Good"
+          : "Easy";
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -25,13 +35,14 @@ export function ReviewResult({
       transition={{ duration: 0.2 }}
     >
       <Card
-        className={`w-full max-w-2xl mx-auto border-2 transition-colors ${
+        size="sm"
+        className={`w-full max-w-2xl mx-auto transition-colors border-l-4 ${
           result.correct
-            ? "border-green-500/40 bg-green-50/50 dark:bg-green-950/20"
-            : "border-red-500/40 bg-red-50/50 dark:bg-red-950/20"
+            ? "border-l-emerald-500 ring-1 ring-emerald-500/15 bg-emerald-500/5"
+            : "border-l-red-500 ring-1 ring-red-500/15 bg-red-500/5"
         }`}
       >
-        <CardContent className="pt-6 space-y-6">
+        <CardContent className="space-y-4">
           <div className="text-center">
             <motion.div
               initial={{ scale: 0, rotate: -20 }}
@@ -42,16 +53,20 @@ export function ReviewResult({
                 damping: 15,
                 delay: 0.05,
               }}
-              className={`text-5xl mb-3 ${result.correct ? "text-green-500" : "text-red-500"}`}
+              className="mb-2 inline-flex"
             >
-              {result.correct ? "+" : "x"}
+              {result.correct ? (
+                <CheckCircle2 className="size-10 text-emerald-500" />
+              ) : (
+                <XCircle className="size-10 text-red-500" />
+              )}
             </motion.div>
 
             <motion.h2
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="text-3xl font-bold"
+              className="text-2xl font-bold"
             >
               {word.word}
             </motion.h2>
@@ -71,9 +86,9 @@ export function ReviewResult({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              className="space-y-1"
+              className="rounded-lg bg-muted/50 p-3 space-y-1"
             >
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
                 Example
               </p>
               <p className="text-sm italic">{word.examples[0]}</p>
@@ -86,22 +101,25 @@ export function ReviewResult({
             transition={{ delay: 0.35 }}
             className="flex items-center justify-between text-sm text-muted-foreground"
           >
-            <span>
-              Response time:{" "}
+            <span className="inline-flex items-center gap-1.5">
+              <Timer className="size-3.5" />
               {(result.responseTimeMs / 1000).toFixed(1)}s
             </span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-2">
               {result.mode === "context" && (
-                <span className="text-xs bg-muted px-1.5 py-0.5 rounded">CTX</span>
+                <span className="text-xs bg-muted px-2 py-0.5 rounded-md font-medium">
+                  CTX
+                </span>
               )}
-              Rating:{" "}
-              {result.rating === 1
-                ? "Again"
-                : result.rating === 2
-                  ? "Hard"
-                  : result.rating === 3
-                    ? "Good"
-                    : "Easy"}
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-md ${
+                result.rating >= 3
+                  ? "bg-emerald-500/10 text-emerald-500"
+                  : result.rating === 2
+                    ? "bg-amber-500/10 text-amber-500"
+                    : "bg-red-500/10 text-red-500"
+              }`}>
+                {ratingLabel}
+              </span>
             </span>
           </motion.div>
 
@@ -110,8 +128,9 @@ export function ReviewResult({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Button onClick={onNext} className="w-full" size="lg">
+            <Button onClick={onNext} className="w-full gap-2" size="lg">
               Next
+              <ArrowRight className="size-4" />
             </Button>
           </motion.div>
         </CardContent>

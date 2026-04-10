@@ -2,12 +2,17 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { useSession } from "@/hooks/use-session";
 import { RecallPrompt } from "@/components/session/recall-prompt";
 import { ContextPrompt } from "@/components/session/context-prompt";
 import { ReviewResult } from "@/components/session/review-result";
+import { SpeedPrompt } from "@/components/session/speed-prompt";
 import { SessionProgress } from "@/components/session/session-progress";
 import { XPAward } from "@/components/session/xp-award";
+import { BattleScene } from "@/components/session/battle-scene";
+import { Button } from "@/components/ui/button";
+import { BookOpen, ArrowLeft } from "lucide-react";
 
 export default function SessionPage() {
   const router = useRouter();
@@ -20,6 +25,7 @@ export default function SessionPage() {
     summary,
     currentMode,
     currentContextSentence,
+    currentSpeedChoices,
     startSession,
     submitAnswer,
     nextWord,
@@ -34,32 +40,50 @@ export default function SessionPage() {
 
   if (state === "loading") {
     return (
-      <main className="max-w-4xl mx-auto px-4 py-8 text-center">
-        <p className="text-muted-foreground">Loading session...</p>
+      <main className="max-w-2xl mx-auto px-4 py-4 text-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-3"
+        >
+          <span className="text-3xl animate-pulse">&#x2694;&#xFE0F;</span>
+          <p className="text-muted-foreground text-sm">Preparing session...</p>
+        </motion.div>
       </main>
     );
   }
 
   if (state === "idle") {
     return (
-      <main className="max-w-4xl mx-auto px-4 py-8 text-center space-y-4">
-        <h2 className="text-2xl font-bold">No words available</h2>
-        <p className="text-muted-foreground">
-          Add words to your library or wait for reviews to become due.
-        </p>
-        <button
-          onClick={() => router.push("/")}
-          className="text-primary underline"
+      <main className="max-w-2xl mx-auto px-4 py-4 text-center space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center gap-4"
         >
-          Back to Dashboard
-        </button>
+          <div className="size-16 rounded-2xl bg-muted/50 flex items-center justify-center">
+            <BookOpen className="size-8 text-muted-foreground" />
+          </div>
+          <h2 className="text-2xl font-bold">No words available</h2>
+          <p className="text-muted-foreground max-w-sm">
+            Add words to your library or wait for reviews to become due.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => router.push("/")}
+            className="gap-2"
+          >
+            <ArrowLeft className="size-4" />
+            Back to Dashboard
+          </Button>
+        </motion.div>
       </main>
     );
   }
 
   if (state === "complete" && summary) {
     return (
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-2xl mx-auto px-4 py-4">
         <XPAward
           summary={summary}
           onDone={() => {
@@ -76,12 +100,24 @@ export default function SessionPage() {
   const lastResult = results[results.length - 1] ?? null;
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-      <SessionProgress current={currentIndex} total={totalWords} />
+    <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+      <SessionProgress current={currentIndex} total={totalWords} results={results} currentMode={currentMode} />
+
+      <BattleScene totalWords={totalWords} results={results} lastResult={state === "reviewing" ? lastResult : null} />
 
       {state === "active" && currentMode === "recall" && (
         <RecallPrompt sessionWord={currentWord} onSubmit={submitAnswer} />
       )}
+
+      {state === "active" &&
+        currentMode === "speed" &&
+        currentSpeedChoices && (
+          <SpeedPrompt
+            sessionWord={currentWord}
+            choices={currentSpeedChoices}
+            onSubmit={submitAnswer}
+          />
+        )}
 
       {state === "active" &&
         currentMode === "context" &&
