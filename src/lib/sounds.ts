@@ -35,11 +35,13 @@ function playTone(
   gain.connect(ctx.destination);
 
   const startTime = ctx.currentTime + delay;
+  const fadeIn = Math.min(0.02, duration * 0.3);
+  const fadeOut = Math.min(0.05, duration * 0.3);
   // Fade in
   gain.gain.setValueAtTime(0, startTime);
-  gain.gain.linearRampToValueAtTime(volume, startTime + 0.02);
+  gain.gain.linearRampToValueAtTime(volume, startTime + fadeIn);
   // Fade out
-  gain.gain.setValueAtTime(volume, startTime + duration - 0.05);
+  gain.gain.setValueAtTime(volume, startTime + duration - fadeOut);
   gain.gain.linearRampToValueAtTime(0, startTime + duration);
 
   osc.start(startTime);
