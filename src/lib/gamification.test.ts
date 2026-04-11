@@ -14,6 +14,18 @@ vi.mock("./db", () => ({
   getOrCreateProfile: getOrCreateProfileMock,
 }));
 
+vi.mock("./supabase", () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+    },
+  },
+}));
+
+vi.mock("./sync", () => ({
+  pushToCloud: vi.fn(),
+}));
+
 import {
   calculateSessionXP,
   calculateStatGains,

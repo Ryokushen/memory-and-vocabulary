@@ -196,6 +196,25 @@ export async function loadSessionWords(
   return sessionWords;
 }
 
+/** Get the count of new words currently available under today's limits. */
+export async function getAvailableNewCount(
+  difficulty: Difficulty = "normal",
+  level: number = 1,
+): Promise<number> {
+  const config = DIFFICULTY_CONFIG[difficulty];
+  const newWordsToday = await getNewWordsIntroducedToday();
+  const remainingNewAllowed = Math.max(
+    0,
+    config.newWordsPerDay - newWordsToday,
+  );
+
+  if (remainingNewAllowed === 0) return 0;
+
+  const unlockedTiers = getUnlockedTiers(level);
+  const newCards = await getNewCards(remainingNewAllowed, unlockedTiers);
+  return newCards.length;
+}
+
 /** Get the current batch from session words. */
 export function getCurrentBatch(
   words: SessionWord[],

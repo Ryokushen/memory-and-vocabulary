@@ -21,6 +21,8 @@ All notable changes to this project should be documented in this file.
 - Nav bar logo: Uncial Antiqua font wordmark replacing PNG logo
 - PWA icons updated with Lexforge branding
 - Quest card now shows "to review" and "new" separately instead of one overwhelming total
+- Dashboard work counts now respect the selected difficulty and current tier unlocks instead of showing all unseen words as available new work
+- Fixed dashboard stats initialization so changing difficulty no longer leaves the new-word count stale on first load
 - Stats page "Words Due" → "To Review" (only counts previously-seen cards past due date)
 - Updated `README.md` to reflect the shipped feature set
 - Adjusted ESLint ignores so generated Serwist service worker artifacts in `public/` no longer pollute lint results

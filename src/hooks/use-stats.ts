@@ -2,14 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { db, getOrCreateProfile } from "@/lib/db";
-import { getDueCount, getNewCount, getWordCount } from "@/lib/scheduler";
+import { getDueCount, getWordCount } from "@/lib/scheduler";
+import { getAvailableNewCount } from "@/lib/session-engine";
 import type { Difficulty, UserProfile } from "@/lib/types";
 
 async function loadStatsSnapshot() {
-  const [profile, dueCount, newCount, wordCount] = await Promise.all([
-    getOrCreateProfile(),
+  const profile = await getOrCreateProfile();
+  const [dueCount, newCount, wordCount] = await Promise.all([
     getDueCount(),
-    getNewCount(),
+    getAvailableNewCount(profile.difficulty, profile.level),
     getWordCount(),
   ]);
 
@@ -42,6 +43,7 @@ export function useStats() {
 
       setProfile(snapshot.profile);
       setDueCount(snapshot.dueCount);
+      setNewCount(snapshot.newCount);
       setWordCount(snapshot.wordCount);
       setLoading(false);
     }

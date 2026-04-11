@@ -110,7 +110,7 @@ const TIER_INFO: Record<string, { label: string; color: string; bg: string; bord
 // ── Page ─────────────────────────────────────────────────────────────────
 
 export default function StatsPage() {
-  const { profile, dueCount, newCount, wordCount, loading } = useStats();
+  const { profile, dueCount, wordCount, loading } = useStats();
   const [recentLogs, setRecentLogs] = useState<ReviewLog[]>([]);
 
   useEffect(() => {

@@ -15,6 +15,14 @@ interface QuestCardProps {
 
 export function QuestCard({ dueCount, newCount, wordCount }: QuestCardProps) {
   const hasWork = dueCount > 0 || newCount > 0;
+  const summaryText =
+    dueCount > 0 && newCount > 0
+      ? `${dueCount} review${dueCount === 1 ? "" : "s"} and ${newCount} new word${newCount === 1 ? "" : "s"} ready`
+      : dueCount > 0
+        ? `${dueCount} review${dueCount === 1 ? "" : "s"} ready`
+        : newCount > 0
+          ? `${newCount} new word${newCount === 1 ? "" : "s"} ready`
+          : `${wordCount} words in library`;
 
   return (
     <motion.div
@@ -55,7 +63,7 @@ export function QuestCard({ dueCount, newCount, wordCount }: QuestCardProps) {
               </p>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <BookOpen className="size-3" />
-                {wordCount} words in library
+                {summaryText}
               </p>
             </div>
 

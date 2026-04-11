@@ -38,6 +38,7 @@ vi.mock("./gamification", () => ({
 import {
   autoGrade,
   finalizeSession,
+  getAvailableNewCount,
   getSpeedChoices,
   getUnlockedTiers,
   gradeSpeedAnswer,
@@ -252,6 +253,21 @@ describe("session engine", () => {
     expect(sessionWords).toHaveLength(1);
     expect(sessionWords[0].word.tier).toBe(3);
     expect(schedulerMock.getNewCards).toHaveBeenCalledWith(5, [1, "custom"]);
+  });
+
+  it("returns only the new words available today for the selected difficulty", async () => {
+    schedulerMock.getNewCards.mockResolvedValue([
+      makeReviewCard(1),
+      makeReviewCard(2),
+    ]);
+    dbMock.reviewLogs.toArray.mockResolvedValue(
+      Array.from({ length: 3 }, (_, index) => makeTodayFirstReviewLog(index + 10)),
+    );
+
+    const count = await getAvailableNewCount("easy", 1);
+
+    expect(count).toBe(2);
+    expect(schedulerMock.getNewCards).toHaveBeenCalledWith(2, [1, "custom"]);
   });
 
   it("delegates session finalization to the gamification layer", async () => {
