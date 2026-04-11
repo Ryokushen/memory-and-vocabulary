@@ -23,7 +23,7 @@ export function NavBar() {
           <img
             src="/icons/lexforge-logo.png"
             alt="Lexforge"
-            className="h-8 w-auto"
+            className="h-10 w-auto"
           />
         </Link>
 
