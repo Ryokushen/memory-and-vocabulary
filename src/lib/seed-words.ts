@@ -5027,5 +5027,400 @@ export const SEED_WORDS: SeedWord[] = [
     synonyms: ["unavoidable", "inevitable", "undeniable"],
     tier: 3,
   },
+  // --- Manufacturing / Industrial / Trades ---
+  // Equipment & Failure Precision
+  {
+    word: "defective",
+    definition: "Having a fault or flaw that prevents proper function; not meeting required standards",
+    examples: [
+      "Three defective units were pulled from the line before the batch shipped.",
+      "The quality inspector flagged the defective seal as the likely cause of the leak.",
+    ],
+    synonyms: ["faulty", "flawed", "substandard"],
+    tier: 1,
+  },
+  {
+    word: "intermittent",
+    definition: "Occurring at irregular intervals; stopping and starting unpredictably",
+    examples: [
+      "The intermittent alarm on press #4 has been harder to diagnose than a constant fault.",
+      "An intermittent power drop was causing random shutdowns on the conveyor motor.",
+    ],
+    synonyms: ["sporadic", "irregular", "on-and-off"],
+    tier: 1,
+  },
+  {
+    word: "calibrate",
+    definition: "To adjust or standardize a measuring instrument or machine to ensure accurate readings",
+    examples: [
+      "You need to calibrate the torque wrench at the start of every shift.",
+      "The technician calibrated the load cells after the sensor replacement.",
+    ],
+    synonyms: ["adjust", "tune", "standardize"],
+    tier: 1,
+  },
+  {
+    word: "diagnose",
+    definition: "To identify the cause of a fault or problem through systematic investigation",
+    examples: [
+      "It took the maintenance team two hours to diagnose the root cause of the conveyor jam.",
+      "You can't fix what you can't diagnose — start by pulling the error codes.",
+    ],
+    synonyms: ["identify", "pinpoint", "troubleshoot"],
+    tier: 1,
+  },
+  {
+    word: "rectify",
+    definition: "To correct or fix a fault, error, or problem",
+    examples: [
+      "The supervisor asked the technician to rectify the misalignment before resuming production.",
+      "We have 24 hours to rectify the nonconformance before the customer audit.",
+    ],
+    synonyms: ["correct", "fix", "resolve"],
+    tier: 1,
+  },
+  {
+    word: "refurbish",
+    definition: "To restore a piece of equipment to good working condition through repair and cleaning",
+    examples: [
+      "Rather than buying new, we decided to refurbish the old hydraulic press.",
+      "The refurbished palletizer ran as well as new equipment at a fraction of the cost.",
+    ],
+    synonyms: ["restore", "recondition", "overhaul"],
+    tier: 1,
+  },
+  {
+    word: "decommission",
+    definition: "To officially take a machine or system out of service",
+    examples: [
+      "We plan to decommission the old injection molder once the replacement is qualified.",
+      "Before you decommission any equipment, make sure all energy sources are locked out.",
+    ],
+    synonyms: ["retire", "withdraw", "shut down"],
+    tier: 1,
+  },
+  {
+    word: "overhaul",
+    definition: "A thorough inspection and repair of a machine to restore it to full working order",
+    examples: [
+      "The pump was due for a full overhaul after 10,000 hours of operation.",
+      "We scheduled the overhaul during the planned plant shutdown in July.",
+    ],
+    synonyms: ["rebuild", "refurbish", "reconditioning"],
+    tier: 1,
+  },
+  {
+    word: "retrofit",
+    definition: "To add new components or technology to existing equipment that was not originally equipped with it",
+    examples: [
+      "We decided to retrofit the older lathes with digital readouts instead of replacing them.",
+      "The safety upgrade required us to retrofit guards on all legacy machines on the floor.",
+    ],
+    synonyms: ["upgrade", "modify", "update"],
+    tier: 1,
+  },
+  {
+    word: "malfunction",
+    definition: "A failure of a machine or system to operate correctly",
+    examples: [
+      "A malfunction in the cooling system caused the line to shut down for three hours.",
+      "Document every malfunction in the maintenance log so we can spot patterns.",
+    ],
+    synonyms: ["failure", "fault", "breakdown"],
+    tier: 1,
+  },
+  // Process & Quality
+  {
+    word: "standardize",
+    definition: "To establish a consistent method, specification, or procedure across operations",
+    examples: [
+      "We need to standardize the changeover process so every shift runs it the same way.",
+      "The quality manager wants to standardize the inspection checklist across all three lines.",
+    ],
+    synonyms: ["normalize", "unify", "regulate"],
+    tier: 1,
+  },
+  {
+    word: "streamline",
+    definition: "To simplify or eliminate unnecessary steps in a process to make it more efficient",
+    examples: [
+      "The lean team was brought in to streamline the receiving dock workflow.",
+      "Streamlining the approval process cut our order turnaround from five days to two.",
+    ],
+    synonyms: ["simplify", "optimize", "rationalize"],
+    tier: 1,
+  },
+  {
+    word: "benchmark",
+    definition: "A standard or reference point used to measure or compare performance",
+    examples: [
+      "Our cycle time benchmark is 45 seconds per unit — anything above that triggers a review.",
+      "We benchmarked our scrap rate against industry standards before setting improvement targets.",
+    ],
+    synonyms: ["standard", "reference point", "baseline"],
+    tier: 1,
+  },
+  {
+    word: "audit",
+    definition: "A systematic inspection or review of a process, product, or system to verify compliance and quality",
+    examples: [
+      "The ISO audit is next month, so make sure your records are up to date.",
+      "We conduct an internal audit every quarter to catch issues before the customer visit.",
+    ],
+    synonyms: ["inspection", "review", "assessment"],
+    tier: 1,
+  },
+  {
+    word: "compliance",
+    definition: "Conforming to required rules, regulations, standards, or specifications",
+    examples: [
+      "Environmental compliance is non-negotiable — any violation carries serious penalties.",
+      "The new operator needs to complete safety training to stay in compliance with OSHA standards.",
+    ],
+    synonyms: ["adherence", "conformance", "observance"],
+    tier: 1,
+  },
+  {
+    word: "throughput",
+    definition: "The amount of product or work processed in a given period of time",
+    examples: [
+      "We increased throughput by 15% after eliminating the manual staging step.",
+      "Track throughput by shift so we can see where the output drops off.",
+    ],
+    synonyms: ["output", "production rate", "capacity"],
+    tier: 1,
+  },
+  {
+    word: "downtime",
+    definition: "Time during which a machine or production line is not operating",
+    examples: [
+      "Unplanned downtime cost us four hours of production on the night shift.",
+      "Preventive maintenance is scheduled during planned downtime to avoid surprises.",
+    ],
+    synonyms: ["outage", "stoppage", "idle time"],
+    tier: 1,
+  },
+  {
+    word: "bottleneck",
+    definition: "A point in a process where flow is restricted and work accumulates, slowing overall output",
+    examples: [
+      "The packaging station is the bottleneck — everything upstream feeds faster than it can keep up.",
+      "Fixing the bottleneck at welding would free up capacity across the entire line.",
+    ],
+    synonyms: ["constraint", "choke point", "limiting factor"],
+    tier: 1,
+  },
+  {
+    word: "yield",
+    definition: "The proportion of good output produced compared to total input; the efficiency of a process",
+    examples: [
+      "Our first-pass yield dropped to 88% after the die change — we need to find out why.",
+      "Improving yield by even 2% would save thousands of dollars in scrap costs monthly.",
+    ],
+    synonyms: ["output rate", "efficiency", "pass rate"],
+    tier: 1,
+  },
+  {
+    word: "tolerance",
+    definition: "The allowable range of variation in a measurement or dimension for a part to still be acceptable",
+    examples: [
+      "The tolerance on that shaft is plus or minus 0.002 inches — anything outside that is scrap.",
+      "Tight tolerances require more precise tooling and slower feed rates.",
+    ],
+    synonyms: ["allowance", "variance", "specification range"],
+    tier: 1,
+  },
+  // Supervision & Leadership
+  {
+    word: "delegate",
+    definition: "To assign a task or responsibility to another person, typically a subordinate",
+    examples: [
+      "A good supervisor knows what to delegate and what to handle personally.",
+      "She delegated the shift handoff report to her lead so she could focus on the line issue.",
+    ],
+    synonyms: ["assign", "entrust", "hand off"],
+    tier: 1,
+  },
+  {
+    word: "mentor",
+    definition: "To guide and support a less experienced person through advice, knowledge, and example",
+    examples: [
+      "He agreed to mentor the new hire through the first 90 days on the floor.",
+      "Pairing senior machinists with new employees is the best way to mentor technical skills.",
+    ],
+    synonyms: ["coach", "guide", "develop"],
+    tier: 1,
+  },
+  {
+    word: "onboard",
+    definition: "To integrate a new employee into the organization through training and orientation",
+    examples: [
+      "We need a consistent process to onboard every new hire so nothing gets missed.",
+      "It takes about two weeks to fully onboard someone on the assembly line.",
+    ],
+    synonyms: ["orient", "integrate", "train"],
+    tier: 1,
+  },
+  {
+    word: "reprimand",
+    definition: "To formally rebuke or criticize an employee for a rule violation or performance issue",
+    examples: [
+      "The supervisor had to reprimand the technician for bypassing the lockout procedure.",
+      "A written reprimand was issued after the third tardiness incident.",
+    ],
+    synonyms: ["rebuke", "discipline", "censure"],
+    tier: 1,
+  },
+  {
+    word: "commend",
+    definition: "To formally praise or recommend someone for good work or exemplary behavior",
+    examples: [
+      "The plant manager took time to commend the team for achieving zero defects for the month.",
+      "I want to commend the maintenance crew for turning that repair around so quickly.",
+    ],
+    synonyms: ["praise", "recognize", "acknowledge"],
+    tier: 1,
+  },
+  {
+    word: "accountability",
+    definition: "The obligation to accept responsibility for one's actions and the outcomes of one's work",
+    examples: [
+      "Accountability on the shop floor starts with supervisors owning their shift numbers.",
+      "When there's no clear accountability, problems get ignored and mistakes repeat.",
+    ],
+    synonyms: ["responsibility", "ownership", "answerability"],
+    tier: 1,
+  },
+  {
+    word: "competency",
+    definition: "A defined skill or ability required to perform a job effectively",
+    examples: [
+      "Operating the CNC lathe is a core competency for any machinist on this line.",
+      "The skills matrix tracks each operator's competency level for every station.",
+    ],
+    synonyms: ["skill", "capability", "proficiency"],
+    tier: 1,
+  },
+  {
+    word: "proficiency",
+    definition: "A high degree of skill or expertise in a particular area",
+    examples: [
+      "She reached full proficiency on the welding station after six weeks of practice.",
+      "We expect proficiency in forklift operation before any associate works in the warehouse.",
+    ],
+    synonyms: ["expertise", "mastery", "competence"],
+    tier: 1,
+  },
+  {
+    word: "cross-train",
+    definition: "To train an employee to perform tasks or roles outside their primary function",
+    examples: [
+      "We cross-train every operator on at least two stations to reduce single-point dependencies.",
+      "Cross-training the team helped us cover absences without bringing in temporary workers.",
+    ],
+    synonyms: ["multi-skill", "rotate", "broaden"],
+    tier: 1,
+  },
+  {
+    word: "troubleshoot",
+    definition: "To systematically identify and resolve problems in a machine, process, or system",
+    examples: [
+      "Call maintenance if you can't troubleshoot the fault within 10 minutes.",
+      "Good operators can troubleshoot minor issues without stopping the line.",
+    ],
+    synonyms: ["diagnose", "debug", "resolve"],
+    tier: 1,
+  },
+  // Continuous Improvement
+  {
+    word: "optimize",
+    definition: "To adjust a process or system to achieve the best possible performance or efficiency",
+    examples: [
+      "We brought in an engineer to optimize the cutting parameters and reduce cycle time.",
+      "The goal of the kaizen event was to optimize flow through the assembly cell.",
+    ],
+    synonyms: ["improve", "fine-tune", "maximize"],
+    tier: 1,
+  },
+  {
+    word: "root-cause",
+    definition: "The fundamental underlying reason for a problem, as opposed to its symptoms",
+    examples: [
+      "We won't stop the failures until we identify the root-cause and fix it permanently.",
+      "The 5-Why analysis pointed to operator training as the root-cause of the defect.",
+    ],
+    synonyms: ["underlying cause", "source", "origin"],
+    tier: 1,
+  },
+  {
+    word: "preventive",
+    definition: "Designed to stop a problem from occurring before it happens",
+    examples: [
+      "Preventive maintenance on the compressor is scheduled every 500 hours.",
+      "A preventive approach to safety means fixing hazards before someone gets hurt.",
+    ],
+    synonyms: ["proactive", "precautionary", "anticipatory"],
+    tier: 1,
+  },
+  {
+    word: "corrective",
+    definition: "Intended to fix a problem or deviation that has already occurred",
+    examples: [
+      "A corrective action report is required any time a product escapes inspection.",
+      "The corrective maintenance took the line down for four hours but solved the problem.",
+    ],
+    synonyms: ["remedial", "restorative", "reactive"],
+    tier: 1,
+  },
+  {
+    word: "proactive",
+    definition: "Acting in anticipation of future problems rather than reacting after they occur",
+    examples: [
+      "Being proactive about equipment wear means you plan repairs before breakdowns happen.",
+      "The proactive safety walk caught two hazards before the morning shift started.",
+    ],
+    synonyms: ["anticipatory", "forward-thinking", "preventive"],
+    tier: 1,
+  },
+  {
+    word: "reactive",
+    definition: "Responding to problems or events after they have already occurred",
+    examples: [
+      "A purely reactive maintenance strategy leads to higher costs and more unplanned downtime.",
+      "We were too reactive last quarter — this year we're focusing on prevention.",
+    ],
+    synonyms: ["responsive", "remedial", "after-the-fact"],
+    tier: 1,
+  },
+  {
+    word: "sustainable",
+    definition: "Able to be maintained consistently over the long term without depleting resources or causing harm",
+    examples: [
+      "The new process needs to be sustainable — not just a quick fix that breaks down in a month.",
+      "Sustainable improvement requires training, documentation, and follow-through.",
+    ],
+    synonyms: ["lasting", "maintainable", "viable"],
+    tier: 1,
+  },
+  {
+    word: "scalable",
+    definition: "Capable of being expanded or adapted to handle increased demand or scope",
+    examples: [
+      "Before we roll this out plant-wide, we need to confirm the solution is scalable.",
+      "A scalable process works whether you're running one shift or three.",
+    ],
+    synonyms: ["expandable", "adaptable", "flexible"],
+    tier: 1,
+  },
+  {
+    word: "iterative",
+    definition: "Based on repeated cycles of testing and improvement, each building on the last",
+    examples: [
+      "Our continuous improvement program is iterative — small gains every sprint add up over time.",
+      "Use an iterative approach when piloting a new process: test, measure, adjust, repeat.",
+    ],
+    synonyms: ["incremental", "cyclical", "progressive"],
+    tier: 1,
+  },
 ];
 

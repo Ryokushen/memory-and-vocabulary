@@ -3954,4 +3954,317 @@ export const CONTEXT_SENTENCES: Record<string, ContextSentence[]> = {
       distractors: ["obvious", "inevitable", "undeniable"],
     },
   ],
+  // --- Manufacturing / Industrial / Trades ---
+  defective: [
+    {
+      sentence: "Five **bad** parts were caught at final inspection before the batch left the line.",
+      weakWord: "bad",
+      answer: "defective",
+      distractors: ["broken", "missing", "worn"],
+    },
+  ],
+  intermittent: [
+    {
+      sentence: "The **on-and-off** fault on the conveyor has been impossible to catch because it never stays long enough to trace.",
+      weakWord: "on-and-off",
+      answer: "intermittent",
+      distractors: ["constant", "random", "mechanical"],
+    },
+  ],
+  calibrate: [
+    {
+      sentence: "Before the first measurement of the shift, the technician needed to **adjust** the micrometer to a known standard.",
+      weakWord: "adjust",
+      answer: "calibrate",
+      distractors: ["clean", "replace", "test"],
+    },
+  ],
+  diagnose: [
+    {
+      sentence: "The maintenance engineer was called in to **find the problem** with the hydraulic press before production could resume.",
+      weakWord: "find the problem",
+      answer: "diagnose",
+      distractors: ["repair", "document", "inspect"],
+    },
+  ],
+  rectify: [
+    {
+      sentence: "The alignment issue on the roller assembly had to be **fixed** before the supervisor would approve a restart.",
+      weakWord: "fixed",
+      answer: "rectify",
+      distractors: ["report", "document", "monitor"],
+    },
+  ],
+  refurbish: [
+    {
+      sentence: "Instead of scrapping the old grinder, the shop decided to **restore** it and put it back into service.",
+      weakWord: "restore",
+      answer: "refurbish",
+      distractors: ["sell", "inspect", "upgrade"],
+    },
+  ],
+  decommission: [
+    {
+      sentence: "The plant manager gave the order to **retire** the aging press once the new model was installed and qualified.",
+      weakWord: "retire",
+      answer: "decommission",
+      distractors: ["repair", "replace", "move"],
+    },
+  ],
+  overhaul: [
+    {
+      sentence: "After 12,000 operating hours, the gearbox was pulled from service for a complete **rebuild**.",
+      weakWord: "rebuild",
+      answer: "overhaul",
+      distractors: ["inspection", "cleaning", "replacement"],
+    },
+  ],
+  retrofit: [
+    {
+      sentence: "The safety team decided to **add** emergency stop buttons to all the older machines that were installed before the current standard.",
+      weakWord: "add",
+      answer: "retrofit",
+      distractors: ["test", "paint", "label"],
+    },
+  ],
+  malfunction: [
+    {
+      sentence: "A sudden **breakdown** in the cooling system forced the night shift to halt production for three hours.",
+      weakWord: "breakdown",
+      answer: "malfunction",
+      distractors: ["inspection", "upgrade", "shutdown"],
+    },
+  ],
+  standardize: [
+    {
+      sentence: "The quality manager's top priority was to **make consistent** the inspection procedure across all three production shifts.",
+      weakWord: "make consistent",
+      answer: "standardize",
+      distractors: ["simplify", "document", "train"],
+    },
+  ],
+  streamline: [
+    {
+      sentence: "The lean team was brought in to **simplify** the receiving dock process and cut the number of steps in half.",
+      weakWord: "simplify",
+      answer: "streamline",
+      distractors: ["automate", "audit", "relocate"],
+    },
+  ],
+  benchmark: [
+    {
+      sentence: "We set a cycle-time **target** of 42 seconds per unit, and anything above it triggers a review.",
+      weakWord: "target",
+      answer: "benchmark",
+      distractors: ["limit", "quota", "estimate"],
+    },
+  ],
+  audit: [
+    {
+      sentence: "The ISO **inspection** is scheduled for next month, so all records need to be current and accessible.",
+      weakWord: "inspection",
+      answer: "audit",
+      distractors: ["meeting", "review", "training"],
+    },
+  ],
+  compliance: [
+    {
+      sentence: "Every new hire must complete the OSHA safety training to remain in **good standing** with regulations.",
+      weakWord: "good standing",
+      answer: "compliance",
+      distractors: ["contact", "progress", "agreement"],
+    },
+  ],
+  throughput: [
+    {
+      sentence: "Removing the manual staging step increased our **output** by 15% without adding any headcount.",
+      weakWord: "output",
+      answer: "throughput",
+      distractors: ["quality", "capacity", "yield"],
+    },
+  ],
+  downtime: [
+    {
+      sentence: "The unplanned **stoppage** on line three cost us four hours of production during the peak order week.",
+      weakWord: "stoppage",
+      answer: "downtime",
+      distractors: ["delay", "shift", "break"],
+    },
+  ],
+  bottleneck: [
+    {
+      sentence: "Work keeps piling up at the packaging station because it's the **slow point** in the entire line.",
+      weakWord: "slow point",
+      answer: "bottleneck",
+      distractors: ["endpoint", "workstation", "checkpoint"],
+    },
+  ],
+  yield: [
+    {
+      sentence: "Our first-pass **pass rate** dropped to 88% after the tooling change, which means more scrap and rework.",
+      weakWord: "pass rate",
+      answer: "yield",
+      distractors: ["output", "volume", "efficiency"],
+    },
+  ],
+  tolerance: [
+    {
+      sentence: "The shaft must be machined to an exact **allowance** — even a few thousandths of an inch outside spec means scrap.",
+      weakWord: "allowance",
+      answer: "tolerance",
+      distractors: ["measurement", "dimension", "clearance"],
+    },
+  ],
+  delegate: [
+    {
+      sentence: "A strong supervisor knows when to **hand off** tasks to their lead and when to stay involved directly.",
+      weakWord: "hand off",
+      answer: "delegate",
+      distractors: ["ignore", "document", "monitor"],
+    },
+  ],
+  mentor: [
+    {
+      sentence: "The senior welder agreed to **guide** the apprentice through the certification process over the next three months.",
+      weakWord: "guide",
+      answer: "mentor",
+      distractors: ["replace", "evaluate", "train"],
+    },
+  ],
+  onboard: [
+    {
+      sentence: "We need a standardized checklist to **integrate** every new hire so that nothing gets skipped in the first week.",
+      weakWord: "integrate",
+      answer: "onboard",
+      distractors: ["promote", "assign", "evaluate"],
+    },
+  ],
+  reprimand: [
+    {
+      sentence: "The supervisor had to formally **discipline** the technician after they bypassed the lockout procedure.",
+      weakWord: "discipline",
+      answer: "reprimand",
+      distractors: ["commend", "suspend", "warn"],
+    },
+  ],
+  commend: [
+    {
+      sentence: "The plant manager took a moment to **recognize** the maintenance team for their fast response to the equipment failure.",
+      weakWord: "recognize",
+      answer: "commend",
+      distractors: ["reprimand", "reward", "promote"],
+    },
+  ],
+  accountability: [
+    {
+      sentence: "When there is no clear **ownership** for a process, problems tend to repeat because no one feels responsible for fixing them.",
+      weakWord: "ownership",
+      answer: "accountability",
+      distractors: ["authority", "blame", "documentation"],
+    },
+  ],
+  competency: [
+    {
+      sentence: "The skills matrix lists every **required ability** for each station so supervisors know who is qualified to run what.",
+      weakWord: "required ability",
+      answer: "competency",
+      distractors: ["certification", "seniority", "availability"],
+    },
+  ],
+  proficiency: [
+    {
+      sentence: "She demonstrated full **mastery** of the CNC lathe after completing her qualification sign-off.",
+      weakWord: "mastery",
+      answer: "proficiency",
+      distractors: ["interest", "experience", "speed"],
+    },
+  ],
+  "cross-train": [
+    {
+      sentence: "To reduce our dependency on individual operators, we decided to **multi-skill** everyone on at least two stations.",
+      weakWord: "multi-skill",
+      answer: "cross-train",
+      distractors: ["overtime", "relocate", "evaluate"],
+    },
+  ],
+  troubleshoot: [
+    {
+      sentence: "If you can't **figure out** the fault within ten minutes, call maintenance rather than guessing.",
+      weakWord: "figure out",
+      answer: "troubleshoot",
+      distractors: ["document", "ignore", "escalate"],
+    },
+  ],
+  optimize: [
+    {
+      sentence: "The process engineer was brought in to **improve** the cutting parameters and reduce cycle time on the lathe.",
+      weakWord: "improve",
+      answer: "optimize",
+      distractors: ["document", "change", "monitor"],
+    },
+  ],
+  "root-cause": [
+    {
+      sentence: "The 5-Why analysis revealed operator training as the true **underlying cause** of the recurring defect.",
+      weakWord: "underlying cause",
+      answer: "root-cause",
+      distractors: ["symptom", "result", "trigger"],
+    },
+  ],
+  preventive: [
+    {
+      sentence: "**Anticipatory** maintenance on the compressor is scheduled every 500 operating hours to avoid unplanned failures.",
+      weakWord: "Anticipatory",
+      answer: "preventive",
+      distractors: ["corrective", "reactive", "emergency"],
+    },
+  ],
+  corrective: [
+    {
+      sentence: "A **remedial** action report is required any time a nonconforming product escapes the inspection point.",
+      weakWord: "remedial",
+      answer: "corrective",
+      distractors: ["preventive", "safety", "audit"],
+    },
+  ],
+  proactive: [
+    {
+      sentence: "Being **forward-thinking** about equipment wear means scheduling repairs before a breakdown stops the line.",
+      weakWord: "forward-thinking",
+      answer: "proactive",
+      distractors: ["reactive", "cautious", "systematic"],
+    },
+  ],
+  reactive: [
+    {
+      sentence: "A purely **after-the-fact** maintenance strategy costs more in the long run because you're always responding to crises.",
+      weakWord: "after-the-fact",
+      answer: "reactive",
+      distractors: ["proactive", "preventive", "planned"],
+    },
+  ],
+  sustainable: [
+    {
+      sentence: "Any improvement we make needs to be **lasting** — not just a workaround that falls apart after a few weeks.",
+      weakWord: "lasting",
+      answer: "sustainable",
+      distractors: ["visible", "fast", "profitable"],
+    },
+  ],
+  scalable: [
+    {
+      sentence: "Before rolling this process out to every line, confirm it is **expandable** and works under full production volume.",
+      weakWord: "expandable",
+      answer: "scalable",
+      distractors: ["repeatable", "auditable", "consistent"],
+    },
+  ],
+  iterative: [
+    {
+      sentence: "We use an **incremental** improvement cycle: run the pilot, measure results, adjust the process, and run it again.",
+      weakWord: "incremental",
+      answer: "iterative",
+      distractors: ["linear", "rapid", "continuous"],
+    },
+  ],
 };
