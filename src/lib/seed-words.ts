@@ -3257,4 +3257,1124 @@ export const SEED_WORDS: SeedWord[] = [
     synonyms: ["formidable", "impressive", "commanding"],
     tier: 3,
   },
+
+  // ─── Tier 1: Leadership & governance ───────────────────────────────
+
+  {
+    word: "orchestrate",
+    definition: "Plan and direct the elements of a complex situation or activity",
+    examples: [
+      "She orchestrated the entire product launch across six teams.",
+      "Orchestrating a smooth migration requires months of careful planning.",
+    ],
+    synonyms: ["coordinate", "organize", "direct"],
+    tier: 1,
+  },
+  {
+    word: "governance",
+    definition: "The system by which an organization or activity is controlled and regulated",
+    examples: [
+      "Strong governance ensures that decisions are made transparently and consistently.",
+      "The new governance framework defines who owns which decisions.",
+    ],
+    synonyms: ["management", "oversight", "administration"],
+    tier: 1,
+  },
+  {
+    word: "supervise",
+    definition: "Observe and direct the execution of a task or activity",
+    examples: [
+      "She was brought in to supervise the transition to the new platform.",
+      "It's hard to supervise effectively when you're also executing individual tasks.",
+    ],
+    synonyms: ["oversee", "manage", "direct"],
+    tier: 1,
+  },
+  {
+    word: "coordinate",
+    definition: "Bring the different elements of a complex activity into a harmonious relationship",
+    examples: [
+      "His role is to coordinate between engineering, design, and product.",
+      "We need someone to coordinate the dependencies before the sprint begins.",
+    ],
+    synonyms: ["align", "synchronize", "organize"],
+    tier: 1,
+  },
+  {
+    word: "directive",
+    definition: "An official or authoritative instruction; relating to management or control",
+    examples: [
+      "The directive came from the CEO: reduce costs by twenty percent this quarter.",
+      "Without a clear directive, teams tend to optimize for local rather than global goals.",
+    ],
+    synonyms: ["instruction", "order", "mandate"],
+    tier: 1,
+  },
+  {
+    word: "objective",
+    definition: "A goal or aim; not influenced by personal feelings or bias",
+    examples: [
+      "The team aligned on a single objective before breaking into workstreams.",
+      "An objective assessment of the data leads to better decisions than gut instinct.",
+    ],
+    synonyms: ["goal", "target", "impartial"],
+    tier: 1,
+  },
+  {
+    word: "undertake",
+    definition: "Commit oneself to and begin a task or challenge",
+    examples: [
+      "They undertook the migration knowing it would take at least a year.",
+      "Do not undertake a project of this scope without proper resourcing.",
+    ],
+    synonyms: ["assume", "tackle", "embark on"],
+    tier: 1,
+  },
+  {
+    word: "ascendancy",
+    definition: "Occupation of a position of dominant power or influence",
+    examples: [
+      "The platform's ascendancy in the market happened faster than anyone predicted.",
+      "Technical ascendancy alone does not guarantee business success.",
+    ],
+    synonyms: ["dominance", "supremacy", "authority"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Critical thinking ──────────────────────────────────────
+
+  {
+    word: "axiom",
+    definition: "A statement or proposition regarded as self-evidently true",
+    examples: [
+      "It is an axiom of good design that complexity should be hidden, not exposed.",
+      "They built the strategy on the axiom that users prefer simplicity over control.",
+    ],
+    synonyms: ["maxim", "principle", "truism"],
+    tier: 1,
+  },
+  {
+    word: "hypothesis",
+    definition: "A proposed explanation made on the basis of limited evidence as a starting point for investigation",
+    examples: [
+      "Our hypothesis is that reducing friction at signup will increase conversion.",
+      "A hypothesis is only useful if it is testable and falsifiable.",
+    ],
+    synonyms: ["theory", "conjecture", "supposition"],
+    tier: 1,
+  },
+  {
+    word: "inference",
+    definition: "A conclusion reached on the basis of evidence and reasoning",
+    examples: [
+      "The inference from the data is that users abandon the flow at step three.",
+      "Drawing an inference requires both good data and sound reasoning.",
+    ],
+    synonyms: ["deduction", "conclusion", "reading"],
+    tier: 1,
+  },
+  {
+    word: "validity",
+    definition: "The quality of being logically or factually sound; legitimacy",
+    examples: [
+      "We need to test the validity of the model before acting on its output.",
+      "The validity of the research depends entirely on the sample selection.",
+    ],
+    synonyms: ["soundness", "legitimacy", "credibility"],
+    tier: 1,
+  },
+  {
+    word: "syllogism",
+    definition: "A form of reasoning where a conclusion is drawn from two given premises",
+    examples: [
+      "The argument relies on a syllogism that falls apart once you examine the second premise.",
+      "Valid syllogisms produce true conclusions only if the premises are also true.",
+    ],
+    synonyms: ["argument", "deduction", "logical form"],
+    tier: 2,
+  },
+  {
+    word: "fallacious",
+    definition: "Based on a mistaken belief; containing a logical flaw",
+    examples: [
+      "The report's conclusion was fallacious — it confused correlation with causation.",
+      "Fallacious reasoning in a business case can lead an entire team in the wrong direction.",
+    ],
+    synonyms: ["flawed", "erroneous", "misleading"],
+    tier: 2,
+  },
+  {
+    word: "correlation",
+    definition: "A mutual relationship or connection between two or more things",
+    examples: [
+      "There is a strong correlation between team autonomy and delivery speed.",
+      "Correlation does not imply causation — that distinction matters enormously in data analysis.",
+    ],
+    synonyms: ["connection", "relationship", "association"],
+    tier: 1,
+  },
+  {
+    word: "categorize",
+    definition: "Place in a particular class or group; classify",
+    examples: [
+      "We categorize bugs by severity before assigning them to the backlog.",
+      "It helps to categorize feedback by theme rather than responding to each point individually.",
+    ],
+    synonyms: ["classify", "group", "sort"],
+    tier: 1,
+  },
+  {
+    word: "cognitive",
+    definition: "Relating to mental processes of thinking, knowing, and understanding",
+    examples: [
+      "The interface creates unnecessary cognitive load for new users.",
+      "Cognitive biases affect even the most experienced decision-makers.",
+    ],
+    synonyms: ["mental", "intellectual", "psychological"],
+    tier: 1,
+  },
+  {
+    word: "dispassionate",
+    definition: "Not influenced by strong emotion; rational and impartial",
+    examples: [
+      "A dispassionate review of the evidence pointed clearly to a systemic issue.",
+      "She gave a dispassionate assessment of the proposal's weaknesses.",
+    ],
+    synonyms: ["impartial", "objective", "detached"],
+    tier: 2,
+  },
+  {
+    word: "scrutinize",
+    definition: "Examine or inspect closely and thoroughly",
+    examples: [
+      "The committee will scrutinize every line of the proposed budget.",
+      "It is worth scrutinizing the assumptions before investing in the solution.",
+    ],
+    synonyms: ["examine", "inspect", "analyze"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Character traits ────────────────────────────────────────
+
+  {
+    word: "stoic",
+    definition: "Enduring pain or difficulty without complaint; unemotionally resilient",
+    examples: [
+      "He remained stoic throughout the performance review, processing the feedback quietly.",
+      "A stoic response to setbacks can steady a team that would otherwise panic.",
+    ],
+    synonyms: ["impassive", "composed", "unflappable"],
+    tier: 1,
+  },
+  {
+    word: "intrepid",
+    definition: "Fearless and adventurous; willing to face difficulty without hesitation",
+    examples: [
+      "Only the most intrepid engineers volunteered to debug the legacy system.",
+      "Her intrepid approach to negotiation opened markets no one else had attempted.",
+    ],
+    synonyms: ["fearless", "bold", "dauntless"],
+    tier: 2,
+  },
+  {
+    word: "tenacious",
+    definition: "Holding firm to a goal despite obstacles; persistently determined",
+    examples: [
+      "She was tenacious in pursuing the root cause even after others gave up.",
+      "Tenacious follow-through is what separates people who ship from people who plan.",
+    ],
+    synonyms: ["persistent", "determined", "relentless"],
+    tier: 1,
+  },
+  {
+    word: "garrulous",
+    definition: "Excessively talkative, especially on trivial matters",
+    examples: [
+      "His garrulous updates in standup regularly pushed meetings past their timebox.",
+      "A garrulous presenter often buries the key insight in unnecessary detail.",
+    ],
+    synonyms: ["talkative", "verbose", "loquacious"],
+    tier: 2,
+  },
+  {
+    word: "complaisant",
+    definition: "Willing to please others; obligingly agreeable",
+    examples: [
+      "His complaisant manner made him well-liked but rarely did he challenge bad ideas.",
+      "A complaisant team culture often masks deeper disagreements.",
+    ],
+    synonyms: ["obliging", "accommodating", "deferential"],
+    tier: 2,
+  },
+  {
+    word: "assiduous",
+    definition: "Showing great care and perseverance; diligently attentive",
+    examples: [
+      "Her assiduous attention to edge cases caught bugs that broad testing missed.",
+      "Assiduous preparation before a client presentation rarely goes unnoticed.",
+    ],
+    synonyms: ["diligent", "thorough", "industrious"],
+    tier: 2,
+  },
+  {
+    word: "irascible",
+    definition: "Having a tendency to become easily angered; quick-tempered",
+    examples: [
+      "His irascible reactions in code reviews created a climate of fear.",
+      "An irascible leader may get short-term results but loses long-term loyalty.",
+    ],
+    synonyms: ["irritable", "hot-tempered", "cantankerous"],
+    tier: 2,
+  },
+  {
+    word: "reticent",
+    definition: "Not revealing one's thoughts or feelings readily; reserved",
+    examples: [
+      "She was reticent during the meeting but submitted a detailed written response afterward.",
+      "A reticent engineer may have the best ideas in the room — but only if you ask.",
+    ],
+    synonyms: ["reserved", "restrained", "tight-lipped"],
+    tier: 2,
+  },
+  {
+    word: "genuine",
+    definition: "Truly what something is said to be; authentic and sincere",
+    examples: [
+      "His enthusiasm for the project was genuine, not performative.",
+      "Genuine curiosity is one of the most valuable traits in a researcher.",
+    ],
+    synonyms: ["authentic", "sincere", "real"],
+    tier: 1,
+  },
+  {
+    word: "indolent",
+    definition: "Wanting to avoid activity or exertion; habitually lazy",
+    examples: [
+      "An indolent approach to documentation creates debt that everyone else pays.",
+      "He was not indolent — he simply needed problems worth solving.",
+    ],
+    synonyms: ["lazy", "idle", "lethargic"],
+    tier: 2,
+  },
+  {
+    word: "amicable",
+    definition: "Having a friendly and pleasant manner; goodwill between parties",
+    examples: [
+      "The two teams reached an amicable agreement on the API boundary.",
+      "Even in disagreement, she kept the conversation amicable and productive.",
+    ],
+    synonyms: ["friendly", "cordial", "harmonious"],
+    tier: 1,
+  },
+  {
+    word: "composed",
+    definition: "Having one's feelings and expression under control; calm",
+    examples: [
+      "She remained composed during the incident, which kept the rest of the team focused.",
+      "A composed response to criticism signals emotional intelligence.",
+    ],
+    synonyms: ["calm", "collected", "unruffled"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Academic / argumentation ──────────────────────────────
+
+  {
+    word: "verify",
+    definition: "Make sure or demonstrate that something is true or accurate",
+    examples: [
+      "Always verify assumptions before writing a single line of code.",
+      "The team verified the results independently before publishing.",
+    ],
+    synonyms: ["confirm", "validate", "check"],
+    tier: 1,
+  },
+  {
+    word: "contradict",
+    definition: "Deny the truth of a statement by asserting the opposite",
+    examples: [
+      "The new findings directly contradict the earlier report.",
+      "His actions contradict his stated commitment to transparency.",
+    ],
+    synonyms: ["deny", "refute", "counter"],
+    tier: 1,
+  },
+  {
+    word: "outline",
+    definition: "Give a summary of something; draw or describe the shape or main features",
+    examples: [
+      "Please outline the key risks before the next stakeholder meeting.",
+      "The spec should outline what the system does, not how it does it.",
+    ],
+    synonyms: ["summarize", "sketch", "describe"],
+    tier: 1,
+  },
+  {
+    word: "explicate",
+    definition: "Analyze and develop an idea in detail; explain fully",
+    examples: [
+      "The paper explicates the theoretical basis for the experimental design.",
+      "She took time to explicate each assumption underlying the model.",
+    ],
+    synonyms: ["explain", "elaborate", "expound"],
+    tier: 2,
+  },
+  {
+    word: "contention",
+    definition: "A point advanced in a debate or argument; heated disagreement",
+    examples: [
+      "Her central contention is that the data does not support the conclusion.",
+      "The contention over ownership of the shared service slowed every team.",
+    ],
+    synonyms: ["assertion", "argument", "dispute"],
+    tier: 1,
+  },
+  {
+    word: "discourse",
+    definition: "Written or spoken communication or debate; a formal discussion",
+    examples: [
+      "The team's discourse around architecture improved significantly after they adopted RFCs.",
+      "Public discourse on AI safety has intensified as capabilities have grown.",
+    ],
+    synonyms: ["discussion", "dialogue", "conversation"],
+    tier: 1,
+  },
+  {
+    word: "justify",
+    definition: "Show or prove to be right or reasonable; provide adequate grounds for",
+    examples: [
+      "You need to justify the added complexity before it gets approved.",
+      "The results justify the investment we made in the new testing infrastructure.",
+    ],
+    synonyms: ["defend", "support", "warrant"],
+    tier: 1,
+  },
+  {
+    word: "orientation",
+    definition: "The direction of someone's interest or focus; familiarization with a new situation",
+    examples: [
+      "The company's orientation toward long-term value creation shapes every hiring decision.",
+      "New engineers go through a two-week orientation before joining a team.",
+    ],
+    synonyms: ["direction", "focus", "inclination"],
+    tier: 1,
+  },
+  {
+    word: "empirical",
+    definition: "Based on observation or experiment rather than theory or assumption",
+    examples: [
+      "The decision should be based on empirical evidence, not intuition.",
+      "Empirical testing revealed that users behave very differently from what we assumed.",
+    ],
+    synonyms: ["evidence-based", "observational", "experimental"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Change & movement ──────────────────────────────────────
+
+  {
+    word: "deteriorate",
+    definition: "Become progressively worse in quality, condition, or value",
+    examples: [
+      "Without maintenance, code quality will deteriorate faster than anyone expects.",
+      "Team morale began to deteriorate after three months of missed commitments.",
+    ],
+    synonyms: ["degrade", "decline", "worsen"],
+    tier: 1,
+  },
+  {
+    word: "burgeon",
+    definition: "Begin to grow or increase rapidly; flourish",
+    examples: [
+      "Demand for the feature began to burgeon once the first cohort of users tried it.",
+      "A burgeoning ecosystem of tools has emerged around the platform.",
+    ],
+    synonyms: ["grow", "flourish", "expand"],
+    tier: 2,
+  },
+  {
+    word: "proliferate",
+    definition: "Increase rapidly in numbers; spread widely",
+    examples: [
+      "Microservices proliferated so fast that the team lost track of what owned what.",
+      "Competing standards tend to proliferate before the market settles on one.",
+    ],
+    synonyms: ["multiply", "spread", "expand"],
+    tier: 1,
+  },
+  {
+    word: "accelerate",
+    definition: "Increase in rate, speed, or amount; cause to happen sooner",
+    examples: [
+      "Automation can accelerate delivery without sacrificing quality.",
+      "The economic pressures accelerated the timeline for the decision.",
+    ],
+    synonyms: ["speed up", "hasten", "intensify"],
+    tier: 1,
+  },
+  {
+    word: "erode",
+    definition: "Gradually wear away or weaken; diminish over time",
+    examples: [
+      "Trust erodes quickly when commitments are repeatedly missed.",
+      "Technical debt erodes the team's ability to ship new features.",
+    ],
+    synonyms: ["wear away", "diminish", "undermine"],
+    tier: 1,
+  },
+  {
+    word: "flourish",
+    definition: "Grow or develop in a healthy or vigorous way; thrive",
+    examples: [
+      "Creative teams flourish when given autonomy and clear purpose.",
+      "The product began to flourish once it found its core audience.",
+    ],
+    synonyms: ["thrive", "prosper", "bloom"],
+    tier: 1,
+  },
+  {
+    word: "subside",
+    definition: "Become less intense, violent, or severe; sink to a lower level",
+    examples: [
+      "Once the initial panic subsided, the team got to work on the root cause.",
+      "The controversy subsided after the company issued a clear public statement.",
+    ],
+    synonyms: ["diminish", "abate", "ease"],
+    tier: 1,
+  },
+  {
+    word: "abate",
+    definition: "Become less intense or widespread; diminish in strength",
+    examples: [
+      "The load on the servers did not abate until the bot traffic was filtered.",
+      "Concerns about the policy abated once the details were made public.",
+    ],
+    synonyms: ["subside", "lessen", "decrease"],
+    tier: 1,
+  },
+  {
+    word: "emerge",
+    definition: "Come into being or prominence; become apparent",
+    examples: [
+      "A clear pattern began to emerge from the user research.",
+      "New competitors tend to emerge once a market is proven viable.",
+    ],
+    synonyms: ["surface", "arise", "appear"],
+    tier: 1,
+  },
+  {
+    word: "transition",
+    definition: "The process or period of changing from one state or condition to another",
+    examples: [
+      "The transition from waterfall to agile took the team nearly a year.",
+      "Managing a leadership transition well requires early and honest communication.",
+    ],
+    synonyms: ["shift", "change", "move"],
+    tier: 1,
+  },
+  {
+    word: "shift",
+    definition: "Move or cause to move from one place, position, or direction to another",
+    examples: [
+      "There has been a significant shift in how customers use the product.",
+      "The company needs to shift its focus from acquisition to retention.",
+    ],
+    synonyms: ["move", "change", "transfer"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Medical / scientific terms ─────────────────────────────
+
+  {
+    word: "pathological",
+    definition: "Relating to or caused by a physical or mental disease; compulsive, extreme",
+    examples: [
+      "The team's pathological need for consensus slowed every decision.",
+      "Pathological optimism about timelines is one of the most common project failure modes.",
+    ],
+    synonyms: ["compulsive", "morbid", "extreme"],
+    tier: 2,
+  },
+  {
+    word: "chronic",
+    definition: "Persisting for a long time; constantly recurring; habitual",
+    examples: [
+      "The team has a chronic problem with scope creep that no process has fixed.",
+      "Chronic underfunding of infrastructure eventually produces catastrophic failures.",
+    ],
+    synonyms: ["persistent", "ongoing", "habitual"],
+    tier: 1,
+  },
+  {
+    word: "inert",
+    definition: "Lacking the ability or strength to move; chemically inactive; sluggish",
+    examples: [
+      "The legacy system had become inert — no one was willing to touch it.",
+      "Without external pressure, the organization remained inert.",
+    ],
+    synonyms: ["inactive", "dormant", "sluggish"],
+    tier: 2,
+  },
+  {
+    word: "lethargic",
+    definition: "Affected by lethargy; sluggish and apathetic",
+    examples: [
+      "The team grew lethargic after months of repetitive maintenance work.",
+      "A lethargic response to a competitor's launch can cost you market share.",
+    ],
+    synonyms: ["sluggish", "listless", "apathetic"],
+    tier: 1,
+  },
+  {
+    word: "malleable",
+    definition: "Able to be shaped or bent; adaptable and easily influenced",
+    examples: [
+      "Early in a project, the architecture is malleable — later, changes are expensive.",
+      "She was malleable in her approach, adapting to each client's communication style.",
+    ],
+    synonyms: ["flexible", "adaptable", "pliable"],
+    tier: 2,
+  },
+  {
+    word: "amalgamate",
+    definition: "Combine or unite to form one organization or structure; merge",
+    examples: [
+      "The two teams were amalgamated under a single engineering director.",
+      "The project amalgamated data from six different legacy systems.",
+    ],
+    synonyms: ["merge", "combine", "consolidate"],
+    tier: 2,
+  },
+
+  // ─── Tier 1: Legal & political ──────────────────────────────────────
+
+  {
+    word: "ratify",
+    definition: "Sign or formally approve an agreement, making it officially valid",
+    examples: [
+      "All three parties must ratify the contract before work can begin.",
+      "The policy was drafted last year but only ratified this quarter.",
+    ],
+    synonyms: ["approve", "endorse", "confirm"],
+    tier: 1,
+  },
+  {
+    word: "sanction",
+    definition: "Official permission or approval; a penalty for disobeying a rule",
+    examples: [
+      "The project was sanctioned by the executive team last quarter.",
+      "Repeated violations will result in formal sanctions under the code of conduct.",
+    ],
+    synonyms: ["authorize", "approve", "penalty"],
+    tier: 1,
+  },
+  {
+    word: "jurisdiction",
+    definition: "The official power or territory over which authority extends",
+    examples: [
+      "The data privacy regulation applies in every jurisdiction where we operate.",
+      "Disputes about which team has jurisdiction over the shared API come up every sprint.",
+    ],
+    synonyms: ["authority", "domain", "scope"],
+    tier: 1,
+  },
+  {
+    word: "repeal",
+    definition: "Revoke or annul a law or regulation",
+    examples: [
+      "The outdated policy was repealed after three years of lobbying by the team.",
+      "Repealing an internal rule without replacing it often creates more confusion.",
+    ],
+    synonyms: ["revoke", "annul", "rescind"],
+    tier: 1,
+  },
+  {
+    word: "autonomy",
+    definition: "The right or condition of self-governance; independence in decision-making",
+    examples: [
+      "Teams with autonomy over their roadmap tend to be more innovative.",
+      "Autonomy without accountability quickly leads to fragmentation.",
+    ],
+    synonyms: ["independence", "self-governance", "freedom"],
+    tier: 1,
+  },
+  {
+    word: "coalition",
+    definition: "A group formed by the union of different parties or interests",
+    examples: [
+      "She built a coalition of stakeholders to champion the accessibility initiative.",
+      "No single team had enough influence — the change required a coalition.",
+    ],
+    synonyms: ["alliance", "partnership", "consortium"],
+    tier: 1,
+  },
+  {
+    word: "protocol",
+    definition: "An official procedure or system of rules governing affairs; a communication standard",
+    examples: [
+      "There is no protocol for this kind of incident — we need to define one.",
+      "Following the communication protocol prevents conflicting signals to customers.",
+    ],
+    synonyms: ["procedure", "convention", "standard"],
+    tier: 1,
+  },
+  {
+    word: "allocate",
+    definition: "Distribute resources or responsibilities for a specific purpose",
+    examples: [
+      "We need to allocate at least twenty percent of each sprint to technical debt.",
+      "Budget is allocated annually but can be reallocated quarterly with approval.",
+    ],
+    synonyms: ["assign", "distribute", "apportion"],
+    tier: 1,
+  },
+  {
+    word: "amendment",
+    definition: "A change or addition to a law, document, or agreement",
+    examples: [
+      "The contract amendment extended the deadline by sixty days.",
+      "Proposing an amendment to the policy requires sign-off from legal and compliance.",
+    ],
+    synonyms: ["revision", "modification", "change"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Relationships ───────────────────────────────────────────
+
+  {
+    word: "reciprocity",
+    definition: "The practice of exchanging things with others for mutual benefit",
+    examples: [
+      "Healthy partnerships are built on reciprocity, not one-sided dependency.",
+      "Reciprocity in feedback culture means everyone gives and receives openly.",
+    ],
+    synonyms: ["mutuality", "exchange", "give-and-take"],
+    tier: 1,
+  },
+  {
+    word: "alienation",
+    definition: "The feeling of being isolated from a group or activity; estrangement",
+    examples: [
+      "Remote work can produce alienation if not counteracted with intentional connection.",
+      "The reorganization created a sense of alienation among the original founding team.",
+    ],
+    synonyms: ["estrangement", "isolation", "disconnection"],
+    tier: 1,
+  },
+  {
+    word: "harmony",
+    definition: "A pleasing combination or agreement of elements; peaceful coexistence",
+    examples: [
+      "Achieving harmony between design and engineering requires ongoing dialogue.",
+      "The team worked in harmony despite coming from very different backgrounds.",
+    ],
+    synonyms: ["accord", "unity", "agreement"],
+    tier: 1,
+  },
+  {
+    word: "hostility",
+    definition: "Unfriendly or aggressive behavior; opposition or resistance",
+    examples: [
+      "There was an underlying hostility between the two departments that no one addressed.",
+      "Hostility in a code review signals a culture problem, not just a people problem.",
+    ],
+    synonyms: ["antagonism", "aggression", "opposition"],
+    tier: 1,
+  },
+  {
+    word: "affable",
+    definition: "Friendly, good-natured, and easy to talk to",
+    examples: [
+      "His affable manner made him the natural choice for client-facing work.",
+      "Affable does not always mean effective — likeability and leadership are different qualities.",
+    ],
+    synonyms: ["friendly", "amiable", "approachable"],
+    tier: 1,
+  },
+  {
+    word: "vulnerable",
+    definition: "Exposed to the possibility of harm; open and honest in a way that risks discomfort",
+    examples: [
+      "Leaders who are vulnerable about uncertainty build more trust than those who perform certainty.",
+      "A system that depends on a single node is vulnerable to cascading failure.",
+    ],
+    synonyms: ["exposed", "susceptible", "open"],
+    tier: 1,
+  },
+  {
+    word: "validation",
+    definition: "Recognition or affirmation that a person or their feelings are understood; confirmation",
+    examples: [
+      "User validation early in the design process saves months of rework later.",
+      "Seeking external validation for every decision is a sign of low team confidence.",
+    ],
+    synonyms: ["confirmation", "recognition", "verification"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Time & duration ─────────────────────────────────────────
+
+  {
+    word: "perennial",
+    definition: "Lasting or existing for a long or apparently infinite time; recurring regularly",
+    examples: [
+      "The tension between speed and quality is a perennial challenge in software.",
+      "Documentation debt is a perennial problem that every team claims to solve next quarter.",
+    ],
+    synonyms: ["enduring", "persistent", "recurring"],
+    tier: 1,
+  },
+  {
+    word: "simultaneous",
+    definition: "Occurring, operating, or done at the same time",
+    examples: [
+      "Simultaneous releases across platforms require precise coordination.",
+      "The simultaneous migration of users and data is the riskiest phase.",
+    ],
+    synonyms: ["concurrent", "synchronous", "parallel"],
+    tier: 1,
+  },
+  {
+    word: "perpetual",
+    definition: "Never ending or changing; occurring repeatedly",
+    examples: [
+      "The team was caught in a perpetual cycle of firefighting with no time for prevention.",
+      "Perpetual beta is a release strategy, not an excuse to avoid shipping stable features.",
+    ],
+    synonyms: ["endless", "continuous", "constant"],
+    tier: 1,
+  },
+  {
+    word: "interim",
+    definition: "In or for the intervening period; temporary",
+    examples: [
+      "An interim solution was deployed while the permanent fix was developed.",
+      "She served as interim lead for six months before a permanent hire was made.",
+    ],
+    synonyms: ["temporary", "provisional", "stopgap"],
+    tier: 1,
+  },
+  {
+    word: "contemporary",
+    definition: "Living or occurring at the same time; belonging to the present day",
+    examples: [
+      "Contemporary frameworks solve problems that were irrelevant a decade ago.",
+      "Her design aesthetic is contemporary without chasing trends.",
+    ],
+    synonyms: ["modern", "current", "present-day"],
+    tier: 1,
+  },
+  {
+    word: "duration",
+    definition: "The length of time that something lasts",
+    examples: [
+      "The duration of the outage was ninety minutes — too long to avoid a post-mortem.",
+      "Estimating the duration of a complex project accurately is notoriously difficult.",
+    ],
+    synonyms: ["length", "period", "span"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Scale & degree ──────────────────────────────────────────
+
+  {
+    word: "marginal",
+    definition: "Related to a small margin; minor; at or near the lower limit of quality",
+    examples: [
+      "The performance gain was marginal and did not justify the added complexity.",
+      "Marginal improvements add up over time if you are consistent about making them.",
+    ],
+    synonyms: ["minor", "slight", "minimal"],
+    tier: 1,
+  },
+  {
+    word: "abysmal",
+    definition: "Extremely bad; of the most extreme kind",
+    examples: [
+      "The onboarding experience was abysmal — most users gave up before completing it.",
+      "Abysmal test coverage made every release feel like a gamble.",
+    ],
+    synonyms: ["terrible", "dreadful", "appalling"],
+    tier: 1,
+  },
+  {
+    word: "exorbitant",
+    definition: "Unreasonably large in amount; greatly exceeding normal bounds",
+    examples: [
+      "The vendor's pricing was exorbitant once usage scaled past the initial tier.",
+      "An exorbitant number of meetings leaves no time for actual work.",
+    ],
+    synonyms: ["excessive", "extravagant", "unreasonable"],
+    tier: 1,
+  },
+  {
+    word: "immense",
+    definition: "Extremely large or great in scale or degree",
+    examples: [
+      "The immense complexity of the codebase made onboarding new engineers slow.",
+      "She had immense patience when explaining technical concepts to non-engineers.",
+    ],
+    synonyms: ["enormous", "vast", "colossal"],
+    tier: 1,
+  },
+  {
+    word: "moderate",
+    definition: "Average in amount, intensity, or degree; not excessive or extreme",
+    examples: [
+      "A moderate improvement in latency is achievable without a full rewrite.",
+      "She took a moderate stance on the debate, acknowledging merit on both sides.",
+    ],
+    synonyms: ["average", "reasonable", "temperate"],
+    tier: 1,
+  },
+  {
+    word: "magnitude",
+    definition: "The great size or extent of something; importance",
+    examples: [
+      "The magnitude of the technical debt had been underestimated for years.",
+      "A decision of this magnitude requires sign-off at the board level.",
+    ],
+    synonyms: ["scale", "size", "extent"],
+    tier: 1,
+  },
+  {
+    word: "nominal",
+    definition: "Existing in name only; very small in amount compared with the actual value",
+    examples: [
+      "The performance difference between the two approaches is nominal in production.",
+      "There is a nominal fee for the developer tier, mostly to filter casual signups.",
+    ],
+    synonyms: ["minimal", "token", "theoretical"],
+    tier: 1,
+  },
+  {
+    word: "excessive",
+    definition: "More than is necessary, normal, or desirable; immoderate",
+    examples: [
+      "Excessive meetings are one of the most cited reasons engineers leave companies.",
+      "The number of dependencies in the project had become excessive.",
+    ],
+    synonyms: ["extreme", "immoderate", "disproportionate"],
+    tier: 1,
+  },
+  {
+    word: "vast",
+    definition: "Of very great extent or quantity; immense",
+    examples: [
+      "The vast majority of support tickets are caused by a small number of recurring issues.",
+      "She had a vast knowledge of the industry that took years to accumulate.",
+    ],
+    synonyms: ["immense", "enormous", "extensive"],
+    tier: 1,
+  },
+  {
+    word: "fragile",
+    definition: "Easily damaged or broken; lacking robustness or resilience",
+    examples: [
+      "The integration is fragile — any change to the upstream API breaks it.",
+      "Fragile systems require constant attention that crowds out new development.",
+    ],
+    synonyms: ["delicate", "brittle", "vulnerable"],
+    tier: 1,
+  },
+
+  // ─── Tier 2: Professional / analytical ─────────────────────────────
+
+  {
+    word: "subpoena",
+    definition: "A legal writ ordering a person to appear in court or produce documents",
+    examples: [
+      "The company received a subpoena for all communications related to the acquisition.",
+      "Handling a subpoena requires coordination between legal and engineering immediately.",
+    ],
+    synonyms: ["summons", "court order", "writ"],
+    tier: 2,
+  },
+  {
+    word: "constituency",
+    definition: "A body of supporters or customers; voters or stakeholders in a particular group",
+    examples: [
+      "The product must serve its core constituency before expanding to adjacent markets.",
+      "Each engineering team is a constituency with legitimate needs that must be balanced.",
+    ],
+    synonyms: ["supporters", "base", "stakeholders"],
+    tier: 2,
+  },
+  {
+    word: "infrastructure",
+    definition: "The basic physical and organizational structures needed for operation",
+    examples: [
+      "Investing in infrastructure now reduces the cost of scaling later.",
+      "The infrastructure team is the foundation everything else is built on.",
+    ],
+    synonyms: ["framework", "foundation", "base"],
+    tier: 1,
+  },
+  {
+    word: "commission",
+    definition: "An instruction to produce something; a fee paid to an agent; bring into use",
+    examples: [
+      "They commissioned an independent audit of the security practices.",
+      "The new data center was commissioned ahead of schedule.",
+    ],
+    synonyms: ["authorize", "contract", "mandate"],
+    tier: 2,
+  },
+  {
+    word: "scheme",
+    definition: "A systematic plan or arrangement; a secret or underhanded plan",
+    examples: [
+      "The color scheme was deliberately chosen to reduce cognitive load.",
+      "A naming scheme that is consistent makes exploration of the codebase intuitive.",
+    ],
+    synonyms: ["plan", "system", "arrangement"],
+    tier: 2,
+  },
+  {
+    word: "facilitator",
+    definition: "A person who helps a group do something more easily; one who enables a process",
+    examples: [
+      "She acted as a facilitator in the design sprint rather than a decision-maker.",
+      "A good facilitator draws out quieter voices and prevents dominant ones from steering.",
+    ],
+    synonyms: ["mediator", "coordinator", "enabler"],
+    tier: 2,
+  },
+  {
+    word: "institute",
+    definition: "Set up or establish an organization or a system; a society or organization",
+    examples: [
+      "The team decided to institute a weekly architecture review going forward.",
+      "The research institute published findings that changed how the industry thought about security.",
+    ],
+    synonyms: ["establish", "create", "found"],
+    tier: 2,
+  },
+  {
+    word: "rationalism",
+    definition: "The practice of treating reason as the basis for belief and action",
+    examples: [
+      "Her approach to decision-making was grounded in rationalism rather than intuition.",
+      "Pure rationalism without empathy often produces technically correct but unusable products.",
+    ],
+    synonyms: ["reason", "logic", "empiricism"],
+    tier: 2,
+  },
+  {
+    word: "paradoxical",
+    definition: "Seeming absurd or contradictory, yet expressing a possible truth",
+    examples: [
+      "It is paradoxical that adding more safety checks can introduce new failure modes.",
+      "The paradoxical result is that slowing down the team made them ship faster.",
+    ],
+    synonyms: ["contradictory", "self-contradicting", "ironic"],
+    tier: 2,
+  },
+  {
+    word: "discrimination",
+    definition: "Unjust treatment based on category; the ability to distinguish between things",
+    examples: [
+      "The model showed discrimination in its outputs that reflected biases in the training data.",
+      "Fine discrimination between similar design options is a mark of a mature aesthetic sense.",
+    ],
+    synonyms: ["bias", "distinction", "prejudice"],
+    tier: 2,
+  },
+  {
+    word: "misanthrope",
+    definition: "A person who dislikes and distrusts other people generally",
+    examples: [
+      "He was not a misanthrope — he simply preferred asynchronous communication.",
+      "A misanthrope rarely thrives in roles that require building broad coalitions.",
+    ],
+    synonyms: ["cynic", "recluse", "pessimist"],
+    tier: 3,
+  },
+  {
+    word: "biological",
+    definition: "Relating to biology or living organisms; naturally inherent",
+    examples: [
+      "The biological metaphor for organizational growth is surprisingly accurate.",
+      "Some cognitive biases have biological roots that predate modern organizations.",
+    ],
+    synonyms: ["organic", "natural", "living"],
+    tier: 2,
+  },
+  {
+    word: "suspension",
+    definition: "The temporary stopping of something; the state of being suspended",
+    examples: [
+      "The account was placed in suspension pending a compliance review.",
+      "A brief suspension of disbelief is required to see the full potential of the prototype.",
+    ],
+    synonyms: ["pause", "temporary halt", "deferral"],
+    tier: 2,
+  },
+  {
+    word: "forerunner",
+    definition: "A person or thing that precedes the arrival of someone or something else",
+    examples: [
+      "The original product was a forerunner to an entire category of tools.",
+      "Small signals of cultural change are often forerunners of major organizational shifts.",
+    ],
+    synonyms: ["precursor", "predecessor", "harbinger"],
+    tier: 2,
+  },
+
+  // ─── Tier 3: Scientific / physical ──────────────────────────────────
+
+  {
+    word: "coagulate",
+    definition: "Change from a liquid to a solid or semi-solid state; congeal",
+    examples: [
+      "Without regular refactoring, ideas coagulate into rigid patterns that resist change.",
+      "Feedback that sits unprocessed tends to coagulate into a single undifferentiated complaint.",
+    ],
+    synonyms: ["solidify", "congeal", "thicken"],
+    tier: 3,
+  },
+  {
+    word: "desiccate",
+    definition: "Remove moisture from; cause to become dry and lifeless",
+    examples: [
+      "Over-process can desiccate creativity just as surely as under-investment does.",
+      "The post-acquisition culture desiccated quickly once the original founders left.",
+    ],
+    synonyms: ["dry out", "dehydrate", "parch"],
+    tier: 3,
+  },
+  {
+    word: "viscous",
+    definition: "Having a thick, sticky consistency; resistant to flow",
+    examples: [
+      "The approval process had become viscous — simple decisions took weeks.",
+      "Data pipelines that are too tightly coupled become viscous and hard to change.",
+    ],
+    synonyms: ["thick", "sluggish", "resistant"],
+    tier: 3,
+  },
+  {
+    word: "porous",
+    definition: "Having tiny holes; not strict or secure; open to influence",
+    examples: [
+      "The security boundary was porous — too many exceptions had been granted over time.",
+      "A porous organization absorbs external ideas more readily than a rigid one.",
+    ],
+    synonyms: ["permeable", "penetrable", "open"],
+    tier: 3,
+  },
+
+  // ─── Tier 1: Provision & provision-related ──────────────────────────
+
+  {
+    word: "provision",
+    definition: "The action of supplying something; a clause in a legal document",
+    examples: [
+      "The contract includes a provision for early termination with sixty days' notice.",
+      "Provision of adequate resources is the leader's first responsibility.",
+    ],
+    synonyms: ["supply", "clause", "arrangement"],
+    tier: 1,
+  },
 ];
+
