@@ -1,6 +1,6 @@
-# Memory & Vocabulary
+# Lexforge
 
-A gamified RPG vocabulary trainer that maps every game mechanic to clinically-evidenced cognitive training techniques. Built to fight vocabulary regression and lethologica (tip-of-the-tongue states).
+Forge your vocabulary. A gamified RPG vocabulary trainer that maps every game mechanic to clinically-evidenced cognitive training techniques. Built to fight vocabulary regression and lethologica (tip-of-the-tongue states).
 
 ## The Idea
 

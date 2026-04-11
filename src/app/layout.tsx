@@ -14,13 +14,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Memory & Vocabulary",
-  description: "Gamified RPG vocabulary trainer powered by spaced repetition",
-  applicationName: "M&V",
+  title: "Lexforge",
+  description: "Forge your vocabulary. Gamified RPG trainer powered by spaced repetition.",
+  applicationName: "Lexforge",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "M&V",
+    title: "Lexforge",
   },
   other: {
     "mobile-web-app-capable": "yes",

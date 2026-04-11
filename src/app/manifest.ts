@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Memory & Vocabulary",
-    short_name: "M&V",
-    description: "Gamified RPG vocabulary trainer powered by spaced repetition",
+    name: "Lexforge",
+    short_name: "Lexforge",
+    description: "Forge your vocabulary. Gamified RPG trainer powered by spaced repetition.",
     start_url: "/",
     display: "standalone",
     background_color: "#1a1625",

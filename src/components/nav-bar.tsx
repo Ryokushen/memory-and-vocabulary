@@ -20,11 +20,11 @@ export function NavBar() {
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-lg">
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-14">
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="text-xl" role="img" aria-label="scroll">
-            &#x1F4DC;
+          <span className="text-xl" role="img" aria-label="anvil">
+            &#x2692;&#xFE0F;
           </span>
           <span className="font-heading font-bold text-base tracking-tight text-foreground group-hover:text-primary transition-colors">
-            M&V
+            Lexforge
           </span>
         </Link>
 
