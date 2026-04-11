@@ -4376,5 +4376,656 @@ export const SEED_WORDS: SeedWord[] = [
     synonyms: ["supply", "clause", "arrangement"],
     tier: 1,
   },
+
+  // ─── Tier 1: Agreement / disagreement ──────────────────────────────
+
+  {
+    word: "assent",
+    definition: "Express agreement or approval; consent to something",
+    examples: [
+      "She nodded in assent when the proposal was read aloud.",
+      "The board gave its assent to the revised budget without objection.",
+    ],
+    synonyms: ["agreement", "consent", "approval"],
+    tier: 1,
+  },
+  {
+    word: "concession",
+    definition: "A thing that is granted, especially in response to demands; an acknowledgment of defeat",
+    examples: [
+      "Making a concession on the timeline bought goodwill with the client.",
+      "His concession that the original approach was flawed opened the door to real progress.",
+    ],
+    synonyms: ["compromise", "acknowledgment", "yielding"],
+    tier: 1,
+  },
+  {
+    word: "accede",
+    definition: "Agree to a demand, request, or treaty; take up an office or position",
+    examples: [
+      "The team finally acceded to the client's request for weekly status reports.",
+      "After much debate, the manager acceded to the engineer's architectural recommendation.",
+    ],
+    synonyms: ["agree", "consent", "comply"],
+    tier: 1,
+  },
+  {
+    word: "placate",
+    definition: "Make someone less angry or hostile; appease or pacify",
+    examples: [
+      "A short memo was sent to placate the stakeholders frustrated by the delay.",
+      "Offering an extra sprint to fix bugs helped placate the client's concerns.",
+    ],
+    synonyms: ["appease", "mollify", "pacify"],
+    tier: 1,
+  },
+  {
+    word: "rebuke",
+    definition: "Express sharp disapproval or criticism of someone; a sharp reprimand",
+    examples: [
+      "The manager delivered a firm rebuke after the team skipped the code review step.",
+      "She accepted the rebuke gracefully and committed to improving her process.",
+    ],
+    synonyms: ["reprimand", "censure", "admonish"],
+    tier: 1,
+  },
+  {
+    word: "upbraid",
+    definition: "Find fault with or scold someone angrily; reproach sharply",
+    examples: [
+      "He upbraided the vendor publicly for missing three consecutive deadlines.",
+      "She was upbraided for submitting the report without legal review.",
+    ],
+    synonyms: ["scold", "rebuke", "reprimand"],
+    tier: 1,
+  },
+  {
+    word: "dispute",
+    definition: "Argue about something; question the truth or validity of a claim",
+    examples: [
+      "The two teams fell into a dispute over who owned the shared authentication service.",
+      "She disputed the claim that the performance regression was introduced by her changes.",
+    ],
+    synonyms: ["contest", "challenge", "argue"],
+    tier: 1,
+  },
+  {
+    word: "wrangle",
+    definition: "Have a long, complicated dispute or argument; argue about something",
+    examples: [
+      "The teams wrangled over the API design for two weeks before reaching alignment.",
+      "Wrangling over priorities at every sprint planning meeting signals a process problem.",
+    ],
+    synonyms: ["argue", "dispute", "quarrel"],
+    tier: 1,
+  },
+  {
+    word: "quibble",
+    definition: "Argue or raise objections about a trivial matter; a minor objection",
+    examples: [
+      "Instead of quibbling over variable names, focus on the architecture first.",
+      "His only quibble with the proposal was the font choice on the slides.",
+    ],
+    synonyms: ["nitpick", "cavil", "object"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Processes / systems ────────────────────────────────────
+
+  {
+    word: "methodology",
+    definition: "A system of methods used in a particular area of study or activity",
+    examples: [
+      "The team adopted an agile methodology after struggling with waterfall planning.",
+      "The research methodology was rigorous enough to withstand peer review.",
+    ],
+    synonyms: ["approach", "framework", "system"],
+    tier: 1,
+  },
+  {
+    word: "systemic",
+    definition: "Relating to a system as a whole; fundamental and widespread rather than isolated",
+    examples: [
+      "The recurring outages point to a systemic problem in the release process.",
+      "Addressing bias requires systemic change, not individual training alone.",
+    ],
+    synonyms: ["structural", "fundamental", "pervasive"],
+    tier: 1,
+  },
+  {
+    word: "deployment",
+    definition: "The act of moving resources into position for action; the release of software to production",
+    examples: [
+      "Each deployment is automatically tested before it reaches the production environment.",
+      "The deployment of new staff across three regional offices took six months.",
+    ],
+    synonyms: ["release", "rollout", "launch"],
+    tier: 1,
+  },
+  {
+    word: "conduit",
+    definition: "A channel or means of transmitting or distributing something; a pipe for water or cables",
+    examples: [
+      "She served as a conduit between the executive team and the engineering department.",
+      "The newsletter became a key conduit for sharing knowledge across distributed teams.",
+    ],
+    synonyms: ["channel", "pipeline", "medium"],
+    tier: 1,
+  },
+  {
+    word: "hierarchy",
+    definition: "A system in which items are ranked according to relative importance or authority",
+    examples: [
+      "The flat hierarchy encouraged everyone to speak directly with the founders.",
+      "Understanding the decision-making hierarchy saves time when escalating issues.",
+    ],
+    synonyms: ["structure", "ranking", "order"],
+    tier: 1,
+  },
+  {
+    word: "framework",
+    definition: "A basic structure underlying a system or concept; a set of guiding principles",
+    examples: [
+      "The team adopted a new prioritization framework to cut down decision fatigue.",
+      "Without a clear framework, every edge case becomes a debate.",
+    ],
+    synonyms: ["structure", "system", "model"],
+    tier: 1,
+  },
+  {
+    word: "sequence",
+    definition: "A particular order in which related events follow each other; a series",
+    examples: [
+      "The deployment follows a fixed sequence: build, test, stage, then release.",
+      "Breaking the onboarding into a clear sequence reduced new-hire confusion significantly.",
+    ],
+    synonyms: ["order", "series", "progression"],
+    tier: 1,
+  },
+  {
+    word: "optimization",
+    definition: "The action of making the best or most effective use of a situation or resource",
+    examples: [
+      "The database optimization reduced query time from two seconds to fifty milliseconds.",
+      "Premature optimization is one of the most common sources of wasted engineering effort.",
+    ],
+    synonyms: ["improvement", "refinement", "tuning"],
+    tier: 1,
+  },
+  {
+    word: "configuration",
+    definition: "An arrangement of parts or elements in a particular form; settings for a system",
+    examples: [
+      "A small misconfiguration in the firewall rules caused the entire outage.",
+      "The build configuration should be version-controlled alongside the application code.",
+    ],
+    synonyms: ["setup", "arrangement", "settings"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Financial / economic ───────────────────────────────────
+
+  {
+    word: "commodity",
+    definition: "A raw material or primary product that can be bought and sold; something common and undifferentiated",
+    examples: [
+      "When software becomes a commodity, price becomes the only differentiator.",
+      "Oil remains the world's most strategically important commodity.",
+    ],
+    synonyms: ["product", "good", "raw material"],
+    tier: 1,
+  },
+  {
+    word: "fiscal",
+    definition: "Relating to government revenue and public funds; of or relating to financial matters",
+    examples: [
+      "The fiscal year ends in December, so all budget requests must be submitted by October.",
+      "Fiscal discipline during growth prevents the cash crises that kill scaling companies.",
+    ],
+    synonyms: ["financial", "budgetary", "economic"],
+    tier: 1,
+  },
+  {
+    word: "monetary",
+    definition: "Relating to money or currency; of or relating to the supply of money",
+    examples: [
+      "The monetary value of the deal was less important than the strategic partnership it created.",
+      "Tight monetary policy raises borrowing costs across the entire economy.",
+    ],
+    synonyms: ["financial", "pecuniary", "economic"],
+    tier: 1,
+  },
+  {
+    word: "expenditure",
+    definition: "The action of spending funds; the total amount of money spent",
+    examples: [
+      "Total expenditure on infrastructure exceeded the original budget by thirty percent.",
+      "Capital expenditure decisions require board-level approval above a certain threshold.",
+    ],
+    synonyms: ["spending", "outlay", "cost"],
+    tier: 1,
+  },
+  {
+    word: "revenue",
+    definition: "Income generated from normal business operations; total income before deductions",
+    examples: [
+      "Annual recurring revenue is the metric investors watch most closely at this stage.",
+      "The new pricing tier added significant revenue without proportional cost increase.",
+    ],
+    synonyms: ["income", "earnings", "receipts"],
+    tier: 1,
+  },
+  {
+    word: "asset",
+    definition: "A resource with economic value owned by an organization; a useful or valuable thing",
+    examples: [
+      "The proprietary dataset is the company's most valuable asset.",
+      "Her institutional knowledge is an asset that cannot easily be replaced.",
+    ],
+    synonyms: ["resource", "advantage", "holding"],
+    tier: 1,
+  },
+  {
+    word: "liability",
+    definition: "A thing for which someone is responsible, especially a debt; something that puts one at a disadvantage",
+    examples: [
+      "Unresolved technical debt is both a business liability and a delivery bottleneck.",
+      "The aging infrastructure is a liability that will need to be addressed before the IPO.",
+    ],
+    synonyms: ["obligation", "debt", "disadvantage"],
+    tier: 1,
+  },
+  {
+    word: "inflation",
+    definition: "A general increase in prices and fall in purchasing value of money; an expansion beyond normal size",
+    examples: [
+      "Rising inflation forced the team to revisit salary bands that had not been updated in years.",
+      "Scope inflation is what happens when no one is willing to say no to new requirements.",
+    ],
+    synonyms: ["price rise", "escalation", "increase"],
+    tier: 1,
+  },
+  {
+    word: "equity",
+    definition: "The quality of being fair; ownership interest in a company; net value after deducting liabilities",
+    examples: [
+      "Early employees received equity as compensation for taking on the risk of joining at seed stage.",
+      "Equity in outcome requires more than equal treatment — it requires addressing systemic barriers.",
+    ],
+    synonyms: ["fairness", "ownership", "shares"],
+    tier: 1,
+  },
+  {
+    word: "deficit",
+    definition: "The amount by which something falls short; an excess of expenditure over revenue",
+    examples: [
+      "The project ran a skills deficit that required three months of external training to close.",
+      "Running a deficit in the early years is acceptable if growth justifies the investment.",
+    ],
+    synonyms: ["shortfall", "gap", "shortage"],
+    tier: 1,
+  },
+  {
+    word: "appreciation",
+    definition: "An increase in the value of an asset over time; recognition of quality or value",
+    examples: [
+      "Property appreciation in the city made the company's real estate holdings highly valuable.",
+      "Currency appreciation can erode the revenue earned in foreign markets.",
+    ],
+    synonyms: ["increase", "growth", "rise"],
+    tier: 1,
+  },
+  {
+    word: "depreciation",
+    definition: "A reduction in the value of an asset over time; an accounting deduction for wear",
+    examples: [
+      "The equipment depreciation schedule affects the company's reported profit each quarter.",
+      "Software assets are often depreciated over three to five years for accounting purposes.",
+    ],
+    synonyms: ["devaluation", "decline", "write-down"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Risk / probability / outcomes ───────────────────────────
+
+  {
+    word: "viable",
+    definition: "Capable of working successfully; feasible and practical",
+    examples: [
+      "The only viable solution given the constraints was to migrate incrementally.",
+      "Before committing resources, we need to establish that the model is commercially viable.",
+    ],
+    synonyms: ["feasible", "workable", "practical"],
+    tier: 1,
+  },
+  {
+    word: "imminent",
+    definition: "About to happen very soon; impending",
+    examples: [
+      "With the deadline imminent, the team moved to a daily release cycle.",
+      "The imminent arrival of a major competitor focused the product roadmap considerably.",
+    ],
+    synonyms: ["impending", "approaching", "forthcoming"],
+    tier: 1,
+  },
+  {
+    word: "repercussion",
+    definition: "An unintended consequence of an event or action, especially an unwelcome one",
+    examples: [
+      "The policy change had repercussions across teams that no one had anticipated.",
+      "Every architectural decision has repercussions that last years, not just sprints.",
+    ],
+    synonyms: ["consequence", "aftereffect", "ramification"],
+    tier: 1,
+  },
+  {
+    word: "precaution",
+    definition: "A measure taken in advance to prevent something dangerous or undesirable",
+    examples: [
+      "As a precaution, the team rolled back the deployment before investigating the spike.",
+      "Basic security precautions can prevent the majority of common attack vectors.",
+    ],
+    synonyms: ["safeguard", "measure", "provision"],
+    tier: 1,
+  },
+  {
+    word: "contingency",
+    definition: "A future event or circumstance that is possible but cannot be certain; a plan for such an event",
+    examples: [
+      "The project plan included a two-week contingency buffer for unforeseen blockers.",
+      "Every critical system should have a contingency in case the primary path fails.",
+    ],
+    synonyms: ["backup", "fallback", "provision"],
+    tier: 1,
+  },
+  {
+    word: "scenario",
+    definition: "A postulated sequence of events; a setting or situation in which something occurs",
+    examples: [
+      "In the worst-case scenario, we lose two weeks and need to cut one feature.",
+      "War-gaming different scenarios helped the team prepare for the launch.",
+    ],
+    synonyms: ["situation", "case", "possibility"],
+    tier: 1,
+  },
+  {
+    word: "upshot",
+    definition: "The final or eventual outcome or conclusion of a sequence of events",
+    examples: [
+      "The upshot of three rounds of review was that the proposal was approved with minor changes.",
+      "The upshot of ignoring the warning signs was a complete system failure at peak traffic.",
+    ],
+    synonyms: ["outcome", "result", "consequence"],
+    tier: 1,
+  },
+  {
+    word: "likelihood",
+    definition: "The probability of something happening; the state of being likely",
+    examples: [
+      "The likelihood of success increases significantly with early user validation.",
+      "There is a high likelihood that the bug will recur without a deeper architectural fix.",
+    ],
+    synonyms: ["probability", "chance", "prospect"],
+    tier: 1,
+  },
+  {
+    word: "potential",
+    definition: "Having or showing the capacity to develop into something in the future; latent ability",
+    examples: [
+      "The platform has enormous potential once the user acquisition problem is solved.",
+      "She recognized the potential in the junior engineer long before anyone else did.",
+    ],
+    synonyms: ["capacity", "promise", "possibility"],
+    tier: 1,
+  },
+
+  // ─── Tier 1: Sophisticated adverbs ──────────────────────────────────
+
+  {
+    word: "exceedingly",
+    definition: "To a very great degree; extremely",
+    examples: [
+      "The task proved exceedingly difficult once the team understood its true scope.",
+      "She was exceedingly careful about committing to deadlines without full information.",
+    ],
+    synonyms: ["extremely", "exceptionally", "vastly"],
+    tier: 1,
+  },
+  {
+    word: "strikingly",
+    definition: "In a way that attracts attention through being noticeably different or impressive",
+    examples: [
+      "The two implementations are strikingly similar despite being built independently.",
+      "Her presentation was strikingly concise for a topic of that complexity.",
+    ],
+    synonyms: ["notably", "remarkably", "conspicuously"],
+    tier: 1,
+  },
+  {
+    word: "invariably",
+    definition: "In every case or on every occasion; always",
+    examples: [
+      "Rushed deployments invariably introduce the bugs that careful ones prevent.",
+      "She invariably arrived prepared, with data to support every recommendation.",
+    ],
+    synonyms: ["always", "consistently", "unfailingly"],
+    tier: 1,
+  },
+  {
+    word: "predominantly",
+    definition: "Mainly; for the most part; as the strongest or main element",
+    examples: [
+      "The codebase is predominantly written in TypeScript, with some legacy Python modules.",
+      "The team is predominantly senior, which speeds up onboarding for new hires.",
+    ],
+    synonyms: ["mainly", "primarily", "largely"],
+    tier: 1,
+  },
+  {
+    word: "markedly",
+    definition: "In a clearly noticeable manner; to a significant degree",
+    examples: [
+      "Response times improved markedly after the caching layer was introduced.",
+      "Her communication style shifted markedly once she moved into a leadership role.",
+    ],
+    synonyms: ["noticeably", "significantly", "considerably"],
+    tier: 1,
+  },
+  {
+    word: "solely",
+    definition: "Not involving anyone or anything else; only",
+    examples: [
+      "The decision to migrate was made solely on the basis of long-term cost projections.",
+      "She is solely responsible for the client relationship on this account.",
+    ],
+    synonyms: ["only", "exclusively", "entirely"],
+    tier: 1,
+  },
+  {
+    word: "arguably",
+    definition: "It may be argued or asserted; used when making a claim that could be disputed",
+    examples: [
+      "This is arguably the most important architectural decision we will make this year.",
+      "She is arguably the most technically capable engineer on the team.",
+    ],
+    synonyms: ["possibly", "plausibly", "conceivably"],
+    tier: 1,
+  },
+  {
+    word: "inherently",
+    definition: "In a permanent, essential, or characteristic way; by its very nature",
+    examples: [
+      "Distributed systems are inherently more complex than monolithic ones.",
+      "The approach is inherently scalable because it adds no shared state.",
+    ],
+    synonyms: ["intrinsically", "fundamentally", "naturally"],
+    tier: 1,
+  },
+  {
+    word: "conspicuously",
+    definition: "In a way that stands out and is clearly visible; noticeably",
+    examples: [
+      "The bug was conspicuously absent from the release notes, raising questions.",
+      "She was conspicuously quiet during the debate, which everyone noticed.",
+    ],
+    synonyms: ["noticeably", "obviously", "prominently"],
+    tier: 1,
+  },
+  {
+    word: "exhaustively",
+    definition: "In a thorough and comprehensive manner; covering all cases",
+    examples: [
+      "The QA team exhaustively tested every edge case before the release.",
+      "She exhaustively documented the migration steps so nothing was left to chance.",
+    ],
+    synonyms: ["thoroughly", "comprehensively", "completely"],
+    tier: 1,
+  },
+
+  // ─── Tier 2: More specialized ────────────────────────────────────────
+
+  {
+    word: "synthesis",
+    definition: "The combination of ideas, elements, or substances to form a connected whole",
+    examples: [
+      "Her report was a synthesis of findings from ten independent research teams.",
+      "Good strategy is a synthesis of market insight, capability assessment, and timing.",
+    ],
+    synonyms: ["combination", "integration", "fusion"],
+    tier: 2,
+  },
+  {
+    word: "modality",
+    definition: "A particular mode in which something exists, is experienced, or is expressed",
+    examples: [
+      "The interface supports multiple input modalities, including voice, touch, and keyboard.",
+      "Understanding the modality of a user's context changes what an ideal response looks like.",
+    ],
+    synonyms: ["mode", "form", "channel"],
+    tier: 2,
+  },
+  {
+    word: "canon",
+    definition: "A general law or principle; a collection of works considered authentic or authoritative",
+    examples: [
+      "Clean Architecture has become part of the software engineering canon.",
+      "The new framework challenged the canonical assumptions that the field had relied on for years.",
+    ],
+    synonyms: ["standard", "doctrine", "body of work"],
+    tier: 2,
+  },
+  {
+    word: "matrix",
+    definition: "An environment or structure in which something develops; a rectangular array of quantities",
+    examples: [
+      "The prioritization matrix weighed impact against effort across all proposed features.",
+      "She mapped the stakeholder relationships in a matrix to identify influence and interest.",
+    ],
+    synonyms: ["grid", "framework", "array"],
+    tier: 2,
+  },
+  {
+    word: "algorithm",
+    definition: "A process or set of rules to be followed in calculations or problem-solving; a step-by-step procedure",
+    examples: [
+      "The recommendation algorithm was updated to reduce recency bias in results.",
+      "Understanding the underlying algorithm helps you predict where it will fail.",
+    ],
+    synonyms: ["procedure", "method", "process"],
+    tier: 2,
+  },
+  {
+    word: "liquidity",
+    definition: "The availability of liquid assets to a market or company; ease of converting assets to cash",
+    examples: [
+      "Cash flow problems are really liquidity problems — the company may be profitable but illiquid.",
+      "Investors prefer markets with high liquidity because positions can be exited quickly.",
+    ],
+    synonyms: ["cash flow", "convertibility", "fluidity"],
+    tier: 2,
+  },
+  {
+    word: "stochastic",
+    definition: "Randomly determined; having a probability distribution and therefore not predictable exactly",
+    examples: [
+      "The model uses stochastic gradient descent to optimize across millions of parameters.",
+      "Traffic patterns are stochastic — even the best load test cannot capture every real-world scenario.",
+    ],
+    synonyms: ["random", "probabilistic", "unpredictable"],
+    tier: 2,
+  },
+  {
+    word: "probabilistic",
+    definition: "Based on or adapted to a theory of probability; involving chance",
+    examples: [
+      "The classifier gives probabilistic outputs rather than hard true-or-false labels.",
+      "A probabilistic approach to risk assessment is more honest than a binary safe-or-unsafe framing.",
+    ],
+    synonyms: ["statistical", "stochastic", "likelihood-based"],
+    tier: 2,
+  },
+  {
+    word: "speculative",
+    definition: "Engaged in or based on conjecture rather than knowledge; involving financial speculation",
+    examples: [
+      "The roadmap items beyond Q3 are speculative and subject to reprioritization.",
+      "Speculative investments carry higher risk but also higher potential return.",
+    ],
+    synonyms: ["theoretical", "conjectural", "risky"],
+    tier: 2,
+  },
+  {
+    word: "adventitious",
+    definition: "Coming from an external or unexpected source; arising spontaneously rather than by design",
+    examples: [
+      "The discovery was adventitious — the team was looking for one bug and found another.",
+      "Adventitious learning happens when curious engineers explore systems beyond their own domain.",
+    ],
+    synonyms: ["incidental", "accidental", "extraneous"],
+    tier: 2,
+  },
+
+  // ─── Tier 3: Power words ─────────────────────────────────────────────
+
+  {
+    word: "propitiate",
+    definition: "Win or regain the favor of someone by doing something to please them; appease",
+    examples: [
+      "The executive team struggled to propitiate investors after the missed earnings quarter.",
+      "Offering a formal apology was the only way to propitiate the client after the data loss.",
+    ],
+    synonyms: ["appease", "placate", "conciliate"],
+    tier: 3,
+  },
+  {
+    word: "reprobation",
+    definition: "Strong condemnation; the state of being condemned or disapproved of severely",
+    examples: [
+      "The security breach drew widespread reprobation from customers and regulators alike.",
+      "Her public reprobation of the decision was unusually direct for someone in her position.",
+    ],
+    synonyms: ["condemnation", "censure", "disapproval"],
+    tier: 3,
+  },
+  {
+    word: "interdict",
+    definition: "Prohibit or forbid something; an authoritative prohibition",
+    examples: [
+      "The legal team moved to interdict the use of the disputed dataset pending the outcome of court proceedings.",
+      "The new policy effectively interdicts the practice of deploying on Fridays.",
+    ],
+    synonyms: ["prohibit", "forbid", "ban"],
+    tier: 3,
+  },
+  {
+    word: "inescapable",
+    definition: "Unable to be avoided or denied; unavoidable",
+    examples: [
+      "The inescapable conclusion from the data is that the current model is unsustainable.",
+      "Technical debt is an inescapable reality of shipping under real-world constraints.",
+    ],
+    synonyms: ["unavoidable", "inevitable", "undeniable"],
+    tier: 3,
+  },
 ];
 

@@ -3450,4 +3450,508 @@ export const CONTEXT_SENTENCES: Record<string, ContextSentence[]> = {
       distractors: ["condition", "term", "requirement"],
     },
   ],
+  assent: [
+    {
+      sentence: "She nodded in **agreement** when the revised proposal was read aloud to the group.",
+      weakWord: "agreement",
+      answer: "assent",
+      distractors: ["approval", "consent", "acknowledgment"],
+    },
+  ],
+  concession: [
+    {
+      sentence: "Making a **compromise** on the timeline bought significant goodwill with the client.",
+      weakWord: "compromise",
+      answer: "concession",
+      distractors: ["adjustment", "sacrifice", "trade-off"],
+    },
+  ],
+  accede: [
+    {
+      sentence: "After long debate, the manager **agreed** to the engineer's architectural recommendation.",
+      weakWord: "agreed",
+      answer: "acceded",
+      distractors: ["yielded", "consented", "complied"],
+    },
+  ],
+  placate: [
+    {
+      sentence: "A short memo was sent to **calm** the stakeholders frustrated by the delay.",
+      weakWord: "calm",
+      answer: "placate",
+      distractors: ["appease", "reassure", "satisfy"],
+    },
+  ],
+  rebuke: [
+    {
+      sentence: "The manager issued a firm **reprimand** after the team skipped the code review step.",
+      weakWord: "reprimand",
+      answer: "rebuke",
+      distractors: ["warning", "criticism", "admonishment"],
+    },
+  ],
+  upbraid: [
+    {
+      sentence: "He **scolded** the vendor publicly for missing three consecutive deadlines.",
+      weakWord: "scolded",
+      answer: "upbraided",
+      distractors: ["criticized", "reprimanded", "rebuked"],
+    },
+  ],
+  dispute: [
+    {
+      sentence: "The two teams fell into an **argument** over who owned the shared authentication service.",
+      weakWord: "argument",
+      answer: "dispute",
+      distractors: ["conflict", "disagreement", "debate"],
+    },
+  ],
+  wrangle: [
+    {
+      sentence: "The teams **argued** over the API design for two weeks before reaching alignment.",
+      weakWord: "argued",
+      answer: "wrangled",
+      distractors: ["debated", "negotiated", "quarreled"],
+    },
+  ],
+  quibble: [
+    {
+      sentence: "Instead of **nitpicking** over variable names, focus on the architecture first.",
+      weakWord: "nitpicking",
+      answer: "quibble",
+      distractors: ["complaining", "arguing", "fussing"],
+    },
+  ],
+  methodology: [
+    {
+      sentence: "The team adopted an agile **approach** after struggling with waterfall planning.",
+      weakWord: "approach",
+      answer: "methodology",
+      distractors: ["process", "framework", "system"],
+    },
+  ],
+  systemic: [
+    {
+      sentence: "The recurring outages point to a **fundamental** problem in the release process.",
+      weakWord: "fundamental",
+      answer: "systemic",
+      distractors: ["structural", "deep-rooted", "pervasive"],
+    },
+  ],
+  deployment: [
+    {
+      sentence: "Each **release** is automatically tested before it reaches the production environment.",
+      weakWord: "release",
+      answer: "deployment",
+      distractors: ["launch", "rollout", "update"],
+    },
+  ],
+  conduit: [
+    {
+      sentence: "She served as a **channel** between the executive team and the engineering department.",
+      weakWord: "channel",
+      answer: "conduit",
+      distractors: ["bridge", "link", "liaison"],
+    },
+  ],
+  hierarchy: [
+    {
+      sentence: "Understanding the decision-making **structure** saves time when escalating issues.",
+      weakWord: "structure",
+      answer: "hierarchy",
+      distractors: ["chain of command", "ranking", "organization"],
+    },
+  ],
+  framework: [
+    {
+      sentence: "Without a clear **structure**, every edge case becomes a debate.",
+      weakWord: "structure",
+      answer: "framework",
+      distractors: ["system", "model", "process"],
+    },
+  ],
+  sequence: [
+    {
+      sentence: "The deployment follows a fixed **order**: build, test, stage, then release.",
+      weakWord: "order",
+      answer: "sequence",
+      distractors: ["process", "series", "workflow"],
+    },
+  ],
+  optimization: [
+    {
+      sentence: "Premature **improvement** is one of the most common sources of wasted engineering effort.",
+      weakWord: "improvement",
+      answer: "optimization",
+      distractors: ["tuning", "refactoring", "enhancement"],
+    },
+  ],
+  configuration: [
+    {
+      sentence: "A small **setup** error in the firewall rules caused the entire outage.",
+      weakWord: "setup",
+      answer: "configuration",
+      distractors: ["setting", "misconfiguration", "arrangement"],
+    },
+  ],
+  commodity: [
+    {
+      sentence: "When software becomes a **standard product**, price becomes the only differentiator.",
+      weakWord: "standard product",
+      answer: "commodity",
+      distractors: ["generic service", "utility", "basic good"],
+    },
+  ],
+  fiscal: [
+    {
+      sentence: "The **financial** year ends in December, so all budget requests are due by October.",
+      weakWord: "financial",
+      answer: "fiscal",
+      distractors: ["budgetary", "accounting", "economic"],
+    },
+  ],
+  monetary: [
+    {
+      sentence: "The **financial** value of the deal mattered less than the strategic partnership it created.",
+      weakWord: "financial",
+      answer: "monetary",
+      distractors: ["economic", "pecuniary", "commercial"],
+    },
+  ],
+  expenditure: [
+    {
+      sentence: "Total **spending** on infrastructure exceeded the original budget by thirty percent.",
+      weakWord: "spending",
+      answer: "expenditure",
+      distractors: ["cost", "outlay", "investment"],
+    },
+  ],
+  revenue: [
+    {
+      sentence: "The new pricing tier added significant **income** without a proportional cost increase.",
+      weakWord: "income",
+      answer: "revenue",
+      distractors: ["profit", "earnings", "receipts"],
+    },
+  ],
+  asset: [
+    {
+      sentence: "The proprietary dataset is the company's most valuable **resource**.",
+      weakWord: "resource",
+      answer: "asset",
+      distractors: ["advantage", "property", "holding"],
+    },
+  ],
+  liability: [
+    {
+      sentence: "Unresolved technical debt is both a business **risk** and a delivery bottleneck.",
+      weakWord: "risk",
+      answer: "liability",
+      distractors: ["burden", "obligation", "disadvantage"],
+    },
+  ],
+  inflation: [
+    {
+      sentence: "Scope **expansion** is what happens when no one is willing to say no to new requirements.",
+      weakWord: "expansion",
+      answer: "inflation",
+      distractors: ["creep", "growth", "escalation"],
+    },
+  ],
+  equity: [
+    {
+      sentence: "Early employees received **ownership shares** as compensation for joining at seed stage.",
+      weakWord: "ownership shares",
+      answer: "equity",
+      distractors: ["stock", "salary", "options"],
+    },
+  ],
+  deficit: [
+    {
+      sentence: "The project ran a skills **shortfall** that required three months of external training.",
+      weakWord: "shortfall",
+      answer: "deficit",
+      distractors: ["gap", "shortage", "lack"],
+    },
+  ],
+  appreciation: [
+    {
+      sentence: "Property **value increase** in the city made the company's real estate holdings highly profitable.",
+      weakWord: "value increase",
+      answer: "appreciation",
+      distractors: ["growth", "gain", "rise"],
+    },
+  ],
+  depreciation: [
+    {
+      sentence: "The equipment **value loss** schedule affects the company's reported profit each quarter.",
+      weakWord: "value loss",
+      answer: "depreciation",
+      distractors: ["write-down", "reduction", "devaluation"],
+    },
+  ],
+  viable: [
+    {
+      sentence: "The only **workable** solution given the constraints was to migrate incrementally.",
+      weakWord: "workable",
+      answer: "viable",
+      distractors: ["feasible", "practical", "realistic"],
+    },
+  ],
+  imminent: [
+    {
+      sentence: "With the deadline **approaching**, the team moved to a daily release cycle.",
+      weakWord: "approaching",
+      answer: "imminent",
+      distractors: ["near", "close", "impending"],
+    },
+  ],
+  repercussion: [
+    {
+      sentence: "Every architectural decision has **consequences** that last years, not just sprints.",
+      weakWord: "consequences",
+      answer: "repercussions",
+      distractors: ["effects", "ramifications", "implications"],
+    },
+  ],
+  precaution: [
+    {
+      sentence: "As a **safeguard**, the team rolled back the deployment before investigating the spike.",
+      weakWord: "safeguard",
+      answer: "precaution",
+      distractors: ["measure", "step", "backup"],
+    },
+  ],
+  contingency: [
+    {
+      sentence: "The project plan included a two-week **backup** buffer for unforeseen blockers.",
+      weakWord: "backup",
+      answer: "contingency",
+      distractors: ["reserve", "buffer", "fallback"],
+    },
+  ],
+  scenario: [
+    {
+      sentence: "In the worst-case **situation**, we lose two weeks and need to cut one feature.",
+      weakWord: "situation",
+      answer: "scenario",
+      distractors: ["case", "outcome", "possibility"],
+    },
+  ],
+  upshot: [
+    {
+      sentence: "The **outcome** of three rounds of review was that the proposal was approved with minor changes.",
+      weakWord: "outcome",
+      answer: "upshot",
+      distractors: ["result", "conclusion", "finding"],
+    },
+  ],
+  likelihood: [
+    {
+      sentence: "The **probability** of success increases significantly with early user validation.",
+      weakWord: "probability",
+      answer: "likelihood",
+      distractors: ["chance", "odds", "prospect"],
+    },
+  ],
+  potential: [
+    {
+      sentence: "The platform has enormous **promise** once the user acquisition problem is solved.",
+      weakWord: "promise",
+      answer: "potential",
+      distractors: ["capacity", "possibility", "opportunity"],
+    },
+  ],
+  exceedingly: [
+    {
+      sentence: "The task proved **extremely** difficult once the team understood its true scope.",
+      weakWord: "extremely",
+      answer: "exceedingly",
+      distractors: ["exceptionally", "remarkably", "unusually"],
+    },
+  ],
+  strikingly: [
+    {
+      sentence: "The two implementations are **remarkably** similar despite being built independently.",
+      weakWord: "remarkably",
+      answer: "strikingly",
+      distractors: ["notably", "surprisingly", "conspicuously"],
+    },
+  ],
+  invariably: [
+    {
+      sentence: "Rushed deployments **always** introduce the bugs that careful ones prevent.",
+      weakWord: "always",
+      answer: "invariably",
+      distractors: ["consistently", "typically", "often"],
+    },
+  ],
+  predominantly: [
+    {
+      sentence: "The codebase is **mainly** written in TypeScript, with some legacy Python modules.",
+      weakWord: "mainly",
+      answer: "predominantly",
+      distractors: ["primarily", "largely", "mostly"],
+    },
+  ],
+  markedly: [
+    {
+      sentence: "Response times improved **noticeably** after the caching layer was introduced.",
+      weakWord: "noticeably",
+      answer: "markedly",
+      distractors: ["significantly", "considerably", "substantially"],
+    },
+  ],
+  solely: [
+    {
+      sentence: "The decision to migrate was made **only** on the basis of long-term cost projections.",
+      weakWord: "only",
+      answer: "solely",
+      distractors: ["purely", "entirely", "exclusively"],
+    },
+  ],
+  arguably: [
+    {
+      sentence: "This is **possibly** the most important architectural decision we will make this year.",
+      weakWord: "possibly",
+      answer: "arguably",
+      distractors: ["perhaps", "conceivably", "plausibly"],
+    },
+  ],
+  inherently: [
+    {
+      sentence: "Distributed systems are **by their nature** more complex than monolithic ones.",
+      weakWord: "by their nature",
+      answer: "inherently",
+      distractors: ["fundamentally", "intrinsically", "necessarily"],
+    },
+  ],
+  conspicuously: [
+    {
+      sentence: "The bug was **noticeably** absent from the release notes, raising questions.",
+      weakWord: "noticeably",
+      answer: "conspicuously",
+      distractors: ["obviously", "strangely", "pointedly"],
+    },
+  ],
+  exhaustively: [
+    {
+      sentence: "The QA team **thoroughly** tested every edge case before the release.",
+      weakWord: "thoroughly",
+      answer: "exhaustively",
+      distractors: ["comprehensively", "rigorously", "completely"],
+    },
+  ],
+  synthesis: [
+    {
+      sentence: "Her report was a **combination** of findings from ten independent research teams.",
+      weakWord: "combination",
+      answer: "synthesis",
+      distractors: ["summary", "integration", "compilation"],
+    },
+  ],
+  modality: [
+    {
+      sentence: "The interface supports multiple input **modes**, including voice, touch, and keyboard.",
+      weakWord: "modes",
+      answer: "modalities",
+      distractors: ["methods", "channels", "formats"],
+    },
+  ],
+  canon: [
+    {
+      sentence: "Clean Architecture has become part of the software engineering **standard body of work**.",
+      weakWord: "standard body of work",
+      answer: "canon",
+      distractors: ["tradition", "doctrine", "curriculum"],
+    },
+  ],
+  matrix: [
+    {
+      sentence: "The prioritization **grid** weighed impact against effort across all proposed features.",
+      weakWord: "grid",
+      answer: "matrix",
+      distractors: ["table", "framework", "chart"],
+    },
+  ],
+  algorithm: [
+    {
+      sentence: "Understanding the underlying **procedure** helps you predict where it will fail.",
+      weakWord: "procedure",
+      answer: "algorithm",
+      distractors: ["process", "method", "logic"],
+    },
+  ],
+  liquidity: [
+    {
+      sentence: "Cash flow problems are really **cash availability** problems — the company may be profitable but unable to pay bills.",
+      weakWord: "cash availability",
+      answer: "liquidity",
+      distractors: ["solvency", "cash flow", "capital"],
+    },
+  ],
+  stochastic: [
+    {
+      sentence: "Traffic patterns are **random** — even the best load test cannot capture every real-world scenario.",
+      weakWord: "random",
+      answer: "stochastic",
+      distractors: ["unpredictable", "variable", "irregular"],
+    },
+  ],
+  probabilistic: [
+    {
+      sentence: "The classifier gives **likelihood-based** outputs rather than hard true-or-false labels.",
+      weakWord: "likelihood-based",
+      answer: "probabilistic",
+      distractors: ["statistical", "approximate", "uncertain"],
+    },
+  ],
+  speculative: [
+    {
+      sentence: "The roadmap items beyond Q3 are **theoretical** and subject to reprioritization.",
+      weakWord: "theoretical",
+      answer: "speculative",
+      distractors: ["tentative", "uncertain", "provisional"],
+    },
+  ],
+  adventitious: [
+    {
+      sentence: "The discovery was **accidental** — the team was looking for one bug and found another.",
+      weakWord: "accidental",
+      answer: "adventitious",
+      distractors: ["incidental", "unexpected", "unplanned"],
+    },
+  ],
+  propitiate: [
+    {
+      sentence: "The executive team struggled to **appease** investors after the missed earnings quarter.",
+      weakWord: "appease",
+      answer: "propitiate",
+      distractors: ["placate", "satisfy", "reassure"],
+    },
+  ],
+  reprobation: [
+    {
+      sentence: "The security breach drew widespread **condemnation** from customers and regulators alike.",
+      weakWord: "condemnation",
+      answer: "reprobation",
+      distractors: ["criticism", "censure", "disapproval"],
+    },
+  ],
+  interdict: [
+    {
+      sentence: "The legal team moved to **prohibit** use of the disputed dataset pending court proceedings.",
+      weakWord: "prohibit",
+      answer: "interdict",
+      distractors: ["ban", "block", "prevent"],
+    },
+  ],
+  inescapable: [
+    {
+      sentence: "The **unavoidable** conclusion from the data is that the current model is unsustainable.",
+      weakWord: "unavoidable",
+      answer: "inescapable",
+      distractors: ["obvious", "inevitable", "undeniable"],
+    },
+  ],
 };
