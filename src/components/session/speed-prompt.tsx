@@ -49,6 +49,19 @@ export function SpeedPrompt({ sessionWord, choices, onSubmit }: SpeedPromptProps
     return () => clearInterval(timerRef.current);
   }, [sessionWord]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (selected !== null || submittedRef.current) return;
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
+      const index = ["1", "2", "3", "4"].indexOf(event.key);
+      if (index !== -1 && index < choices.definitions.length) {
+        handleSelect(choices.definitions[index]);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selected, choices]);
+
   const handleSelect = (definition: string) => {
     if (selected || submittedRef.current) return;
     playTick();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,6 +36,19 @@ export function ContextPrompt({ sentence, onSubmit }: ContextPromptProps) {
   const choices = getChoices(sentence);
 
   const parts = sentence.sentence.split(`**${sentence.weakWord}**`);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (selected !== null) return;
+      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
+      const index = ["1", "2", "3", "4"].indexOf(event.key);
+      if (index !== -1 && index < choices.length) {
+        handleSelect(choices[index]);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selected, choices]);
 
   const handleSelect = (choice: string) => {
     playTick();
