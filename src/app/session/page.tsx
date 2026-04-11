@@ -15,12 +15,12 @@ import { SessionProgress } from "@/components/session/session-progress";
 import { XPAward } from "@/components/session/xp-award";
 import { BattleScene } from "@/components/session/battle-scene";
 import { Button } from "@/components/ui/button";
-import { BookOpen, ArrowLeft } from "lucide-react";
+import { AlertTriangle, BookOpen, ArrowLeft, RotateCcw } from "lucide-react";
 
 export default function SessionPage() {
   const router = useRouter();
   const { profile, loading: statsLoading } = useStats();
-  const { seedStatus } = useBootstrap();
+  const { seedStatus, seedError, retrySeed } = useBootstrap();
   const {
     state,
     currentWord,
@@ -57,6 +57,40 @@ export default function SessionPage() {
           <p className="text-muted-foreground text-sm">
             {seedStatus === "seeding" ? "Preparing your library..." : "Preparing session..."}
           </p>
+        </motion.div>
+      </main>
+    );
+  }
+
+  if (state === "idle" && seedStatus === "error") {
+    return (
+      <main className="max-w-2xl mx-auto px-4 py-4 text-center space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="size-16 rounded-2xl bg-red-500/10 flex items-center justify-center">
+            <AlertTriangle className="size-8 text-red-400" />
+          </div>
+          <h2 className="text-2xl font-bold">Your library isn&apos;t ready yet</h2>
+          <p className="text-muted-foreground max-w-sm">
+            {seedError ?? "Retry setup before starting a session."}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Button onClick={retrySeed} className="gap-2">
+              <RotateCcw className="size-4" />
+              Retry Setup
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/")}
+              className="gap-2"
+            >
+              <ArrowLeft className="size-4" />
+              Back to Dashboard
+            </Button>
+          </div>
         </motion.div>
       </main>
     );

@@ -170,7 +170,11 @@ export async function completeSession(
 
   // Sync to cloud if logged in (fire and forget)
   supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session?.user) pushToCloud(session.user);
+    if (session?.user) {
+      void pushToCloud(session.user).catch((error) => {
+        console.error("Post-session cloud sync failed:", error);
+      });
+    }
   });
 
   return {

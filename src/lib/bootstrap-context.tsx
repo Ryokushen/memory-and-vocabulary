@@ -7,11 +7,13 @@ export type BootstrapStatus = "seeding" | "ready" | "error";
 interface BootstrapContextValue {
   seedStatus: BootstrapStatus;
   seedError: string | null;
+  retrySeed: () => void;
 }
 
 const BootstrapContext = createContext<BootstrapContextValue>({
   seedStatus: "seeding",
   seedError: null,
+  retrySeed: () => {},
 });
 
 export function BootstrapProvider({

@@ -16,7 +16,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus, Search, BookOpen, ChevronDown, Lock } from "lucide-react";
+import {
+  AlertTriangle,
+  BookOpen,
+  ChevronDown,
+  Lock,
+  Plus,
+  RotateCcw,
+  Search,
+} from "lucide-react";
 import { useStats } from "@/hooks/use-stats";
 import type { Word } from "@/lib/types";
 import { TIER_UNLOCK_LEVELS } from "@/lib/types";
@@ -109,7 +117,7 @@ function WordRow({ word, isExpanded, onToggle }: { word: Word; isExpanded: boole
 
 export default function WordsPage() {
   const { profile } = useStats();
-  const { seedStatus } = useBootstrap();
+  const { seedStatus, seedError, retrySeed } = useBootstrap();
   const playerLevel = profile?.level ?? 1;
   const [words, setWords] = useState<Word[]>([]);
   const [search, setSearch] = useState("");
@@ -224,6 +232,28 @@ export default function WordsPage() {
         <div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-center">
           <span className="text-3xl animate-pulse">&#x2692;&#xFE0F;</span>
           <p className="text-sm text-muted-foreground">Stocking your library...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (seedStatus === "error" && words.length === 0) {
+    return (
+      <main className="max-w-4xl mx-auto px-4 py-4">
+        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 text-center">
+          <div className="flex size-14 items-center justify-center rounded-2xl bg-red-500/10 text-red-400">
+            <AlertTriangle className="size-7" />
+          </div>
+          <div className="space-y-1">
+            <h1 className="text-2xl font-bold">Library setup failed</h1>
+            <p className="max-w-md text-sm text-muted-foreground">
+              {seedError ?? "Retry setup to load the built-in word library."}
+            </p>
+          </div>
+          <Button onClick={retrySeed} className="gap-2">
+            <RotateCcw className="size-4" />
+            Retry Setup
+          </Button>
         </div>
       </main>
     );

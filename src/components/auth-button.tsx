@@ -3,10 +3,43 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, User, Cloud } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Cloud,
+  CloudOff,
+  LoaderCircle,
+  LogIn,
+  LogOut,
+  RotateCcw,
+  User,
+  WifiOff,
+} from "lucide-react";
+
+function formatLastSync(lastSyncAt: string | null): string {
+  if (!lastSyncAt) return "No successful sync yet";
+
+  const timestamp = new Date(lastSyncAt);
+
+  return `Last synced ${timestamp.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })}`;
+}
 
 export function AuthButton() {
-  const { user, loading, signIn, signOut } = useAuth();
+  const {
+    user,
+    loading,
+    syncState,
+    syncError,
+    lastSyncAt,
+    isOnline,
+    signIn,
+    signOut,
+    retrySync,
+  } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
 
   if (loading) return null;
@@ -25,6 +58,48 @@ export function AuthButton() {
     );
   }
 
+  const syncUi = {
+    synced: {
+      icon: Cloud,
+      iconClassName: "text-emerald-500",
+      badgeClassName: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+      label: "Synced",
+      detail: formatLastSync(lastSyncAt),
+    },
+    syncing: {
+      icon: LoaderCircle,
+      iconClassName: "animate-spin text-sky-400",
+      badgeClassName: "border-sky-500/20 bg-sky-500/10 text-sky-400",
+      label: "Syncing",
+      detail: "Updating cloud backup now",
+    },
+    offline: {
+      icon: WifiOff,
+      iconClassName: "text-amber-400",
+      badgeClassName: "border-amber-500/20 bg-amber-500/10 text-amber-400",
+      label: "Offline",
+      detail: isOnline
+        ? formatLastSync(lastSyncAt)
+        : "Progress is saved locally until you reconnect",
+    },
+    error: {
+      icon: CloudOff,
+      iconClassName: "text-red-400",
+      badgeClassName: "border-red-500/20 bg-red-500/10 text-red-400",
+      label: "Sync Error",
+      detail: syncError ?? "Local progress is safe. Retry cloud sync.",
+    },
+    idle: {
+      icon: Cloud,
+      iconClassName: "text-muted-foreground",
+      badgeClassName: "border-border/60 bg-muted/40 text-muted-foreground",
+      label: "Local Only",
+      detail: "Sign in to back up progress across devices",
+    },
+  }[syncState];
+
+  const StatusIcon = syncUi.icon;
+
   const initial = user.user_metadata?.preferred_username?.[0]?.toUpperCase()
     ?? user.email?.[0]?.toUpperCase()
     ?? "U";
@@ -35,7 +110,7 @@ export function AuthButton() {
         onClick={() => setShowMenu(!showMenu)}
         className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs hover:bg-muted/50 transition-colors"
       >
-        <Cloud className="size-3 text-emerald-500" />
+        <StatusIcon className={`size-3 ${syncUi.iconClassName}`} />
         <div className="size-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-semibold">
           {initial}
         </div>
@@ -44,14 +119,36 @@ export function AuthButton() {
       {showMenu && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
-          <div className="absolute right-0 top-full mt-1 z-50 w-48 rounded-lg border border-border/60 bg-card p-2 shadow-lg space-y-1">
+          <div className="absolute right-0 top-full mt-1 z-50 w-64 rounded-lg border border-border/60 bg-card p-2 shadow-lg space-y-2">
             <div className="px-2 py-1.5 text-xs text-muted-foreground truncate">
               <User className="size-3 inline mr-1" />
               {user.user_metadata?.preferred_username ?? user.email}
             </div>
-            <div className="px-2 py-1 text-[10px] text-emerald-500 flex items-center gap-1">
-              <Cloud className="size-2.5" />
-              Synced to cloud
+            <div className="rounded-md border border-border/50 bg-muted/20 px-2 py-2">
+              <div className="flex items-center justify-between gap-2">
+                <Badge
+                  variant="outline"
+                  className={`h-auto rounded-md px-1.5 py-1 text-[10px] ${syncUi.badgeClassName}`}
+                >
+                  <StatusIcon className={`size-3 ${syncUi.iconClassName}`} />
+                  {syncUi.label}
+                </Badge>
+                {(syncState === "error" || syncState === "offline") && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => void retrySync()}
+                    disabled={!isOnline}
+                    className="gap-1 px-1.5"
+                  >
+                    <RotateCcw className="size-3" />
+                    Retry
+                  </Button>
+                )}
+              </div>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                {syncUi.detail}
+              </p>
             </div>
             <hr className="border-border/40" />
             <button

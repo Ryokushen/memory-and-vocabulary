@@ -32,3 +32,7 @@ export function ensureSeedDatabase(): Promise<void> {
 
   return seedPromise;
 }
+
+export function resetSeedDatabase() {
+  seedPromise = null;
+}

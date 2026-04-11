@@ -3,6 +3,25 @@ import { supabase } from "./supabase";
 import { db, getOrCreateProfile } from "./db";
 
 const SYNC_BATCH_SIZE = 100;
+export const CLOUD_SYNC_EVENT = "lexforge-cloud-sync";
+
+export type CloudSyncEventDetail = {
+  state: "syncing" | "synced" | "error";
+  error?: string;
+  lastSyncAt?: string;
+};
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Unknown cloud sync error";
+}
+
+function emitCloudSyncEvent(detail: CloudSyncEventDetail) {
+  if (typeof window === "undefined") return;
+
+  window.dispatchEvent(
+    new CustomEvent<CloudSyncEventDetail>(CLOUD_SYNC_EVENT, { detail }),
+  );
+}
 
 /** Push local profile to Supabase. */
 async function pushProfile(user: User) {
@@ -219,36 +238,45 @@ async function pullAssociations(user: User) {
   }
 }
 
-/** Full push to cloud. Call after session completion. */
-export async function pushToCloud(user: User) {
-  try {
-    await Promise.all([
-      pushProfile(user),
-      pushReviewCards(user),
-      pushReviewLogs(user),
-      pushAssociations(user),
-    ]);
-  } catch (err) {
-    console.error("Cloud sync push failed:", err);
-  }
+async function pushToCloudInternal(user: User) {
+  await Promise.all([
+    pushProfile(user),
+    pushReviewCards(user),
+    pushReviewLogs(user),
+    pushAssociations(user),
+  ]);
 }
 
 /** Full pull from cloud. Call on login. */
 async function pullFromCloud(user: User) {
+  await Promise.all([
+    pullProfile(user),
+    pullReviewCards(user),
+    pullReviewLogs(user),
+    pullAssociations(user),
+  ]);
+}
+
+/** Full push to cloud. Call after session completion. */
+export async function pushToCloud(user: User) {
+  emitCloudSyncEvent({ state: "syncing" });
+
   try {
-    await Promise.all([
-      pullProfile(user),
-      pullReviewCards(user),
-      pullReviewLogs(user),
-      pullAssociations(user),
-    ]);
+    await pushToCloudInternal(user);
+    const lastSyncAt = new Date().toISOString();
+    emitCloudSyncEvent({ state: "synced", lastSyncAt });
+    return { lastSyncAt };
   } catch (err) {
-    console.error("Cloud sync pull failed:", err);
+    console.error("Cloud sync push failed:", err);
+    emitCloudSyncEvent({ state: "error", error: getErrorMessage(err) });
+    throw err;
   }
 }
 
 /** Sync on login: check if cloud has data, pull if yes, push if no. */
 export async function syncOnLogin(user: User) {
+  emitCloudSyncEvent({ state: "syncing" });
+
   try {
     const { data } = await supabase
       .from("profiles")
@@ -261,9 +289,15 @@ export async function syncOnLogin(user: User) {
       await pullFromCloud(user);
     } else {
       // First login — push local data to cloud
-      await pushToCloud(user);
+      await pushToCloudInternal(user);
     }
+
+    const lastSyncAt = new Date().toISOString();
+    emitCloudSyncEvent({ state: "synced", lastSyncAt });
+    return { lastSyncAt };
   } catch (err) {
     console.error("Sync on login failed:", err);
+    emitCloudSyncEvent({ state: "error", error: getErrorMessage(err) });
+    throw err;
   }
 }

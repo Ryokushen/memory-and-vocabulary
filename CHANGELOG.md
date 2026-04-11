@@ -24,6 +24,8 @@ All notable changes to this project should be documented in this file.
 - Dashboard work counts now respect the selected difficulty and current tier unlocks instead of showing all unseen words as available new work
 - Fixed dashboard stats initialization so changing difficulty no longer leaves the new-word count stale on first load
 - App startup now renders the nav and auth controls immediately while first-run seeding continues in the background
+- Auth menu now exposes real cloud-sync status, last successful sync time, and retry controls
+- Added global startup/offline banners plus retryable bootstrap failure states for the dashboard, session, and library screens
 - Review logs now sync to Supabase so daily new-word limits stay consistent across browsers and login pulls no longer duplicate existing local logs
 - Added a Supabase migration for the `review_logs` table, indexes, and RLS policies required by review-log sync, including compatibility upgrades for older table shapes
 - Stats page "Words Due" → "To Review" (only counts previously-seen cards past due date)
