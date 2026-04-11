@@ -51,6 +51,12 @@ export function BattleScene({
   const monsterHp = Math.max(monsterMaxHp - correctCount, 0);
   const hpPct = monsterMaxHp > 0 ? (monsterHp / monsterMaxHp) * 100 : 0;
   const isDead = monsterHp === 0;
+  const isLowHp = hpPct < 30 && !isDead;
+
+  // Shake intensity scales inversely with HP: low HP = bigger shake
+  const shakeIntensity = isLowHp
+    ? [0, -12, 12, -8, 8, -4, 4, 0]
+    : [0, 8, -8, 4, -4, 0];
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -82,19 +88,36 @@ export function BattleScene({
           className="relative z-10"
           animate={
             attackPhase === "hit"
-              ? { x: [0, 30, 0] }
+              ? { x: [0, 40, 0] }
               : attackPhase === "miss"
-                ? { x: [0, 20, 0] }
-                : { x: 0 }
+                ? { x: [0, 15, 0] }
+                : { y: [0, -3, 0] }
           }
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={
+            attackPhase === "idle"
+              ? { duration: 2, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 0.3, ease: "easeOut" }
+          }
         >
+          {/* Red flash on player when monster "counterattacks" on miss */}
+          <AnimatePresence>
+            {attackPhase === "miss" && (
+              <motion.div
+                key={`player-flash-${lastResult?.wordId}`}
+                initial={{ opacity: 0.7 }}
+                animate={{ opacity: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="absolute inset-0 rounded-full bg-red-500 blur-md z-0"
+              />
+            )}
+          </AnimatePresence>
           <Image
             src={playerIcon}
             alt="Player"
             width={64}
             height={64}
-            className="size-16 opacity-90 drop-shadow-[0_0_6px_rgba(139,92,246,0.4)]"
+            className="relative size-16 opacity-90 drop-shadow-[0_0_6px_rgba(139,92,246,0.4)]"
             style={{ filter: "brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(230deg)" }}
           />
         </motion.div>
@@ -130,6 +153,24 @@ export function BattleScene({
           )}
         </AnimatePresence>
 
+        {/* Floating damage / miss number */}
+        <AnimatePresence>
+          {lastResult && (
+            <motion.div
+              key={`dmg-${results.length}`}
+              initial={{ y: 0, opacity: 1 }}
+              animate={{ y: -30, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className={`absolute right-12 top-6 z-30 font-bold text-sm pointer-events-none select-none ${
+                attackPhase === "hit" ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {attackPhase === "hit" ? "-1" : "MISS"}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Monster (right) */}
         <AnimatePresence>
           {!isDead ? (
@@ -138,12 +179,18 @@ export function BattleScene({
               className="relative z-10"
               animate={
                 attackPhase === "hit"
-                  ? { x: [0, 8, -8, 4, -4, 0], opacity: [1, 0.5, 1] }
+                  ? { x: shakeIntensity, opacity: [1, 0.5, 1] }
                   : attackPhase === "miss"
                     ? { scale: [1, 1.1, 1] }
-                    : { x: 0, scale: 1 }
+                    : isLowHp
+                      ? { rotate: [0, 1, -1, 0] }
+                      : { x: 0, scale: 1 }
               }
-              transition={{ duration: 0.4 }}
+              transition={
+                attackPhase === "idle" && isLowHp
+                  ? { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
+                  : { duration: 0.4 }
+              }
             >
               <Image
                 src={monster.icon}
@@ -156,18 +203,35 @@ export function BattleScene({
             </motion.div>
           ) : (
             <motion.div
-              initial={{ opacity: 1, scale: 1, rotate: 0 }}
-              animate={{ opacity: 0, scale: 0.5, rotate: 15, y: 20 }}
-              transition={{ duration: 0.6 }}
-              className="relative z-10"
+              key="monster-dead"
+              className="relative z-10 flex flex-col items-center"
             >
-              <Image
-                src="/icons/fx-skull-crack.svg"
-                alt="Defeated"
-                width={64}
-                height={64}
-                className="size-16 opacity-60"
-              />
+              {/* Dramatic death: scale to 0, rotate 45deg, fade out */}
+              <motion.div
+                initial={{ opacity: 1, scale: 1, rotate: 0 }}
+                animate={{ opacity: 0, scale: 0, rotate: 45 }}
+                transition={{ duration: 0.7, ease: "easeIn" }}
+              >
+                <Image
+                  src="/icons/fx-death.svg"
+                  alt="Defeated"
+                  width={64}
+                  height={64}
+                  className="size-16 opacity-80"
+                />
+              </motion.div>
+
+              {/* VICTORY text — gold, springs up from 0 */}
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.4 }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <span className="text-amber-400 font-black text-lg tracking-widest drop-shadow-[0_0_8px_rgba(251,191,36,0.7)]">
+                  VICTORY
+                </span>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
