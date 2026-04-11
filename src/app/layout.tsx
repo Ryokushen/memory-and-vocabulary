@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Uncial_Antiqua } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -10,6 +10,12 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const uncialAntiqua = Uncial_Antiqua({
+  variable: "--font-lexforge",
+  weight: "400",
   subsets: ["latin"],
 });
 
@@ -35,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      className={`${geistSans.variable} ${geistMono.variable} ${uncialAntiqua.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>

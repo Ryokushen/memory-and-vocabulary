@@ -20,11 +20,9 @@ export function NavBar() {
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-lg">
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-14">
         <Link href="/" className="flex items-center gap-1.5 group">
-          <img
-            src="/icons/lexforge-logo.png"
-            alt="Lexforge"
-            className="h-10 w-auto"
-          />
+          <span className="font-lexforge text-[28px] text-[#c4b5fd] group-hover:text-primary transition-colors leading-none">
+            Lexforge
+          </span>
         </Link>
 
         <nav className="flex items-center gap-1">
