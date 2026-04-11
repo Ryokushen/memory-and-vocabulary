@@ -2,7 +2,6 @@ import {
   createEmptyCard,
   fsrs,
   generatorParameters,
-  type Card,
   type Grade,
   Rating,
 } from "ts-fsrs";

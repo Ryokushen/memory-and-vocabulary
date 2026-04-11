@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 import type {
   ContextSentence,
   GameMode,
@@ -39,6 +39,7 @@ export function useSession() {
     useState<{ definitions: string[]; correctDefinition: string } | null>(null);
 
   const currentWord = words[currentIndex] ?? null;
+  const sessionSeed = words[0]?.word.id ?? 0;
   const progress = words.length > 0 ? currentIndex / words.length : 0;
   // Derive association phase from word data — no extra state needed
   const associationPhase: "create" | "recall" | null =
@@ -46,13 +47,14 @@ export function useSession() {
       ? currentWord.word.association ? "recall" : "create"
       : null;
 
-  const pickModeForWord = useCallback((word: SessionWord, allWords: SessionWord[]) => {
+  const configurePrompt = useCallback((word: SessionWord, allWords: SessionWord[]) => {
     const mode = pickMode(word.word);
-    setCurrentMode(mode);
     if (mode === "context") {
+      setCurrentMode("context");
       setCurrentContextSentence(getContextSentence(word.word));
       setCurrentSpeedChoices(null);
     } else if (mode === "speed" && allWords.length >= 4) {
+      setCurrentMode("speed");
       setCurrentSpeedChoices(getSpeedChoices(word.word, allWords));
       setCurrentContextSentence(null);
     } else {
@@ -75,68 +77,51 @@ export function useSession() {
     setResults([]);
     setSummary(null);
     setPromptStartTime(Date.now());
-
-    // Pick mode for first word
-    const mode = pickMode(sessionWords[0].word);
-    setCurrentMode(mode);
-    if (mode === "context") {
-      setCurrentContextSentence(getContextSentence(sessionWords[0].word));
-      setCurrentSpeedChoices(null);
-    } else if (mode === "speed" && sessionWords.length >= 4) {
-      setCurrentSpeedChoices(getSpeedChoices(sessionWords[0].word, sessionWords));
-      setCurrentContextSentence(null);
-    } else {
-      if (mode === "speed") setCurrentMode("recall");
-      setCurrentContextSentence(null);
-      setCurrentSpeedChoices(null);
-    }
+    configurePrompt(sessionWords[0], sessionWords);
 
     setState("active");
-  }, []);
+  }, [configurePrompt]);
 
-  const submitAnswer = useCallback(
-    async (answer: string, manualRating?: 1 | 2 | 3 | 4) => {
-      if (!currentWord || state !== "active") return;
+  async function submitAnswer(answer: string, manualRating?: 1 | 2 | 3 | 4) {
+    if (!currentWord || state !== "active") return;
 
-      const responseTimeMs = Date.now() - promptStartTime;
-      const expectedAnswer = currentMode === "association" && associationPhase === "create"
-        ? "__create__"
-        : currentMode === "speed"
-          ? currentSpeedChoices?.correctDefinition
-          : currentContextSentence?.answer;
+    const responseTimeMs = Date.now() - promptStartTime;
+    const expectedAnswer = currentMode === "association" && associationPhase === "create"
+      ? "__create__"
+      : currentMode === "speed"
+        ? currentSpeedChoices?.correctDefinition
+        : currentContextSentence?.answer;
 
-      const { result } = await processAnswer(
-        currentWord,
-        answer,
-        responseTimeMs,
-        currentMode,
-        expectedAnswer,
-        manualRating,
-      );
+    const { result } = await processAnswer(
+      currentWord,
+      answer,
+      responseTimeMs,
+      currentMode,
+      expectedAnswer,
+      manualRating,
+    );
 
-      // Play sound based on result
-      if (result.correct) {
-        // Count consecutive correct for streak sound
-        const prevCorrectStreak = results
-          .slice()
-          .reverse()
-          .findIndex((r) => !r.correct);
-        const streak =
-          prevCorrectStreak === -1 ? results.length : prevCorrectStreak;
-        if (streak >= 2) {
-          playStreakCorrect();
-        } else {
-          playCorrect();
-        }
+    // Play sound based on result
+    if (result.correct) {
+      // Count consecutive correct for streak sound
+      const prevCorrectStreak = results
+        .slice()
+        .reverse()
+        .findIndex((r) => !r.correct);
+      const streak =
+        prevCorrectStreak === -1 ? results.length : prevCorrectStreak;
+      if (streak >= 2) {
+        playStreakCorrect();
       } else {
-        playIncorrect();
+        playCorrect();
       }
+    } else {
+      playIncorrect();
+    }
 
-      setResults((prev) => [...prev, result]);
-      setState("reviewing");
-    },
-    [currentWord, state, promptStartTime, currentMode, currentContextSentence, currentSpeedChoices, results],
-  );
+    setResults((prev) => [...prev, result]);
+    setState("reviewing");
+  }
 
   const nextWord = useCallback(async () => {
     const nextIndex = currentIndex + 1;
@@ -152,25 +137,10 @@ export function useSession() {
     } else {
       setCurrentIndex(nextIndex);
       setPromptStartTime(Date.now());
-
-      // Pick mode for next word
-      const mode = pickMode(words[nextIndex].word);
-      setCurrentMode(mode);
-      if (mode === "context") {
-        setCurrentContextSentence(getContextSentence(words[nextIndex].word));
-        setCurrentSpeedChoices(null);
-      } else if (mode === "speed" && words.length >= 4) {
-        setCurrentSpeedChoices(getSpeedChoices(words[nextIndex].word, words));
-        setCurrentContextSentence(null);
-      } else {
-        if (mode === "speed") setCurrentMode("recall");
-        setCurrentContextSentence(null);
-        setCurrentSpeedChoices(null);
-      }
-
+      configurePrompt(words[nextIndex], words);
       setState("active");
     }
-  }, [currentIndex, words, results]);
+  }, [configurePrompt, currentIndex, words, results]);
 
   const resetSession = useCallback(() => {
     setState("idle");
@@ -186,6 +156,7 @@ export function useSession() {
   return {
     state,
     currentWord,
+    sessionSeed,
     currentIndex,
     totalWords: words.length,
     progress,

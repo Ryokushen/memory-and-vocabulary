@@ -8,10 +8,10 @@ export default function OfflinePage() {
           <BookOpen className="size-16 text-muted-foreground/30" />
           <WifiOff className="size-6 text-red-500 absolute -bottom-1 -right-1" />
         </div>
-        <h1 className="text-2xl font-bold">You're Offline</h1>
+        <h1 className="text-2xl font-bold">You&apos;re Offline</h1>
         <p className="text-muted-foreground max-w-sm">
           Your connection dropped. Previously visited pages are still available —
-          head back or try again when you're reconnected.
+          head back or try again when you&apos;re reconnected.
         </p>
       </div>
     </main>

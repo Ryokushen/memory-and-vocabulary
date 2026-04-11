@@ -21,10 +21,8 @@ export function RecallPrompt({ sessionWord, onSubmit }: RecallPromptProps) {
   const { word } = sessionWord;
 
   useEffect(() => {
-    setAnswer("");
-    setShowHint(false);
     inputRef.current?.focus();
-  }, [sessionWord]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

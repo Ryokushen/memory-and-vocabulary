@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SessionResult } from "@/lib/types";
 
@@ -24,19 +24,26 @@ const PLAYERS = [
 // ── Props ──────────────────────────────────────────────────────────────
 
 interface BattleSceneProps {
+  sessionSeed: number;
   totalWords: number;
   results: SessionResult[];
   /** Signals the reviewing state so we can trigger attack animation */
   lastResult: SessionResult | null;
 }
 
-export function BattleScene({ totalWords, results, lastResult }: BattleSceneProps) {
-  const [attackPhase, setAttackPhase] = useState<"idle" | "hit" | "miss">("idle");
-  const [showClash, setShowClash] = useState(false);
-
-  // Pick a random monster + player on mount (stable for the session)
-  const monster = useMemo(() => MONSTERS[Math.floor(Math.random() * MONSTERS.length)], []);
-  const playerIcon = useMemo(() => PLAYERS[Math.floor(Math.random() * PLAYERS.length)], []);
+export function BattleScene({
+  sessionSeed,
+  totalWords,
+  results,
+  lastResult,
+}: BattleSceneProps) {
+  // Stable cosmetic selection derived from the session seed.
+  const monster = MONSTERS[sessionSeed % MONSTERS.length];
+  const playerIcon =
+    PLAYERS[Math.floor(sessionSeed / MONSTERS.length) % PLAYERS.length];
+  const attackPhase = lastResult
+    ? (lastResult.correct ? "hit" : "miss")
+    : "idle";
 
   // Monster HP: starts at totalWords, decreases by 1 per correct answer
   const correctCount = results.filter(r => r.correct).length;
@@ -44,18 +51,6 @@ export function BattleScene({ totalWords, results, lastResult }: BattleSceneProp
   const monsterHp = Math.max(monsterMaxHp - correctCount, 0);
   const hpPct = monsterMaxHp > 0 ? (monsterHp / monsterMaxHp) * 100 : 0;
   const isDead = monsterHp === 0;
-
-  // Trigger attack animation when a new result comes in
-  useEffect(() => {
-    if (!lastResult) return;
-    const phase = lastResult.correct ? "hit" : "miss";
-    setAttackPhase(phase);
-    setShowClash(true);
-
-    const timer1 = setTimeout(() => setShowClash(false), 400);
-    const timer2 = setTimeout(() => setAttackPhase("idle"), 600);
-    return () => { clearTimeout(timer1); clearTimeout(timer2); };
-  }, [lastResult, results.length]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -83,6 +78,7 @@ export function BattleScene({ totalWords, results, lastResult }: BattleSceneProp
 
         {/* Player character (left) */}
         <motion.div
+          key={`player-${lastResult?.wordId ?? "idle"}-${attackPhase}`}
           className="relative z-10"
           animate={
             attackPhase === "hit"
@@ -93,9 +89,11 @@ export function BattleScene({ totalWords, results, lastResult }: BattleSceneProp
           }
           transition={{ duration: 0.3, ease: "easeOut" }}
         >
-          <img
+          <Image
             src={playerIcon}
             alt="Player"
+            width={64}
+            height={64}
             className="size-16 opacity-90 drop-shadow-[0_0_6px_rgba(139,92,246,0.4)]"
             style={{ filter: "brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(230deg)" }}
           />
@@ -103,17 +101,20 @@ export function BattleScene({ totalWords, results, lastResult }: BattleSceneProp
 
         {/* Clash FX (center) */}
         <AnimatePresence>
-          {showClash && (
+          {lastResult && (
             <motion.div
+              key={`clash-${lastResult.wordId}-${attackPhase}`}
               initial={{ scale: 0, opacity: 0, rotate: -30 }}
-              animate={{ scale: 1.2, opacity: 1, rotate: 0 }}
+              animate={{ scale: [0, 1.2, 0.9], opacity: [0, 1, 0], rotate: [-30, 0, 0] }}
               exit={{ scale: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
             >
-              <img
+              <Image
                 src="/icons/fx-sword-clash.svg"
                 alt=""
+                width={48}
+                height={48}
                 className={`size-12 ${
                   attackPhase === "hit"
                     ? "drop-shadow-[0_0_8px_rgba(34,197,94,0.6)]"
@@ -133,6 +134,7 @@ export function BattleScene({ totalWords, results, lastResult }: BattleSceneProp
         <AnimatePresence>
           {!isDead ? (
             <motion.div
+              key={`monster-${lastResult?.wordId ?? "idle"}-${attackPhase}`}
               className="relative z-10"
               animate={
                 attackPhase === "hit"
@@ -143,9 +145,11 @@ export function BattleScene({ totalWords, results, lastResult }: BattleSceneProp
               }
               transition={{ duration: 0.4 }}
             >
-              <img
+              <Image
                 src={monster.icon}
                 alt={monster.name}
+                width={64}
+                height={64}
                 className="size-16 opacity-90 drop-shadow-[0_0_6px_rgba(239,68,68,0.4)]"
                 style={{ filter: "brightness(0) invert(1) sepia(1) saturate(3) hue-rotate(330deg)", transform: "scaleX(-1)" }}
               />
@@ -157,9 +161,11 @@ export function BattleScene({ totalWords, results, lastResult }: BattleSceneProp
               transition={{ duration: 0.6 }}
               className="relative z-10"
             >
-              <img
+              <Image
                 src="/icons/fx-skull-crack.svg"
                 alt="Defeated"
+                width={64}
+                height={64}
                 className="size-16 opacity-60"
               />
             </motion.div>

@@ -1,4 +1,4 @@
-import type { Card, RecordLog } from "ts-fsrs";
+import type { Card } from "ts-fsrs";
 
 // ── Word ────────────────────────────────────────────────────────────────
 

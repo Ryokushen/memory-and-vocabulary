@@ -5,6 +5,16 @@ import { db, getOrCreateProfile } from "@/lib/db";
 import { getDueCount, getWordCount } from "@/lib/scheduler";
 import type { Difficulty, UserProfile } from "@/lib/types";
 
+async function loadStatsSnapshot() {
+  const [profile, dueCount, wordCount] = await Promise.all([
+    getOrCreateProfile(),
+    getDueCount(),
+    getWordCount(),
+  ]);
+
+  return { profile, dueCount, wordCount };
+}
+
 export function useStats() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [dueCount, setDueCount] = useState(0);
@@ -12,24 +22,37 @@ export function useStats() {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    const [p, due, total] = await Promise.all([
-      getOrCreateProfile(),
-      getDueCount(),
-      getWordCount(),
-    ]);
-    setProfile(p);
-    setDueCount(due);
-    setWordCount(total);
+    setLoading(true);
+    const snapshot = await loadStatsSnapshot();
+    setProfile(snapshot.profile);
+    setDueCount(snapshot.dueCount);
+    setWordCount(snapshot.wordCount);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let cancelled = false;
+
+    async function loadInitialStats() {
+      const snapshot = await loadStatsSnapshot();
+      if (cancelled) return;
+
+      setProfile(snapshot.profile);
+      setDueCount(snapshot.dueCount);
+      setWordCount(snapshot.wordCount);
+      setLoading(false);
+    }
+
+    void loadInitialStats();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const setDifficulty = useCallback(async (difficulty: Difficulty) => {
     await db.userProfile.update(1, { difficulty });
-    refresh();
+    await refresh();
   }, [refresh]);
 
   return { profile, dueCount, wordCount, loading, refresh, setDifficulty };

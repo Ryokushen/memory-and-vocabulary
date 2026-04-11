@@ -1,0 +1,19 @@
+# Changelog
+
+All notable changes to this project should be documented in this file.
+
+## [Unreleased] - 2026-04-10
+
+### Changed
+
+- Updated `README.md` to reflect the shipped feature set: 321 seeded words, live Recall/Context/Speed/Association modes, difficulty settings, tier gating, PWA support, and the current roadmap.
+- Adjusted ESLint ignores so generated Serwist service worker artifacts in `public/` no longer pollute lint results.
+- Refactored session and stats hooks for current React Compiler rules, removing effect-driven state initialization patterns that were failing lint.
+- Made session UI behavior deterministic by replacing render-time randomness with stable session-derived selection in context choice ordering and battle-scene visuals.
+- Simplified prompt reset behavior by relying on keyed remounts for session prompts instead of synchronous `setState` calls inside effects.
+- Cleaned minor lint issues across the app, including unused imports/types and unescaped apostrophes in the offline page.
+
+### Verified
+
+- `npm run lint`
+- `npm run build`

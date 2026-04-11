@@ -8,14 +8,22 @@ Existing brain games are either fun but unscientific (Wordle, random trivia), or
 
 Your character's stats reflect your real cognitive training, not arbitrary points.
 
+## Current Status
+
+- 321 seeded words plus custom-word support
+- Four live training modes: Recall, Context, Speed, and Association
+- Difficulty settings that control daily new-word intake
+- Tier gating that unlocks harder vocabulary as the player levels up
+- PWA support with offline fallback via Serwist
+
 ## Game Modes
 
 | Mode | Trains | How It Works |
 |------|--------|-------------|
 | **Recall** | Phonological retrieval | See a definition, type the word. No multiple choice — pure production. |
 | **Context** | Real-life word selection | See a sentence with a weak word highlighted, pick a more precise replacement from 4 choices. |
-
-Planned: Speed Mode (timed rapid-fire), Association Mode (visual mnemonics).
+| **Speed** | Speed-of-processing | Match a word to the correct definition before the countdown expires. |
+| **Association** | Dual coding | Create a vivid mental image for a word, then later recall the word from that image. |
 
 ## RPG System
 
@@ -29,31 +37,34 @@ Planned: Speed Mode (timed rapid-fire), Association Mode (visual mnemonics).
 - **XP** from correct answers, streak bonuses, speed bonuses
 - **HP** decays on missed days (mirrors real memory decay, floor at 20 — never zero)
 - **Leveling** scales at 1.5x per level, restores HP on level-up
+- **Difficulty** adjusts session size and daily introduction rate
+- **Tier gating** unlocks Tier 2 at level 5 and Tier 3 at level 10
 
 ## Tech Stack
 
 | Layer | Choice | Why |
 |-------|--------|-----|
-| Framework | Next.js (App Router) | Consistent with other project patterns |
+| Framework | Next.js 16 (App Router) | Static-first app shell with modern React compiler rules |
 | Local storage | Dexie.js (IndexedDB) | Typed queries, offline-ready, no backend needed |
 | Spaced repetition | ts-fsrs | State-of-the-art scheduler, what Anki switched to |
 | Animations | Framer Motion | Card transitions, XP counters, level-up effects |
 | Sound | Web Audio API | Synthesized feedback tones, zero audio files |
 | UI | shadcn/ui + Tailwind | Accessible primitives, game feel comes from Framer Motion |
-| Testing | Vitest | Interval math and scheduling logic |
+| PWA | Serwist | Service worker generation and offline fallback |
+| Tooling | ESLint + TypeScript + Vitest | Lint/build are active; tests are not added yet |
 
 ## Architecture
 
 ```
 src/
 ├── app/                    Next.js App Router pages
-│   ├── page.tsx            Dashboard (stats, HP, streak, start button)
+│   ├── page.tsx            Dashboard (character banner, quest card, difficulty)
 │   ├── session/page.tsx    Active training session
 │   ├── words/page.tsx      Word library with search + add custom words
 │   └── stats/page.tsx      Detailed progress and performance
 ├── components/
-│   ├── dashboard/          Summary cards, RPG stat bars
-│   └── session/            Recall prompt, context prompt, review result, XP award
+│   ├── dashboard/          Character, quest, difficulty, and stat UI
+│   └── session/            Recall, context, speed, association, combat, results
 ├── hooks/
 │   ├── use-session.ts      Session state machine (idle → active → reviewing → complete)
 │   └── use-stats.ts        Live profile + due count from IndexedDB
@@ -62,8 +73,8 @@ src/
     ├── scheduler.ts        ts-fsrs wrapper (create, grade, query due cards)
     ├── session-engine.ts   Word selection, grading (edit distance + exact match), mode picking
     ├── gamification.ts     XP formula, leveling, HP decay, stat growth
-    ├── context-sentences.ts Sentence bank for Context Mode (34 sentences)
-    ├── seed-words.ts       50 curated Tier 1 vocabulary words
+    ├── context-sentences.ts Shared sentence bank for Context Mode
+    ├── seed-words.ts       321 seeded vocabulary words across three tiers
     ├── sounds.ts           Web Audio API synthesized sound effects
     └── types.ts            All TypeScript interfaces
 ```
@@ -73,9 +84,11 @@ src/
 ```bash
 npm install
 npm run dev
+npm run lint
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The database auto-seeds with 50 Tier 1 words on first launch.
+Open [http://localhost:3000](http://localhost:3000). The database auto-seeds on first launch and upgrades the local Dexie profile schema as new fields are added.
 
 ## Research Foundation
 
@@ -88,9 +101,7 @@ Built on research documented in the companion Obsidian vault:
 
 ## Roadmap
 
-- [ ] Speed Mode (timed rapid-fire rounds)
-- [ ] Association Mode (visual mnemonics for new words)
-- [ ] Expand word corpus from 50 to 200
-- [ ] PWA with offline support (Serwist)
 - [ ] Web Push notifications ("Your words are decaying")
 - [ ] Supabase for multi-device sync (if needed)
+- [ ] Automated tests for scheduler, session grading, and progression logic
+- [ ] More curated context sentences and association content

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,29 +10,30 @@ import type { ContextSentence } from "@/lib/types";
 
 interface ContextPromptProps {
   sentence: ContextSentence;
-  wordDisplay: string;
   onSubmit: (answer: string) => void;
 }
 
-export function ContextPrompt({
-  sentence,
-  wordDisplay,
-  onSubmit,
-}: ContextPromptProps) {
+function hashString(value: string) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index++) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function getChoices(sentence: ContextSentence) {
+  const seed = hashString(`${sentence.sentence}:${sentence.answer}`);
+
+  return [...sentence.distractors, sentence.answer].sort((left, right) => {
+    const leftScore = hashString(`${seed}:${left}`);
+    const rightScore = hashString(`${seed}:${right}`);
+    return leftScore - rightScore || left.localeCompare(right);
+  });
+}
+
+export function ContextPrompt({ sentence, onSubmit }: ContextPromptProps) {
   const [selected, setSelected] = useState<string | null>(null);
-
-  const choices = useMemo(() => {
-    const all = [...sentence.distractors, sentence.answer];
-    for (let i = all.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [all[i], all[j]] = [all[j], all[i]];
-    }
-    return all;
-  }, [sentence]);
-
-  useEffect(() => {
-    setSelected(null);
-  }, [sentence]);
+  const choices = getChoices(sentence);
 
   const parts = sentence.sentence.split(`**${sentence.weakWord}**`);
 

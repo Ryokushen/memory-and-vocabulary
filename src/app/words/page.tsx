@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/db";
 import { addWordWithCard } from "@/lib/scheduler";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -116,13 +116,25 @@ export default function WordsPage() {
   const [newDef, setNewDef] = useState("");
   const [newExample, setNewExample] = useState("");
 
-  const loadWords = async () => {
+  const loadWords = useCallback(async () => {
     const all = await db.words.toArray();
     setWords(all.sort((a, b) => a.word.localeCompare(b.word)));
-  };
+  }, []);
 
   useEffect(() => {
-    loadWords();
+    let cancelled = false;
+
+    async function loadInitialWords() {
+      const all = await db.words.toArray();
+      if (cancelled) return;
+      setWords(all.sort((a, b) => a.word.localeCompare(b.word)));
+    }
+
+    void loadInitialWords();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Filter by tier + search
@@ -173,7 +185,7 @@ export default function WordsPage() {
     setNewDef("");
     setNewExample("");
     setDialogOpen(false);
-    loadWords();
+    await loadWords();
   };
 
   const tierFilters: { key: TierFilter; label: string }[] = [

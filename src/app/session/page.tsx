@@ -22,6 +22,7 @@ export default function SessionPage() {
   const {
     state,
     currentWord,
+    sessionSeed,
     currentIndex,
     totalWords,
     results,
@@ -102,21 +103,30 @@ export default function SessionPage() {
   if (!currentWord) return null;
 
   const lastResult = results[results.length - 1] ?? null;
-
   return (
     <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
       <SessionProgress current={currentIndex} total={totalWords} results={results} currentMode={currentMode} />
 
-      <BattleScene totalWords={totalWords} results={results} lastResult={state === "reviewing" ? lastResult : null} />
+      <BattleScene
+        sessionSeed={sessionSeed}
+        totalWords={totalWords}
+        results={results}
+        lastResult={state === "reviewing" ? lastResult : null}
+      />
 
       {state === "active" && currentMode === "recall" && (
-        <RecallPrompt sessionWord={currentWord} onSubmit={submitAnswer} />
+        <RecallPrompt
+          key={currentWord.word.id}
+          sessionWord={currentWord}
+          onSubmit={submitAnswer}
+        />
       )}
 
       {state === "active" &&
         currentMode === "association" &&
         associationPhase && (
           <AssociationPrompt
+            key={`${currentWord.word.id}-${associationPhase}`}
             sessionWord={currentWord}
             phase={associationPhase}
             onSubmit={submitAnswer}
@@ -127,6 +137,7 @@ export default function SessionPage() {
         currentMode === "speed" &&
         currentSpeedChoices && (
           <SpeedPrompt
+            key={currentWord.word.id}
             sessionWord={currentWord}
             choices={currentSpeedChoices}
             onSubmit={submitAnswer}
@@ -137,8 +148,8 @@ export default function SessionPage() {
         currentMode === "context" &&
         currentContextSentence && (
           <ContextPrompt
+            key={currentContextSentence.sentence}
             sentence={currentContextSentence}
-            wordDisplay={currentWord.word.word}
             onSubmit={submitAnswer}
           />
         )}

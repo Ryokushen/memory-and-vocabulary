@@ -22,13 +22,12 @@ export function AssociationPrompt({ sessionWord, phase, onSubmit }: AssociationP
   const { word } = sessionWord;
 
   useEffect(() => {
-    setInput("");
     if (phase === "create") {
       textareaRef.current?.focus();
     } else {
       inputRef.current?.focus();
     }
-  }, [sessionWord, phase]);
+  }, [phase]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

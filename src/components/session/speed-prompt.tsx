@@ -20,14 +20,17 @@ interface SpeedPromptProps {
 export function SpeedPrompt({ sessionWord, choices, onSubmit }: SpeedPromptProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
-  const startTime = useRef(Date.now());
+  const onSubmitRef = useRef(onSubmit);
+  const startTime = useRef(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
   const submittedRef = useRef(false);
 
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
+
   // Reset on new word
   useEffect(() => {
-    setSelected(null);
-    setElapsed(0);
     startTime.current = Date.now();
     submittedRef.current = false;
 
@@ -39,12 +42,12 @@ export function SpeedPrompt({ sessionWord, choices, onSubmit }: SpeedPromptProps
       if (ms >= TIMEOUT_MS && !submittedRef.current) {
         submittedRef.current = true;
         clearInterval(timerRef.current);
-        onSubmit("__timeout__");
+        onSubmitRef.current("__timeout__");
       }
     }, 50);
 
     return () => clearInterval(timerRef.current);
-  }, [sessionWord, onSubmit]);
+  }, [sessionWord]);
 
   const handleSelect = (definition: string) => {
     if (selected || submittedRef.current) return;
@@ -52,7 +55,7 @@ export function SpeedPrompt({ sessionWord, choices, onSubmit }: SpeedPromptProps
     setSelected(definition);
     submittedRef.current = true;
     clearInterval(timerRef.current);
-    setTimeout(() => onSubmit(definition), 200);
+    setTimeout(() => onSubmitRef.current(definition), 200);
   };
 
   const pct = Math.max(0, 1 - elapsed / TIMEOUT_MS) * 100;

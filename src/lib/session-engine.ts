@@ -62,7 +62,6 @@ export function gradeContextAnswer(
 }
 
 const SPEED_FAST_MS = 3000;
-const SPEED_TIMEOUT_MS = 8000;
 
 /** Grade a speed mode answer: time-based rating. */
 export function gradeSpeedAnswer(
