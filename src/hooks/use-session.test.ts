@@ -10,8 +10,10 @@ const finalizeSessionMock = vi.hoisted(() => vi.fn());
 const pickModeMock = vi.hoisted(() => vi.fn());
 const getContextSentenceMock = vi.hoisted(() => vi.fn());
 const getSpeedChoicesMock = vi.hoisted(() => vi.fn());
+const createSessionIdMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/session-engine", () => ({
+  createSessionId: createSessionIdMock,
   loadSessionWords: loadSessionWordsMock,
   processAnswer: processAnswerMock,
   finalizeSession: finalizeSessionMock,
@@ -91,6 +93,7 @@ describe("useSession", () => {
     pickModeMock.mockReturnValue("recall");
     getContextSentenceMock.mockReturnValue(null);
     getSpeedChoicesMock.mockReturnValue(null);
+    createSessionIdMock.mockReturnValue("session-abc");
     finalizeSessionMock.mockResolvedValue({
       results: [],
       totalCorrect: 0,
@@ -164,5 +167,26 @@ describe("useSession", () => {
       });
       await secondAnswer.promise;
     });
+
+    expect(processAnswerMock).toHaveBeenNthCalledWith(
+      1,
+      words[0],
+      "word-1",
+      expect.any(Number),
+      "session-abc",
+      "recall",
+      undefined,
+      undefined,
+    );
+    expect(processAnswerMock).toHaveBeenNthCalledWith(
+      2,
+      words[1],
+      "word-2",
+      expect.any(Number),
+      "session-abc",
+      "recall",
+      undefined,
+      undefined,
+    );
   });
 });

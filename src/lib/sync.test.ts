@@ -128,9 +128,15 @@ function makeUser(): User {
   return { id: "user-1" } as User;
 }
 
-function makeReviewLog(wordId: number, reviewedAt: string, correct: boolean): {
+function makeReviewLog(
+  wordId: number,
+  reviewedAt: string,
+  correct: boolean,
+  sessionId?: string,
+): {
   id: number;
   wordId: number;
+  sessionId?: string;
   rating: 1 | 2 | 3 | 4;
   responseTimeMs: number;
   correct: boolean;
@@ -139,6 +145,7 @@ function makeReviewLog(wordId: number, reviewedAt: string, correct: boolean): {
   return {
     id: wordId,
     wordId,
+    sessionId,
     rating: correct ? 3 : 1,
     responseTimeMs: correct ? 1500 : 7000,
     correct,
@@ -260,6 +267,7 @@ describe("sync review logs", () => {
     expect(dbMock.reviewLogs.add).toHaveBeenCalledTimes(1);
     expect(dbMock.reviewLogs.add).toHaveBeenCalledWith({
       wordId: 2,
+      sessionId: undefined,
       rating: 1,
       responseTimeMs: 9000,
       correct: false,
@@ -411,7 +419,7 @@ describe("sync review logs", () => {
     });
   });
 
-  it("keeps same-day work from both devices by using merged review logs as profile floors", async () => {
+  it("keeps same-day work from both devices by using merged review-log session ids", async () => {
     tableState.profiles.exists = true;
     tableState.profiles.row = {
       id: "user-1",
@@ -434,6 +442,7 @@ describe("sync review logs", () => {
       {
         user_id: "user-1",
         word_key: "word-11",
+        session_id: "session-remote",
         rating: 3,
         response_time_ms: 1200,
         correct: true,
@@ -447,22 +456,23 @@ describe("sync review logs", () => {
     dbMock.reviewCards.toArray.mockResolvedValue([]);
 
     const localLogs = [
-      makeReviewLog(1, "2026-04-11T08:00:00.000Z", true),
-      makeReviewLog(2, "2026-04-11T08:01:00.000Z", true),
-      makeReviewLog(3, "2026-04-11T08:02:00.000Z", true),
-      makeReviewLog(4, "2026-04-11T08:03:00.000Z", true),
-      makeReviewLog(5, "2026-04-11T08:04:00.000Z", true),
-      makeReviewLog(6, "2026-04-11T08:05:00.000Z", true),
-      makeReviewLog(7, "2026-04-11T08:06:00.000Z", true),
-      makeReviewLog(8, "2026-04-11T08:07:00.000Z", true),
-      makeReviewLog(9, "2026-04-11T08:08:00.000Z", false),
-      makeReviewLog(10, "2026-04-11T08:09:00.000Z", false),
+      makeReviewLog(1, "2026-04-11T08:00:00.000Z", true, "session-local"),
+      makeReviewLog(2, "2026-04-11T08:01:00.000Z", true, "session-local"),
+      makeReviewLog(3, "2026-04-11T08:02:00.000Z", true, "session-local"),
+      makeReviewLog(4, "2026-04-11T08:03:00.000Z", true, "session-local"),
+      makeReviewLog(5, "2026-04-11T08:04:00.000Z", true, "session-local"),
+      makeReviewLog(6, "2026-04-11T08:05:00.000Z", true, "session-local"),
+      makeReviewLog(7, "2026-04-11T08:06:00.000Z", true, "session-local"),
+      makeReviewLog(8, "2026-04-11T08:07:00.000Z", true, "session-local"),
+      makeReviewLog(9, "2026-04-11T08:08:00.000Z", false, "session-local"),
+      makeReviewLog(10, "2026-04-11T08:09:00.000Z", false, "session-local"),
     ];
     dbMock.reviewLogs.toArray.mockImplementation(async () => localLogs);
     dbMock.reviewLogs.add.mockImplementation(async (log) => {
       localLogs.push({
         id: localLogs.length + 1,
         wordId: log.wordId,
+        sessionId: log.sessionId,
         rating: log.rating,
         responseTimeMs: log.responseTimeMs,
         correct: log.correct,

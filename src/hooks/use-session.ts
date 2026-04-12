@@ -10,6 +10,7 @@ import type {
   SessionSummary,
 } from "@/lib/types";
 import {
+  createSessionId,
   loadSessionWords,
   processAnswer,
   finalizeSession,
@@ -38,6 +39,7 @@ export function useSession() {
   const [currentSpeedChoices, setCurrentSpeedChoices] =
     useState<{ definitions: string[]; correctDefinition: string } | null>(null);
   const submittingRef = useRef(false);
+  const sessionIdRef = useRef<string | null>(null);
 
   const currentWord = words[currentIndex] ?? null;
   const sessionSeed = words[0]?.word.id ?? 0;
@@ -75,6 +77,7 @@ export function useSession() {
       return;
     }
     setWords(sessionWords);
+    sessionIdRef.current = createSessionId();
     setCurrentIndex(0);
     setResults([]);
     setSummary(null);
@@ -100,6 +103,7 @@ export function useSession() {
         currentWord,
         answer,
         responseTimeMs,
+        sessionIdRef.current ?? undefined,
         currentMode,
         expectedAnswer,
         manualRating,
@@ -153,6 +157,7 @@ export function useSession() {
 
   const resetSession = useCallback(() => {
     submittingRef.current = false;
+    sessionIdRef.current = null;
     setState("idle");
     setWords([]);
     setCurrentIndex(0);

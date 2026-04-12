@@ -28,6 +28,7 @@ export interface ReviewCard {
 export interface ReviewLog {
   id?: number;
   wordId: number;
+  sessionId?: string;
   rating: 1 | 2 | 3 | 4; // Again, Hard, Good, Easy
   responseTimeMs: number;
   correct: boolean;

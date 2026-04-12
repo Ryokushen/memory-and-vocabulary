@@ -41,6 +41,7 @@ type CloudReviewCardRow = {
 type CloudReviewLogRow = {
   user_id: string;
   word_key: string;
+  session_id?: string | null;
   rating: number;
   response_time_ms: number;
   correct: boolean;
@@ -66,6 +67,7 @@ type MergedReviewStats = {
   totalReviewed: number;
   totalCorrect: number;
   estimatedSessions: number;
+  sessionCountsByDay: Record<string, number>;
 };
 
 function getErrorMessage(error: unknown): string {
@@ -217,7 +219,7 @@ function pickMoreProgressedProfile(local: UserProfile, remote: UserProfile): Use
   return toMillis(local.updatedAt) >= toMillis(remote.updatedAt) ? local : remote;
 }
 
-function estimateSessionCount(logs: ReviewLog[]): number {
+function estimateLegacySessionCount(logs: ReviewLog[]): number {
   if (logs.length === 0) return 0;
 
   const sortedLogs = [...logs].sort(
@@ -246,11 +248,55 @@ function estimateSessionCount(logs: ReviewLog[]): number {
   return sessions;
 }
 
+function countSessionsByDay(logs: ReviewLog[]): Record<string, number> {
+  const counts = new Map<string, number>();
+  const logsBySessionId = new Map<string, ReviewLog[]>();
+  const legacyLogsByDay = new Map<string, ReviewLog[]>();
+
+  for (const log of logs) {
+    if (log.sessionId) {
+      const bucket = logsBySessionId.get(log.sessionId) ?? [];
+      bucket.push(log);
+      logsBySessionId.set(log.sessionId, bucket);
+      continue;
+    }
+
+    const dayKey = toLocalDateKey(log.reviewedAt);
+    const bucket = legacyLogsByDay.get(dayKey) ?? [];
+    bucket.push(log);
+    legacyLogsByDay.set(dayKey, bucket);
+  }
+
+  for (const sessionLogs of logsBySessionId.values()) {
+    const sorted = [...sessionLogs].sort(
+      (left, right) => left.reviewedAt.getTime() - right.reviewedAt.getTime(),
+    );
+    const dayKey = toLocalDateKey(sorted[0].reviewedAt);
+    counts.set(dayKey, (counts.get(dayKey) ?? 0) + 1);
+  }
+
+  for (const [dayKey, legacyLogs] of legacyLogsByDay.entries()) {
+    counts.set(dayKey, (counts.get(dayKey) ?? 0) + estimateLegacySessionCount(legacyLogs));
+  }
+
+  return Object.fromEntries(counts);
+}
+
+function estimateSessionCount(logs: ReviewLog[]): number {
+  const explicitSessionIds = new Set(
+    logs.flatMap((log) => (log.sessionId ? [log.sessionId] : [])),
+  );
+  const legacyLogs = logs.filter((log) => !log.sessionId);
+
+  return explicitSessionIds.size + estimateLegacySessionCount(legacyLogs);
+}
+
 function summarizeMergedReviewLogs(logs: ReviewLog[]): MergedReviewStats {
   return {
     totalReviewed: logs.length,
     totalCorrect: logs.filter((log) => log.correct).length,
     estimatedSessions: estimateSessionCount(logs),
+    sessionCountsByDay: countSessionsByDay(logs),
   };
 }
 
@@ -293,7 +339,16 @@ function mergeProfiles(
       reviewedFloor > Math.max(local.totalReviewed, remote.totalReviewed)
       || correctFloor > Math.max(local.totalCorrect, remote.totalCorrect)
     );
+  const latestDaySessions = latestSessionDate
+    ? (mergedReviewStats?.sessionCountsByDay[latestSessionDate] ?? 0)
+    : 0;
   let totalSessions = Math.max(local.totalSessions, remote.totalSessions, sessionFloor);
+  if (sameLatestSessionDay && latestDaySessions > 1) {
+    totalSessions = Math.max(
+      totalSessions,
+      Math.max(local.totalSessions, remote.totalSessions) + latestDaySessions - 1,
+    );
+  }
   if (independentSameDayWork) {
     totalSessions = Math.max(
       totalSessions,
@@ -410,6 +465,7 @@ async function reconcileReviewLogs(
 
     await db.reviewLogs.add({
       wordId,
+      sessionId: row.session_id ?? undefined,
       rating: row.rating as 1 | 2 | 3 | 4,
       responseTimeMs: row.response_time_ms,
       correct: row.correct,
@@ -545,6 +601,7 @@ async function pushReviewLogs(user: User) {
     .map((log) => ({
       user_id: user.id,
       word_key: wordMap.get(log.wordId)!,
+      session_id: log.sessionId ?? null,
       rating: log.rating,
       response_time_ms: log.responseTimeMs,
       correct: log.correct,

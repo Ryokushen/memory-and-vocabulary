@@ -18,6 +18,14 @@ import { DIFFICULTY_CONFIG, TIER_UNLOCK_LEVELS } from "./types";
 
 const BATCH_SIZE = 4; // working memory capacity
 
+export function createSessionId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `session-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 /** Levenshtein distance for fuzzy matching. */
 function editDistance(a: string, b: string): number {
   const m = a.length;
@@ -231,6 +239,7 @@ export async function processAnswer(
   sessionWord: SessionWord,
   answer: string,
   responseTimeMs: number,
+  sessionId?: string,
   mode: GameMode = "recall",
   contextExpected?: string,
   manualRating?: 1 | 2 | 3 | 4,
@@ -268,6 +277,7 @@ export async function processAnswer(
   // Log the review
   const log: ReviewLog = {
     wordId: sessionWord.word.id!,
+    sessionId,
     rating,
     responseTimeMs,
     correct,

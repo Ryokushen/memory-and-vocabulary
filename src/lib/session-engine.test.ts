@@ -37,6 +37,7 @@ vi.mock("./gamification", () => ({
 
 import {
   autoGrade,
+  createSessionId,
   finalizeSession,
   getAvailableNewCount,
   getSpeedChoices,
@@ -185,6 +186,7 @@ describe("session engine", () => {
       sessionWord,
       "any mnemonic",
       2000,
+      "session-1",
       "association",
       "__create__",
     );
@@ -199,8 +201,20 @@ describe("session engine", () => {
     });
     expect(schedulerMock.gradeCard).toHaveBeenCalledWith(sessionWord.reviewCard, 3);
     expect(dbMock.reviewLogs.add).toHaveBeenCalledWith(
-      expect.objectContaining({ wordId: 1, rating: 3, correct: true }),
+      expect.objectContaining({
+        wordId: 1,
+        sessionId: "session-1",
+        rating: 3,
+        correct: true,
+      }),
     );
+  });
+
+  it("creates a stable session id string", () => {
+    const sessionId = createSessionId();
+
+    expect(sessionId).toEqual(expect.any(String));
+    expect(sessionId.length).toBeGreaterThan(8);
   });
 
   it("limits new words per day based on difficulty and words introduced today", async () => {

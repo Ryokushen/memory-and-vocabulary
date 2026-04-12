@@ -28,6 +28,13 @@ db.version(2).stores({
   });
 });
 
+db.version(3).stores({
+  words: "++id, word, tier",
+  reviewCards: "++id, wordId, card.due, card.state",
+  reviewLogs: "++id, wordId, reviewedAt, sessionId",
+  userProfile: "id",
+});
+
 export { db };
 
 // ── Default profile ─────────────────────────────────────────────────────
