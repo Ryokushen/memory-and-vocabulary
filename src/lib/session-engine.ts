@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { toLocalDateKey } from "./date";
 import { getDueCards, getNewCards, gradeCard, Rating } from "./scheduler";
 import { completeSession } from "./gamification";
 import { CONTEXT_SENTENCES } from "./context-sentences";
@@ -137,11 +138,11 @@ export function getUnlockedTiers(level: number): (1 | 2 | 3 | "custom")[] {
 
 /** Count how many new words were introduced today. */
 async function getNewWordsIntroducedToday(): Promise<number> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toLocalDateKey(new Date());
   const logs = await db.reviewLogs.toArray();
   // Count unique wordIds reviewed today that were first-time reviews
   const todayLogs = logs.filter(
-    (l) => l.reviewedAt.toISOString().slice(0, 10) === today,
+    (l) => toLocalDateKey(l.reviewedAt) === today,
   );
   const wordIds = new Set(todayLogs.map((l) => l.wordId));
 
@@ -152,7 +153,7 @@ async function getNewWordsIntroducedToday(): Promise<number> {
     const firstReview = allLogsForWord.sort(
       (a, b) => a.reviewedAt.getTime() - b.reviewedAt.getTime(),
     )[0];
-    if (firstReview && firstReview.reviewedAt.toISOString().slice(0, 10) === today) {
+    if (firstReview && toLocalDateKey(firstReview.reviewedAt) === today) {
       newCount++;
     }
   }

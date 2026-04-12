@@ -30,6 +30,7 @@ All notable changes to this project should be documented in this file.
 - Review logs now sync to Supabase so daily new-word limits stay consistent across browsers and login pulls no longer duplicate existing local logs
 - Cloud sync now reconciles profile progress, review-card state, and word associations before pushing so newer cross-device changes win instead of being overwritten
 - Added a Supabase migration for the `review_logs` table, indexes, and RLS policies required by review-log sync, including compatibility upgrades for older table shapes
+- Daily new-word limits and streak/day tracking now use the player’s local calendar day instead of UTC rollover
 - Stats page "Words Due" → "To Review" (only counts previously-seen cards past due date)
 - Updated `README.md` to reflect the shipped feature set
 - Adjusted ESLint ignores so generated Serwist service worker artifacts in `public/` no longer pollute lint results

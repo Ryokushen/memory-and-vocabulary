@@ -1,4 +1,5 @@
 import { db, getOrCreateProfile } from "./db";
+import { diffDateKeys, toLocalDateKey } from "./date";
 import { supabase } from "./supabase";
 import { pushToCloud } from "./sync";
 import type { RPGStats, SessionResult, SessionSummary, UserProfile } from "./types";
@@ -89,7 +90,7 @@ export async function completeSession(
   results: SessionResult[],
 ): Promise<SessionSummary> {
   const profile = await getOrCreateProfile();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toLocalDateKey(new Date());
 
   // Calculate gains
   const xpEarned = calculateSessionXP(results);
@@ -103,23 +104,14 @@ export async function completeSession(
   // HP decay for missed days
   let hp = profile.hp;
   if (profile.lastSessionDate && profile.lastSessionDate !== today) {
-    const lastDate = new Date(profile.lastSessionDate);
-    const todayDate = new Date(today);
-    const daysMissed =
-      Math.floor(
-        (todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
-      ) - 1;
+    const daysMissed = diffDateKeys(today, profile.lastSessionDate) - 1;
     hp = decayHP(hp, profile.maxHp, daysMissed);
   }
 
   // Streak
   let streak = profile.currentStreak;
   if (profile.lastSessionDate) {
-    const lastDate = new Date(profile.lastSessionDate);
-    const todayDate = new Date(today);
-    const dayDiff = Math.floor(
-      (todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
+    const dayDiff = diffDateKeys(today, profile.lastSessionDate);
     if (dayDiff === 1) {
       streak += 1;
     } else if (dayDiff > 1) {
