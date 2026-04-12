@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import type {
   ContextSentence,
   GameMode,
@@ -40,6 +40,11 @@ export function useSession() {
     useState<{ definitions: string[]; correctDefinition: string } | null>(null);
   const submittingRef = useRef(false);
   const sessionIdRef = useRef<string | null>(null);
+  const stateRef = useRef<SessionState>("idle");
+  const resultsRef = useRef<SessionResult[]>([]);
+  const summaryRef = useRef<SessionSummary | null>(null);
+  const partialCommitPromiseRef = useRef<Promise<void> | null>(null);
+  const partialCommitDoneRef = useRef(false);
 
   const currentWord = words[currentIndex] ?? null;
   const sessionSeed = words[0]?.word.id ?? 0;
@@ -49,6 +54,18 @@ export function useSession() {
     currentMode === "association" && currentWord
       ? currentWord.word.association ? "recall" : "create"
       : null;
+
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
+    resultsRef.current = results;
+  }, [results]);
+
+  useEffect(() => {
+    summaryRef.current = summary;
+  }, [summary]);
 
   const configurePrompt = useCallback((word: SessionWord, allWords: SessionWord[]) => {
     const mode = pickMode(word.word);
@@ -71,6 +88,8 @@ export function useSession() {
   const startSession = useCallback(async (difficulty?: "easy" | "normal" | "hard", level?: number) => {
     setState("loading");
     submittingRef.current = false;
+    partialCommitDoneRef.current = false;
+    partialCommitPromiseRef.current = null;
     const sessionWords = await loadSessionWords(difficulty ?? "normal", level ?? 1);
     if (sessionWords.length === 0) {
       setState("idle");
@@ -86,6 +105,39 @@ export function useSession() {
 
     setState("active");
   }, [configurePrompt]);
+
+  const commitPartialSession = useCallback(async () => {
+    if (partialCommitDoneRef.current) {
+      return partialCommitPromiseRef.current ?? Promise.resolve();
+    }
+
+    const currentState = stateRef.current;
+    const currentResults = resultsRef.current;
+
+    if (
+      (currentState !== "active" && currentState !== "reviewing")
+      || currentResults.length === 0
+      || summaryRef.current
+    ) {
+      partialCommitDoneRef.current = true;
+      return;
+    }
+
+    const commitPromise = finalizeSession(currentResults)
+      .then((sessionSummary) => {
+        summaryRef.current = sessionSummary;
+      })
+      .catch((error) => {
+        console.error("Partial session commit failed:", error);
+        throw error;
+      })
+      .finally(() => {
+        partialCommitDoneRef.current = true;
+      });
+
+    partialCommitPromiseRef.current = commitPromise.then(() => {});
+    return partialCommitPromiseRef.current;
+  }, []);
 
   async function submitAnswer(answer: string, manualRating?: 1 | 2 | 3 | 4) {
     if (!currentWord || state !== "active" || submittingRef.current) return;
@@ -158,6 +210,9 @@ export function useSession() {
   const resetSession = useCallback(() => {
     submittingRef.current = false;
     sessionIdRef.current = null;
+    partialCommitDoneRef.current = false;
+    partialCommitPromiseRef.current = null;
+    summaryRef.current = null;
     setState("idle");
     setWords([]);
     setCurrentIndex(0);
@@ -167,6 +222,12 @@ export function useSession() {
     setCurrentContextSentence(null);
     setCurrentSpeedChoices(null);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      void commitPartialSession();
+    };
+  }, [commitPartialSession]);
 
   return {
     state,
@@ -185,5 +246,6 @@ export function useSession() {
     submitAnswer,
     nextWord,
     resetSession,
+    commitPartialSession,
   };
 }

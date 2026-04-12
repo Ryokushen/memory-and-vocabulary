@@ -189,4 +189,45 @@ describe("useSession", () => {
       undefined,
     );
   });
+
+  it("commits answered words when the session is abandoned before completion", async () => {
+    const words = [makeSessionWord(1), makeSessionWord(2)];
+    loadSessionWordsMock.mockResolvedValue(words);
+    processAnswerMock.mockResolvedValue({
+      result: makeResult(1),
+      updatedCard: words[0].reviewCard,
+    });
+
+    const partialSummary: SessionSummary = {
+      results: [makeResult(1)],
+      totalCorrect: 1,
+      totalWords: 1,
+      xpEarned: 65,
+      leveledUp: false,
+      statGains: {},
+      averageResponseTimeMs: 1000,
+    };
+    finalizeSessionMock.mockResolvedValue(partialSummary);
+
+    const { result, unmount } = renderHook(() => useSession());
+
+    await act(async () => {
+      await result.current.startSession("normal", 1);
+    });
+
+    await act(async () => {
+      await result.current.submitAnswer("word-1");
+    });
+
+    expect(result.current.state).toBe("reviewing");
+
+    await act(async () => {
+      unmount();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(finalizeSessionMock).toHaveBeenCalledTimes(1);
+    expect(finalizeSessionMock).toHaveBeenCalledWith([makeResult(1)]);
+  });
 });
