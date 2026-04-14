@@ -48,7 +48,11 @@ import {
   processAnswer,
 } from "./session-engine";
 
-function makeWord(id: number, tier: Word["tier"] = 1): Word {
+function makeWord(
+  id: number,
+  tier: Word["tier"] = 1,
+  totCapture?: Word["totCapture"],
+): Word {
   return {
     id,
     word: `word-${id}`,
@@ -64,11 +68,12 @@ function makeWord(id: number, tier: Word["tier"] = 1): Word {
         distractors: ["other-1", "other-2", "other-3"],
       },
     ],
+    totCapture,
     createdAt: new Date("2026-04-01T00:00:00.000Z"),
   };
 }
 
-function makeReviewCard(wordId: number): ReviewCard {
+function makeReviewCard(wordId: number, state: number = 0): ReviewCard {
   return {
     id: wordId,
     wordId,
@@ -80,7 +85,7 @@ function makeReviewCard(wordId: number): ReviewCard {
       scheduled_days: 0,
       reps: 0,
       lapses: 0,
-      state: 0,
+      state,
       last_review: undefined,
       learning_steps: 0,
     },
@@ -232,6 +237,35 @@ describe("session engine", () => {
     expect(ratios.recall).toBeLessThan(0.45);
   });
 
+  it("biases TOT-captured words toward recall and rapid retrieval", () => {
+    const word = makeWord(1, 1, {
+      source: "speech",
+      weakSubstitute: "thing",
+      context: "I kept saying thing instead of the right word.",
+      capturedAt: "2026-04-10T08:00:00.000Z",
+      count: 2,
+    });
+    const counts = {
+      recall: 0,
+      context: 0,
+      speed: 0,
+      association: 0,
+    };
+
+    for (let index = 0; index < 20000; index++) {
+      counts[pickMode(word)]++;
+    }
+
+    const ratios = Object.fromEntries(
+      Object.entries(counts).map(([mode, count]) => [mode, count / 20000]),
+    );
+
+    expect(ratios.recall).toBeGreaterThan(0.45);
+    expect(ratios.speed).toBeGreaterThan(0.3);
+    expect(ratios.context).toBeLessThan(0.2);
+    expect(ratios.association).toBeLessThan(0.15);
+  });
+
   it("always grades association create prompts as Good", async () => {
     const sessionWord = makeSessionWord(1);
     const updatedCard = makeReviewCard(1);
@@ -359,6 +393,41 @@ describe("session engine", () => {
     expect(sessionWords).toHaveLength(1);
     expect(sessionWords[0].word.tier).toBe(3);
     expect(schedulerMock.getNewCards).toHaveBeenCalledWith(5, [1, "custom"]);
+  });
+
+  it("prioritizes TOT-captured words within due and new buckets", async () => {
+    schedulerMock.getDueCards.mockResolvedValue([
+      makeReviewCard(1, 1),
+      makeReviewCard(2, 1),
+    ]);
+    schedulerMock.getNewCards.mockResolvedValue([
+      makeReviewCard(3, 0),
+      makeReviewCard(4, 0),
+    ]);
+    dbMock.reviewLogs.toArray.mockResolvedValue([]);
+    dbMock.words.get.mockImplementation(async (wordId: number) => {
+      if (wordId === 2) {
+        return makeWord(2, 1, {
+          source: "speech",
+          capturedAt: "2026-04-10T09:00:00.000Z",
+          count: 1,
+        });
+      }
+
+      if (wordId === 4) {
+        return makeWord(4, 1, {
+          source: "writing",
+          capturedAt: "2026-04-10T10:00:00.000Z",
+          count: 3,
+        });
+      }
+
+      return makeWord(wordId);
+    });
+
+    const sessionWords = await loadSessionWords("easy", 1);
+
+    expect(sessionWords.map((entry) => entry.word.id)).toEqual([2, 1, 4, 3]);
   });
 
   it("returns only the new words available today for the selected difficulty", async () => {

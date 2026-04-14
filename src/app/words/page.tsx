@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -26,11 +27,12 @@ import {
   Search,
 } from "lucide-react";
 import { useStats } from "@/hooks/use-stats";
-import type { Word } from "@/lib/types";
-import { TIER_UNLOCK_LEVELS } from "@/lib/types";
+import type { TOTCaptureSource, Word } from "@/lib/types";
+import { TIER_UNLOCK_LEVELS, TOT_CAPTURE_SOURCES } from "@/lib/types";
 import {
   isDuplicateWord,
   isTierLocked,
+  normalizeWord,
   type LibraryTierFilter,
 } from "@/lib/word-library";
 
@@ -50,6 +52,40 @@ const TIER_INFO: Record<string, { label: string; color: string; bg: string; bord
   custom: { label: "Custom", color: "text-amber-500", bg: "bg-amber-500", border: "border-l-amber-500/40" },
 };
 
+const TOT_SOURCE_LABELS: Record<TOTCaptureSource, string> = {
+  speech: "Speech",
+  writing: "Writing",
+  reading: "Reading",
+  meeting: "Meeting",
+  other: "Other",
+};
+
+const INITIAL_TOT_FORM = {
+  word: "",
+  definition: "",
+  weakSubstitute: "",
+  context: "",
+  source: "speech" as TOTCaptureSource,
+};
+
+function trimOptional(value: string): string | undefined {
+  const trimmed = value.trim();
+  return trimmed || undefined;
+}
+
+function formatCaptureDate(capturedAt: string): string {
+  const parsed = new Date(capturedAt);
+  if (Number.isNaN(parsed.getTime())) {
+    return "Unknown";
+  }
+
+  return parsed.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 // ── Word row ───────────────────────────────────────────────────────────
 
 function WordRow({ word, isExpanded, onToggle }: { word: Word; isExpanded: boolean; onToggle: () => void }) {
@@ -68,6 +104,14 @@ function WordRow({ word, isExpanded, onToggle }: { word: Word; isExpanded: boole
         >
           {word.tier === "custom" ? "Custom" : `T${word.tier}`}
         </Badge>
+        {word.totCapture && (
+          <Badge
+            variant="outline"
+            className="text-[10px] border border-amber-500/30 bg-amber-500/10 text-amber-500 shrink-0"
+          >
+            TOT x{word.totCapture.count}
+          </Badge>
+        )}
         <span className="text-sm text-muted-foreground truncate flex-1">{word.definition}</span>
         <ChevronDown className={`size-3.5 text-muted-foreground shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
       </button>
@@ -105,6 +149,42 @@ function WordRow({ word, isExpanded, onToggle }: { word: Word; isExpanded: boole
                   ))}
                 </div>
               )}
+
+              {word.totCapture && (
+                <div className="space-y-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="size-4 text-amber-500" />
+                    <p className="text-xs uppercase tracking-widest text-amber-500 font-medium">
+                      Blanking Capture
+                    </p>
+                    <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-500">
+                      {word.totCapture.count} logged
+                    </Badge>
+                  </div>
+                  <div className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
+                    <p>
+                      <span className="text-foreground">Source:</span>{" "}
+                      {TOT_SOURCE_LABELS[word.totCapture.source]}
+                    </p>
+                    <p>
+                      <span className="text-foreground">Last captured:</span>{" "}
+                      {formatCaptureDate(word.totCapture.capturedAt)}
+                    </p>
+                  </div>
+                  {word.totCapture.weakSubstitute && (
+                    <p className="text-sm text-muted-foreground">
+                      <span className="text-foreground">Used instead:</span>{" "}
+                      {word.totCapture.weakSubstitute}
+                    </p>
+                  )}
+                  {word.totCapture.context && (
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      <span className="text-foreground">Context:</span>{" "}
+                      {word.totCapture.context}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
@@ -124,12 +204,20 @@ export default function WordsPage() {
   const [activeTier, setActiveTier] = useState<LibraryTierFilter>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [totDialogOpen, setTotDialogOpen] = useState(false);
 
   const [newWord, setNewWord] = useState("");
   const [newDef, setNewDef] = useState("");
   const [newExample, setNewExample] = useState("");
+  const [totForm, setTotForm] = useState(INITIAL_TOT_FORM);
   const duplicateWord = isDuplicateWord(newWord, words);
   const selectedTierLocked = isTierLocked(activeTier, playerLevel);
+  const normalizedTOTWord = normalizeWord(totForm.word);
+  const existingTOTWord = useMemo(
+    () => words.find((word) => normalizeWord(word.word) === normalizedTOTWord),
+    [normalizedTOTWord, words],
+  );
+  const totNeedsDefinition = Boolean(normalizedTOTWord) && !existingTOTWord;
 
   const loadWords = useCallback(async () => {
     const all = await db.words.toArray();
@@ -154,14 +242,22 @@ export default function WordsPage() {
 
   // Filter by tier + search
   const filtered = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
     return words
       .filter((w) => activeTier === "all" || w.tier === activeTier)
-      .filter(
-        (w) =>
-          !search ||
-          w.word.toLowerCase().includes(search.toLowerCase()) ||
-          w.definition.toLowerCase().includes(search.toLowerCase()),
-      );
+      .filter((w) => {
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        return [
+          w.word,
+          w.definition,
+          w.totCapture?.weakSubstitute,
+          w.totCapture?.context,
+        ].some((value) => value?.toLowerCase().includes(normalizedSearch));
+      });
   }, [words, activeTier, search]);
 
   // Group by tier for "all" view
@@ -200,6 +296,58 @@ export default function WordsPage() {
     setNewDef("");
     setNewExample("");
     setDialogOpen(false);
+    await loadWords();
+  };
+
+  const resetTOTForm = useCallback(() => {
+    setTotForm(INITIAL_TOT_FORM);
+  }, []);
+
+  const handleTOTDialogChange = useCallback((open: boolean) => {
+    setTotDialogOpen(open);
+    if (!open) {
+      resetTOTForm();
+    }
+  }, [resetTOTForm]);
+
+  const handleCaptureTOT = async () => {
+    const targetWord = totForm.word.trim();
+    const definition = totForm.definition.trim();
+    if (!targetWord || (totNeedsDefinition && !definition)) return;
+
+    const weakSubstitute = trimOptional(totForm.weakSubstitute);
+    const context = trimOptional(totForm.context);
+    const capturedAt = new Date().toISOString();
+
+    if (existingTOTWord?.id) {
+      await db.words.update(existingTOTWord.id, {
+        totCapture: {
+          source: totForm.source,
+          weakSubstitute,
+          context,
+          capturedAt,
+          count: (existingTOTWord.totCapture?.count ?? 0) + 1,
+        },
+      });
+    } else {
+      await addWordWithCard({
+        word: targetWord,
+        definition,
+        examples: context ? [context] : [],
+        tier: "custom",
+        synonyms: [],
+        totCapture: {
+          source: totForm.source,
+          weakSubstitute,
+          context,
+          capturedAt,
+          count: 1,
+        },
+        createdAt: new Date(),
+      });
+    }
+
+    handleTOTDialogChange(false);
     await loadWords();
   };
 
@@ -274,53 +422,150 @@ export default function WordsPage() {
             </p>
           </div>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger render={<Button size="sm" className="gap-1.5" />}>
-            <Plus className="size-3.5" />
-            Add Word
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Custom Word</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-3 pt-3">
-              <Input
-                placeholder="Word"
-                value={newWord}
-                onChange={(e) => setNewWord(e.target.value)}
-              />
-              {duplicateWord && (
-                <p className="text-sm text-red-500">
-                  This word is already in your library.
-                </p>
-              )}
-              <Input
-                placeholder="Definition"
-                value={newDef}
-                onChange={(e) => setNewDef(e.target.value)}
-              />
-              <Input
-                placeholder="Example sentence (optional)"
-                value={newExample}
-                onChange={(e) => setNewExample(e.target.value)}
-              />
-              <Button
-                onClick={handleAdd}
-                className="w-full"
-                disabled={!newWord.trim() || !newDef.trim() || duplicateWord}
-              >
-                Add to Library
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <div className="flex items-center gap-2">
+          <Dialog open={totDialogOpen} onOpenChange={handleTOTDialogChange}>
+            <DialogTrigger render={<Button size="sm" variant="outline" className="gap-1.5" />}>
+              <AlertTriangle className="size-3.5" />
+              Capture TOT
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Capture Blanking Moment</DialogTitle>
+                <DialogDescription>
+                  Save the exact word that stalled, what you used instead, and where it happened.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3 pt-1">
+                <Input
+                  placeholder="Target word"
+                  value={totForm.word}
+                  onChange={(event) =>
+                    setTotForm((current) => ({ ...current, word: event.target.value }))
+                  }
+                />
+                {normalizedTOTWord && (
+                  existingTOTWord ? (
+                    <p className="text-sm text-emerald-500">
+                      This word is already in your library. Saving here will reinforce that entry.
+                    </p>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      This will create a new custom word, so add a definition before saving.
+                    </p>
+                  )
+                )}
+                {totNeedsDefinition && (
+                  <Input
+                    placeholder="Definition"
+                    value={totForm.definition}
+                    onChange={(event) =>
+                      setTotForm((current) => ({ ...current, definition: event.target.value }))
+                    }
+                  />
+                )}
+                <Input
+                  placeholder="What you said instead (optional)"
+                  value={totForm.weakSubstitute}
+                  onChange={(event) =>
+                    setTotForm((current) => ({
+                      ...current,
+                      weakSubstitute: event.target.value,
+                    }))
+                  }
+                />
+                <div className="space-y-1.5">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                    Context
+                  </label>
+                  <textarea
+                    value={totForm.context}
+                    onChange={(event) =>
+                      setTotForm((current) => ({ ...current, context: event.target.value }))
+                    }
+                    placeholder="Where did it happen? Paste the sentence or describe the moment."
+                    className="flex min-h-24 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground/70 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground font-medium">
+                    Source
+                  </label>
+                  <select
+                    value={totForm.source}
+                    onChange={(event) =>
+                      setTotForm((current) => ({
+                        ...current,
+                        source: event.target.value as TOTCaptureSource,
+                      }))
+                    }
+                    className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    {TOT_CAPTURE_SOURCES.map((source) => (
+                      <option key={source} value={source}>
+                        {TOT_SOURCE_LABELS[source]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Button
+                  onClick={handleCaptureTOT}
+                  className="w-full gap-2"
+                  disabled={!totForm.word.trim() || (totNeedsDefinition && !totForm.definition.trim())}
+                >
+                  <AlertTriangle className="size-4" />
+                  Save Blanking Moment
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger render={<Button size="sm" className="gap-1.5" />}>
+              <Plus className="size-3.5" />
+              Add Word
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Custom Word</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 pt-3">
+                <Input
+                  placeholder="Word"
+                  value={newWord}
+                  onChange={(e) => setNewWord(e.target.value)}
+                />
+                {duplicateWord && (
+                  <p className="text-sm text-red-500">
+                    This word is already in your library.
+                  </p>
+                )}
+                <Input
+                  placeholder="Definition"
+                  value={newDef}
+                  onChange={(e) => setNewDef(e.target.value)}
+                />
+                <Input
+                  placeholder="Example sentence (optional)"
+                  value={newExample}
+                  onChange={(e) => setNewExample(e.target.value)}
+                />
+                <Button
+                  onClick={handleAdd}
+                  className="w-full"
+                  disabled={!newWord.trim() || !newDef.trim() || duplicateWord}
+                >
+                  Add to Library
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
-          placeholder="Search words or definitions..."
+          placeholder="Search words, definitions, or blanking notes..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9 h-9 text-sm bg-muted/30 border-border/50"

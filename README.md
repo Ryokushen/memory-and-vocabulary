@@ -21,6 +21,7 @@ What it does not currently claim:
 
 - 531 seeded words across three tiers, plus custom words
 - Four live training modes: Recall, Context, Rapid Retrieval, and Association
+- TOT capture flow for real-world blanking moments, including source, weak substitute, and context
 - Difficulty settings that control daily new-word intake
 - Tier gating that unlocks harder vocabulary as the player levels up
 - Local-first storage with Dexie/IndexedDB
@@ -36,6 +37,15 @@ What it does not currently claim:
 | **Context** | Word choice in context | Type a stronger replacement first, then fall back to assisted options only if needed. |
 | **Rapid Retrieval** | Fast verbal access | See a definition, type the word under a 5 second timer, and recover with a rescue cue if needed. |
 | **Association** | Elaborative encoding | Create a vivid text association for a word, then later recall from that association. |
+
+## Real-World Capture Loop
+
+Lexforge now supports a dedicated TOT capture flow in the word library.
+
+- Log the exact word that stalled in real life.
+- Record what you said instead, the surrounding context, and where it happened.
+- Save it onto an existing library word or create a new custom word on the spot.
+- Surface those captured words earlier in sessions, with extra bias toward Recall and Rapid Retrieval.
 
 ## RPG Layer
 
@@ -75,7 +85,7 @@ src/
 |-- app/                    Next.js App Router pages
 |   |-- page.tsx            Dashboard
 |   |-- session/page.tsx    Active training session
-|   |-- words/page.tsx      Word library and custom word creation
+|   |-- words/page.tsx      Word library, custom word creation, and TOT capture
 |   `-- stats/page.tsx      Progress and performance views
 |-- components/
 |   |-- dashboard/          Character, quest, difficulty, and stat UI
@@ -103,14 +113,14 @@ npm run lint
 npm run build
 ```
 
-Create `.env.local` with your Supabase project URL and anon key:
+If you want GitHub auth and cloud sync, create `.env.local` with your Supabase project URL and anon key:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The database auto-seeds on first launch and upgrades the local Dexie profile schema as new fields are added. If you sign in with GitHub, Lexforge also syncs profile state, review cards, review logs, and word associations to Supabase.
+Open [http://localhost:3000](http://localhost:3000). The database auto-seeds on first launch and upgrades the local Dexie profile schema as new fields are added. Without Supabase env vars, Lexforge stays fully local. If you sign in with GitHub, it also syncs profile state, review cards, review logs, and word associations to Supabase.
 
 ## Research Notes
 
@@ -132,6 +142,5 @@ The app intentionally avoids stronger claims until the mechanics and data suppor
 
 - cue-aware grading and review-log fields
 - production-first context mode with MCQ fallback
-- TOT capture flow for real-world misses
 - adaptive use of RPG stats in session generation
 - broader automated coverage and runtime verification

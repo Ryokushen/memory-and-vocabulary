@@ -136,14 +136,62 @@ export function getContextSentence(word: Word): ContextSentence | null {
   return null;
 }
 
+function getTOTCaptureTimestamp(word: Word): number {
+  if (!word.totCapture?.capturedAt) {
+    return 0;
+  }
+
+  const parsed = new Date(word.totCapture.capturedAt).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function prioritizeSessionWords(sessionWords: SessionWord[]): SessionWord[] {
+  return [...sessionWords].sort((left, right) => {
+    const leftIsNew = left.reviewCard.card.state === 0 ? 1 : 0;
+    const rightIsNew = right.reviewCard.card.state === 0 ? 1 : 0;
+    if (leftIsNew !== rightIsNew) {
+      return leftIsNew - rightIsNew;
+    }
+
+    const leftHasTOT = left.word.totCapture ? 0 : 1;
+    const rightHasTOT = right.word.totCapture ? 0 : 1;
+    if (leftHasTOT !== rightHasTOT) {
+      return leftHasTOT - rightHasTOT;
+    }
+
+    const countDelta =
+      (right.word.totCapture?.count ?? 0) - (left.word.totCapture?.count ?? 0);
+    if (countDelta !== 0) {
+      return countDelta;
+    }
+
+    const recencyDelta =
+      getTOTCaptureTimestamp(right.word) - getTOTCaptureTimestamp(left.word);
+    if (recencyDelta !== 0) {
+      return recencyDelta;
+    }
+
+    return left.word.word.localeCompare(right.word.word);
+  });
+}
+
 /** Decide game mode for a session word. Mix of all four modes. */
 export function pickMode(word: Word, forceMode?: GameMode): GameMode {
   if (forceMode) return forceMode;
   const roll = Math.random();
+  const hasTOTCapture = Boolean(word.totCapture);
+  const hasContext = getContextSentence(word) !== null;
+
+  if (hasTOTCapture) {
+    if (roll < 0.5) return "recall";
+    if (roll < 0.85) return "speed";
+    if (hasContext && roll < 0.95) return "context";
+    return "association";
+  }
+
   // ~15% association, ~15% speed, ~30% context (if available), ~40% recall
   if (roll < 0.15) return "association";
   if (roll < 0.30) return "speed";
-  const hasContext = getContextSentence(word) !== null;
   if (hasContext && roll < 0.60) return "context";
   return "recall";
 }
@@ -217,7 +265,7 @@ export async function loadSessionWords(
     }
   }
 
-  return sessionWords;
+  return prioritizeSessionWords(sessionWords);
 }
 
 /** Get the count of new words currently available under today's limits. */

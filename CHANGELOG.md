@@ -16,7 +16,8 @@ All notable changes to this project should be documented in this file.
 - Auth button in nav bar with user menu and sync status
 - Rapid Retrieval mode now uses a typed definition-to-word prompt with a rescue cue and stricter grading for assisted and near-miss answers
 - Context mode now starts with typed replacement before offering assisted multiple-choice fallback
-- Automated coverage now spans 43 tests across scheduler, session, sync, and hook logic
+- TOT capture flow in the word library now records real-world blanking moments with source, weak substitute, and context, and can create a new custom word if needed
+- Automated coverage now spans 48 tests across scheduler, session, sync, and hook logic
 
 ### Changed
 
@@ -38,6 +39,8 @@ All notable changes to this project should be documented in this file.
 - Daily new-word limits and streak/day tracking now use the player's local calendar day instead of UTC rollover
 - Stats page "Words Due" to "To Review" (only counts previously-seen cards past due date)
 - Updated public and project documentation to describe Rapid Retrieval as verbal fluency training and to narrow scientific claims around vocabulary retrieval rather than broad brain-training promises
+- Session assembly now prioritizes TOT-captured words within due/new buckets and biases them toward Recall and Rapid Retrieval
+- Build no longer fails when Supabase env vars are absent; cloud sync now remains optional at build time
 - Adjusted ESLint ignores so generated Serwist service worker artifacts in `public/` no longer pollute lint results
 - Refactored session and stats hooks for current React Compiler rules
 - Made session UI behavior deterministic by replacing render-time randomness with stable session-derived selection

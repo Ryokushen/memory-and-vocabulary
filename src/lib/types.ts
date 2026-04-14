@@ -13,7 +13,26 @@ export interface Word {
   association?: string;
   associationUpdatedAt?: string;
   contextSentences?: ContextSentence[];
+  totCapture?: TOTCapture;
   createdAt: Date;
+}
+
+export type TOTCaptureSource = "speech" | "writing" | "reading" | "meeting" | "other";
+
+export const TOT_CAPTURE_SOURCES: TOTCaptureSource[] = [
+  "speech",
+  "writing",
+  "reading",
+  "meeting",
+  "other",
+];
+
+export interface TOTCapture {
+  source: TOTCaptureSource;
+  weakSubstitute?: string;
+  context?: string;
+  capturedAt: string;
+  count: number;
 }
 
 // ── Review ──────────────────────────────────────────────────────────────
