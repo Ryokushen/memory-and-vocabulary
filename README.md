@@ -25,7 +25,7 @@ What it does not currently claim:
 - Difficulty settings that control daily new-word intake
 - Tier gating that unlocks harder vocabulary as the player levels up
 - Local-first storage with Dexie/IndexedDB
-- Optional Supabase sync with GitHub OAuth for cross-device backup
+- Optional Supabase sync with GitHub OAuth for cross-device backup, including custom words and TOT capture summaries
 - Review-log sync that keeps daily limits consistent across browsers
 - PWA support with offline fallback via Serwist
 
@@ -130,6 +130,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The database auto-seeds on first launch and upgrades the local Dexie profile schema as new fields are added. Without Supabase env vars, Lexforge stays fully local. If you sign in with GitHub, it also syncs profile state, review cards, review logs, and word associations to Supabase.
+
+If you apply the latest Supabase migrations, cloud sync also carries custom words and TOT capture summaries across devices.
 
 ## Research Notes
 

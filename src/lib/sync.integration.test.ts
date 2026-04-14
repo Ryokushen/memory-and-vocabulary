@@ -21,11 +21,19 @@ const cloudState = vi.hoisted(() => ({
   review_cards: [] as Record<string, unknown>[],
   review_logs: [] as Record<string, unknown>[],
   word_associations: [] as Record<string, unknown>[],
+  custom_words: [] as Record<string, unknown>[],
+  word_tot_captures: [] as Record<string, unknown>[],
 }));
 
 const dbMock = vi.hoisted(() => ({
   words: {
     toArray: vi.fn(async () => activeDevice.state?.words ?? []),
+    add: vi.fn(async (word: Word) => {
+      const words = activeDevice.state?.words ?? [];
+      const id = word.id ?? words.length + 1;
+      words.push({ ...word, id });
+      return id;
+    }),
     update: vi.fn(async (id: number, changes: Partial<Word>) => {
       const words = activeDevice.state?.words ?? [];
       const index = words.findIndex((word) => word.id === id);
@@ -148,6 +156,18 @@ vi.mock("./supabase", () => ({
             cloudState.word_associations,
             (row) => `${row.user_id}:${row.word_key}`,
           );
+        } else if (table === "custom_words") {
+          upsertCloudRows(
+            normalizedRows,
+            cloudState.custom_words,
+            (row) => `${row.user_id}:${row.word_key}`,
+          );
+        } else if (table === "word_tot_captures") {
+          upsertCloudRows(
+            normalizedRows,
+            cloudState.word_tot_captures,
+            (row) => `${row.user_id}:${row.word_key}`,
+          );
         }
 
         return { error: null };
@@ -171,6 +191,13 @@ function makeWord(id: number, word: string): Word {
     synonyms: [],
     tier: 1,
     createdAt: new Date("2026-04-01T00:00:00.000Z"),
+  };
+}
+
+function makeCustomWord(id: number, word: string): Word {
+  return {
+    ...makeWord(id, word),
+    tier: "custom",
   };
 }
 
@@ -247,6 +274,8 @@ describe("sync integration", () => {
     cloudState.review_cards = [];
     cloudState.review_logs = [];
     cloudState.word_associations = [];
+    cloudState.custom_words = [];
+    cloudState.word_tot_captures = [];
   });
 
   it("pushes device A progress to cloud, then lets device B merge and continue without losing distinct sessions", async () => {
@@ -326,5 +355,97 @@ describe("sync integration", () => {
     expect(
       new Set(cloudState.review_logs.map((row) => row.session_id)),
     ).toEqual(new Set(["device-a-session", "device-b-session"]));
+  });
+
+  it("syncs custom words and TOT capture summaries across devices", async () => {
+    activeDevice.state = {
+      words: [
+        makeWord(1, "lucid"),
+        {
+          ...makeCustomWord(2, "equanimity"),
+          definition: "mental calmness under pressure",
+          examples: ["Equanimity kept the discussion steady."],
+        },
+      ],
+      reviewCards: [
+        makeCard(1, 1, "2026-04-13T08:05:00.000Z", "2026-04-13T08:05:00.000Z"),
+        makeCard(2, 2, "2026-04-13T08:06:00.000Z", "2026-04-13T08:06:00.000Z"),
+      ],
+      reviewLogs: [
+        makeLog(1, 1, "2026-04-13T08:05:00.000Z", true, "device-a-session"),
+      ],
+      profile: makeProfile({
+        updatedAt: "2026-04-13T08:10:00.000Z",
+      }),
+    };
+    activeDevice.state.words[0].totCapture = {
+      source: "speech",
+      weakSubstitute: "clear",
+      context: "I blanked on lucid in conversation.",
+      capturedAt: "2026-04-13T08:00:00.000Z",
+      count: 1,
+    };
+
+    await pushToCloud(makeUser());
+
+    expect(cloudState.custom_words).toEqual([
+      expect.objectContaining({
+        word_key: "equanimity",
+        definition: "mental calmness under pressure",
+      }),
+    ]);
+    expect(cloudState.word_tot_captures).toEqual([
+      expect.objectContaining({
+        word_key: "lucid",
+        source: "speech",
+        count: 1,
+      }),
+    ]);
+
+    activeDevice.state = {
+      words: [makeWord(1, "lucid")],
+      reviewCards: [makeCard(3, 1, "2026-04-13T18:05:00.000Z", "2026-04-13T18:05:00.000Z")],
+      reviewLogs: [makeLog(2, 1, "2026-04-13T18:05:00.000Z", true, "device-b-session")],
+      profile: makeProfile({
+        xp: 95,
+        totalSessions: 1,
+        totalCorrect: 1,
+        totalReviewed: 1,
+        updatedAt: "2026-04-13T18:10:00.000Z",
+      }),
+    };
+
+    await syncOnLogin(makeUser());
+
+    expect(activeDevice.state.words).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          word: "equanimity",
+          tier: "custom",
+        }),
+        expect.objectContaining({
+          word: "lucid",
+          totCapture: expect.objectContaining({
+            source: "speech",
+            count: 1,
+          }),
+        }),
+      ]),
+    );
+    expect(cloudState.custom_words).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          word_key: "equanimity",
+        }),
+      ]),
+    );
+    expect(cloudState.word_tot_captures).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          word_key: "lucid",
+          count: 1,
+        }),
+      ]),
+    );
   });
 });

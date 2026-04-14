@@ -5,6 +5,7 @@ import type { UserProfile, Word } from "./types";
 const dbMock = vi.hoisted(() => ({
   words: {
     toArray: vi.fn(),
+    add: vi.fn(),
     update: vi.fn(),
   },
   reviewCards: {
@@ -43,6 +44,14 @@ const tableState = vi.hoisted(() => ({
     upserts: [] as Array<{ rows: unknown; options: unknown }>,
   },
   word_associations: {
+    rows: [] as Record<string, unknown>[],
+    upserts: [] as Array<{ rows: unknown; options: unknown }>,
+  },
+  custom_words: {
+    rows: [] as Record<string, unknown>[],
+    upserts: [] as Array<{ rows: unknown; options: unknown }>,
+  },
+  word_tot_captures: {
     rows: [] as Record<string, unknown>[],
     upserts: [] as Array<{ rows: unknown; options: unknown }>,
   },
@@ -124,6 +133,13 @@ function makeWord(id: number, word: string): Word {
   };
 }
 
+function makeCustomWord(id: number, word: string): Word {
+  return {
+    ...makeWord(id, word),
+    tier: "custom",
+  };
+}
+
 function makeUser(): User {
   return { id: "user-1" } as User;
 }
@@ -169,8 +185,13 @@ describe("sync review logs", () => {
     tableState.review_logs.upserts = [];
     tableState.word_associations.rows = [];
     tableState.word_associations.upserts = [];
+    tableState.custom_words.rows = [];
+    tableState.custom_words.upserts = [];
+    tableState.word_tot_captures.rows = [];
+    tableState.word_tot_captures.upserts = [];
 
     dbMock.words.toArray.mockResolvedValue([]);
+    dbMock.words.add.mockResolvedValue(1);
     dbMock.reviewCards.toArray.mockResolvedValue([]);
     dbMock.reviewLogs.toArray.mockResolvedValue([]);
     dbMock.reviewLogs.add.mockResolvedValue(1);
@@ -212,6 +233,52 @@ describe("sync review logs", () => {
         }),
       ],
       options: { onConflict: "user_id,word_key,reviewed_at" },
+    });
+  });
+
+  it("pushes custom words and TOT capture summaries to Supabase", async () => {
+    dbMock.words.toArray.mockResolvedValue([
+      makeCustomWord(1, "equanimity"),
+      {
+        ...makeWord(2, "lucid"),
+        totCapture: {
+          source: "speech",
+          weakSubstitute: "clear",
+          context: "I said clear when I wanted lucid.",
+          capturedAt: "2026-04-13T12:00:00.000Z",
+          count: 2,
+        },
+      },
+    ]);
+
+    await pushToCloud(makeUser());
+
+    expect(tableState.custom_words.upserts[0]).toEqual({
+      rows: [
+        expect.objectContaining({
+          user_id: "user-1",
+          word_key: "equanimity",
+          definition: "equanimity definition",
+          examples: ["equanimity example"],
+          synonyms: [],
+        }),
+      ],
+      options: { onConflict: "user_id,word_key" },
+    });
+
+    expect(tableState.word_tot_captures.upserts[0]).toEqual({
+      rows: [
+        expect.objectContaining({
+          user_id: "user-1",
+          word_key: "lucid",
+          source: "speech",
+          weak_substitute: "clear",
+          context: "I said clear when I wanted lucid.",
+          captured_at: "2026-04-13T12:00:00.000Z",
+          count: 2,
+        }),
+      ],
+      options: { onConflict: "user_id,word_key" },
     });
   });
 
@@ -288,6 +355,54 @@ describe("sync review logs", () => {
       reviewedAt: new Date("2026-04-11T08:20:00.000Z"),
     });
     expect(tableState.review_logs.upserts).toHaveLength(1);
+  });
+
+  it("pulls remote custom words and TOT capture summaries on login", async () => {
+    tableState.custom_words.rows = [
+      {
+        user_id: "user-1",
+        word_key: "equanimity",
+        definition: "mental calmness under pressure",
+        examples: ["Equanimity helped during the argument."],
+        synonyms: ["calmness"],
+        created_at: "2026-04-12T08:00:00.000Z",
+        updated_at: "2026-04-12T08:00:00.000Z",
+      },
+    ];
+    tableState.word_tot_captures.rows = [
+      {
+        user_id: "user-1",
+        word_key: "lucid",
+        source: "speech",
+        weak_substitute: "clear",
+        context: "I stalled before saying lucid.",
+        captured_at: "2026-04-13T12:00:00.000Z",
+        count: 2,
+        updated_at: "2026-04-13T12:00:00.000Z",
+      },
+    ];
+    dbMock.words.toArray.mockResolvedValue([
+      makeWord(1, "lucid"),
+    ]);
+
+    await syncOnLogin(makeUser());
+
+    expect(dbMock.words.add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        word: "equanimity",
+        tier: "custom",
+        definition: "mental calmness under pressure",
+      }),
+    );
+    expect(dbMock.words.update).toHaveBeenCalledWith(1, {
+      totCapture: {
+        source: "speech",
+        weakSubstitute: "clear",
+        context: "I stalled before saying lucid.",
+        capturedAt: "2026-04-13T12:00:00.000Z",
+        count: 2,
+      },
+    });
   });
 
   it("merges conflicting review cards and profile progress before pushing back to cloud", async () => {

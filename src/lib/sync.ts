@@ -2,7 +2,14 @@ import type { User } from "@supabase/supabase-js";
 import { toLocalDateKey } from "./date";
 import { supabase } from "./supabase";
 import { db, getOrCreateProfile } from "./db";
-import type { RetrievalKind, ReviewCard, ReviewLog, UserProfile, Word } from "./types";
+import type {
+  RetrievalKind,
+  ReviewCard,
+  ReviewLog,
+  TOTCaptureSource,
+  UserProfile,
+  Word,
+} from "./types";
 
 const SYNC_BATCH_SIZE = 100;
 export const CLOUD_SYNC_EVENT = "lexforge-cloud-sync";
@@ -58,11 +65,35 @@ type CloudAssociationRow = {
   updated_at?: string | null;
 };
 
+type CloudCustomWordRow = {
+  user_id: string;
+  word_key: string;
+  definition: string;
+  examples?: unknown;
+  pronunciation?: string | null;
+  synonyms?: unknown;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+type CloudTOTCaptureRow = {
+  user_id: string;
+  word_key: string;
+  source: TOTCaptureSource;
+  weak_substitute?: string | null;
+  context?: string | null;
+  captured_at: string;
+  count: number;
+  updated_at?: string | null;
+};
+
 type CloudSnapshot = {
   profile: CloudProfileRow | null;
   reviewCards: CloudReviewCardRow[];
   reviewLogs: CloudReviewLogRow[];
   associations: CloudAssociationRow[];
+  customWords: CloudCustomWordRow[];
+  totCaptures: CloudTOTCaptureRow[];
 };
 
 type MergedReviewStats = {
@@ -105,6 +136,98 @@ function compareDateOnly(a?: string | null, b?: string | null): number {
   if (!a) return -1;
   if (!b) return 1;
   return a.localeCompare(b);
+}
+
+function normalizeTextArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter((item): item is string => typeof item === "string")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function mergeUniqueStrings(...groups: string[][]): string[] {
+  const merged = new Set<string>();
+
+  for (const group of groups) {
+    for (const item of group) {
+      const normalized = item.trim();
+      if (normalized) {
+        merged.add(normalized);
+      }
+    }
+  }
+
+  return [...merged];
+}
+
+function pickRicherText(localValue?: string | null, remoteValue?: string | null): string | undefined {
+  const local = localValue?.trim() ?? "";
+  const remote = remoteValue?.trim() ?? "";
+
+  if (!local) return remote || undefined;
+  if (!remote) return local;
+
+  return remote.length > local.length ? remote : local;
+}
+
+function getWordSyncUpdatedAt(word: Word): string {
+  return maxIso(
+    word.createdAt.toISOString(),
+    word.associationUpdatedAt,
+    word.totCapture?.capturedAt,
+  );
+}
+
+function cloudCustomWordToLocal(row: CloudCustomWordRow): Omit<Word, "id"> {
+  return {
+    word: row.word_key,
+    definition: row.definition,
+    examples: normalizeTextArray(row.examples),
+    pronunciation: row.pronunciation ?? undefined,
+    tier: "custom",
+    synonyms: normalizeTextArray(row.synonyms),
+    createdAt: new Date(row.created_at ?? new Date(0).toISOString()),
+  };
+}
+
+function mergeCustomWord(localWord: Word, remoteWord: Omit<Word, "id">): Partial<Word> {
+  return {
+    definition: pickRicherText(localWord.definition, remoteWord.definition) ?? localWord.definition,
+    examples: mergeUniqueStrings(localWord.examples, remoteWord.examples),
+    pronunciation: pickRicherText(localWord.pronunciation, remoteWord.pronunciation),
+    synonyms: mergeUniqueStrings(localWord.synonyms, remoteWord.synonyms),
+    createdAt: new Date(
+      Math.min(localWord.createdAt.getTime(), remoteWord.createdAt.getTime()),
+    ),
+  };
+}
+
+function mergeTOTCapture(
+  localWord: Word,
+  remoteRow: CloudTOTCaptureRow,
+): NonNullable<Word["totCapture"]> {
+  const localCapture = localWord.totCapture;
+  const remoteUpdatedAt = remoteRow.updated_at ?? remoteRow.captured_at;
+  const localUpdatedAt = localCapture?.capturedAt;
+  const remoteIsNewer = toMillis(remoteUpdatedAt) >= toMillis(localUpdatedAt);
+
+  return {
+    source: remoteIsNewer
+      ? remoteRow.source
+      : (localCapture?.source ?? remoteRow.source),
+    weakSubstitute: remoteIsNewer
+      ? (remoteRow.weak_substitute ?? undefined)
+      : localCapture?.weakSubstitute,
+    context: remoteIsNewer
+      ? (remoteRow.context ?? undefined)
+      : localCapture?.context,
+    capturedAt: remoteIsNewer
+      ? remoteRow.captured_at
+      : (localCapture?.capturedAt ?? remoteRow.captured_at),
+    count: Math.max(localCapture?.count ?? 0, remoteRow.count),
+  };
 }
 
 function chunkRows<T>(rows: T[]): T[][] {
@@ -397,23 +520,31 @@ async function fetchCloudSnapshot(user: User): Promise<CloudSnapshot> {
     reviewCardsResponse,
     reviewLogsResponse,
     associationsResponse,
+    customWordsResponse,
+    totCapturesResponse,
   ] = await Promise.all([
     supabase.from("profiles").select("*").eq("id", user.id),
     supabase.from("review_cards").select("*").eq("user_id", user.id),
     supabase.from("review_logs").select("*").eq("user_id", user.id),
     supabase.from("word_associations").select("*").eq("user_id", user.id),
+    supabase.from("custom_words").select("*").eq("user_id", user.id),
+    supabase.from("word_tot_captures").select("*").eq("user_id", user.id),
   ]);
 
   if (profileResponse.error) throw profileResponse.error;
   if (reviewCardsResponse.error) throw reviewCardsResponse.error;
   if (reviewLogsResponse.error) throw reviewLogsResponse.error;
   if (associationsResponse.error) throw associationsResponse.error;
+  if (customWordsResponse.error) throw customWordsResponse.error;
+  if (totCapturesResponse.error) throw totCapturesResponse.error;
 
   return {
     profile: ((profileResponse.data as CloudProfileRow[] | null) ?? [])[0] ?? null,
     reviewCards: (reviewCardsResponse.data as CloudReviewCardRow[] | null) ?? [],
     reviewLogs: (reviewLogsResponse.data as CloudReviewLogRow[] | null) ?? [],
     associations: (associationsResponse.data as CloudAssociationRow[] | null) ?? [],
+    customWords: (customWordsResponse.data as CloudCustomWordRow[] | null) ?? [],
+    totCaptures: (totCapturesResponse.data as CloudTOTCaptureRow[] | null) ?? [],
   };
 }
 
@@ -548,13 +679,52 @@ async function reconcileAssociations(cloudAssociations: CloudAssociationRow[], w
   }
 }
 
+async function reconcileCustomWords(cloudCustomWords: CloudCustomWordRow[]) {
+  const localWords = await db.words.toArray();
+  const localCustomWordsByKey = new Map(
+    localWords
+      .filter((word) => word.tier === "custom")
+      .map((word) => [word.word, word]),
+  );
+
+  for (const row of cloudCustomWords) {
+    const localWord = localCustomWordsByKey.get(row.word_key);
+    const remoteWord = cloudCustomWordToLocal(row);
+
+    if (!localWord) {
+      const id = await db.words.add(remoteWord as Word);
+      localCustomWordsByKey.set(row.word_key, { ...remoteWord, id });
+      continue;
+    }
+
+    const mergedWord = mergeCustomWord(localWord, remoteWord);
+    await db.words.update(localWord.id!, mergedWord);
+    localCustomWordsByKey.set(row.word_key, { ...localWord, ...mergedWord });
+  }
+}
+
+async function reconcileTOTCaptures(cloudTOTCaptures: CloudTOTCaptureRow[], words: Word[]) {
+  const localWordsByKey = new Map(words.map((word) => [word.word, word]));
+
+  for (const row of cloudTOTCaptures) {
+    const localWord = localWordsByKey.get(row.word_key);
+    if (!localWord) continue;
+
+    const mergedTOTCapture = mergeTOTCapture(localWord, row);
+    await db.words.update(localWord.id!, { totCapture: mergedTOTCapture });
+    localWordsByKey.set(row.word_key, { ...localWord, totCapture: mergedTOTCapture });
+  }
+}
+
 async function reconcileCloudState(user: User) {
   const snapshot = await fetchCloudSnapshot(user);
+  await reconcileCustomWords(snapshot.customWords);
   const words = await db.words.toArray();
 
   const mergedReviewStats = await reconcileReviewLogs(snapshot.reviewLogs, words);
   await reconcileReviewCards(snapshot.reviewCards, words);
   await reconcileAssociations(snapshot.associations, words);
+  await reconcileTOTCaptures(snapshot.totCaptures, words);
   const profile = await reconcileProfile(snapshot.profile, mergedReviewStats);
 
   return { profile };
@@ -659,15 +829,67 @@ async function pushAssociations(user: User) {
   }
 }
 
+/** Push custom words so they can be restored on other devices. */
+async function pushCustomWords(user: User) {
+  const words = await db.words.toArray();
+  const rows = words
+    .filter((word) => word.tier === "custom")
+    .map((word) => ({
+      user_id: user.id,
+      word_key: word.word,
+      definition: word.definition,
+      examples: word.examples,
+      pronunciation: word.pronunciation ?? null,
+      synonyms: word.synonyms,
+      created_at: word.createdAt.toISOString(),
+      updated_at: getWordSyncUpdatedAt(word),
+    }));
+
+  for (const chunk of chunkRows(rows)) {
+    const { error } = await supabase
+      .from("custom_words")
+      .upsert(chunk, { onConflict: "user_id,word_key" });
+
+    if (error) throw error;
+  }
+}
+
+/** Push TOT capture summaries for cross-device recovery drilling. */
+async function pushTOTCaptures(user: User) {
+  const words = await db.words.toArray();
+  const rows = words
+    .filter((word) => word.totCapture)
+    .map((word) => ({
+      user_id: user.id,
+      word_key: word.word,
+      source: word.totCapture!.source,
+      weak_substitute: word.totCapture!.weakSubstitute ?? null,
+      context: word.totCapture!.context ?? null,
+      captured_at: word.totCapture!.capturedAt,
+      count: word.totCapture!.count,
+      updated_at: word.totCapture!.capturedAt,
+    }));
+
+  for (const chunk of chunkRows(rows)) {
+    const { error } = await supabase
+      .from("word_tot_captures")
+      .upsert(chunk, { onConflict: "user_id,word_key" });
+
+    if (error) throw error;
+  }
+}
+
 async function pushToCloudInternal(
   user: User,
   reconciledState?: { profile: UserProfile },
 ) {
   await Promise.all([
     pushProfile(user, reconciledState?.profile),
+    pushCustomWords(user),
     pushReviewCards(user),
     pushReviewLogs(user),
     pushAssociations(user),
+    pushTOTCaptures(user),
   ]);
 }
 
