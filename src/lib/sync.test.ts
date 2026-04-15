@@ -548,6 +548,83 @@ describe("sync review logs", () => {
     });
   });
 
+  it("prefers a reviewed remote card over a freshly seeded local new card", async () => {
+    tableState.review_cards.rows = [
+      {
+        user_id: "user-1",
+        word_key: "lucid",
+        card: {
+          due: new Date("2026-04-14T08:00:00.000Z"),
+          stability: 2,
+          difficulty: 4,
+          elapsed_days: 0,
+          scheduled_days: 1,
+          reps: 1,
+          lapses: 0,
+          state: 2,
+          learning_steps: 0,
+          last_review: new Date("2026-04-13T08:00:00.000Z"),
+        },
+        updated_at: "2026-04-13T08:00:00.000Z",
+      },
+    ];
+
+    dbMock.words.toArray.mockResolvedValue([makeWord(1, "lucid")]);
+    dbMock.reviewCards.toArray
+      .mockResolvedValueOnce([
+        {
+          id: 7,
+          wordId: 1,
+          card: {
+            due: new Date("2026-04-14T09:00:00.000Z"),
+            stability: 0,
+            difficulty: 0,
+            elapsed_days: 0,
+            scheduled_days: 0,
+            reps: 0,
+            lapses: 0,
+            state: 0,
+            learning_steps: 0,
+            last_review: undefined,
+          },
+          updatedAt: "2026-04-14T09:30:00.000Z",
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: 7,
+          wordId: 1,
+          card: {
+            due: new Date("2026-04-14T08:00:00.000Z"),
+            stability: 2,
+            difficulty: 4,
+            elapsed_days: 0,
+            scheduled_days: 1,
+            reps: 1,
+            lapses: 0,
+            state: 2,
+            learning_steps: 0,
+            last_review: new Date("2026-04-13T08:00:00.000Z"),
+          },
+          updatedAt: "2026-04-13T08:00:00.000Z",
+        },
+      ]);
+
+    await syncOnLogin(makeUser());
+
+    expect(dbMock.reviewCards.update).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({
+        wordId: 1,
+        updatedAt: "2026-04-13T08:00:00.000Z",
+        card: expect.objectContaining({
+          state: 2,
+          reps: 1,
+        }),
+      }),
+    );
+  });
+
   it("keeps same-day work from both devices by using merged review-log session ids", async () => {
     tableState.profiles.exists = true;
     tableState.profiles.row = {

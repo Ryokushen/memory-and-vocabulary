@@ -310,6 +310,7 @@ function cloudCardToLocal(row: CloudReviewCardRow, wordId: number): ReviewCard {
 
 function getCardProgressScore(card: ReviewCard["card"]): [number, number, number] {
   return [
+    card.state === 0 ? 0 : 1,
     card.reps ?? 0,
     toMillis(card.last_review),
     toMillis(card.due),
@@ -317,19 +318,20 @@ function getCardProgressScore(card: ReviewCard["card"]): [number, number, number
 }
 
 function shouldKeepLocalCard(localCard: ReviewCard, remoteCard: ReviewCard): boolean {
+  const [localSeen, localReps, localLastReview, localDue] = getCardProgressScore(localCard.card);
+  const [remoteSeen, remoteReps, remoteLastReview, remoteDue] = getCardProgressScore(remoteCard.card);
+
+  if (localSeen !== remoteSeen) return localSeen > remoteSeen;
+  if (localReps !== remoteReps) return localReps > remoteReps;
+  if (localLastReview !== remoteLastReview) return localLastReview > remoteLastReview;
+  if (localDue !== remoteDue) return localDue > remoteDue;
+
   const localUpdated = toMillis(localCard.updatedAt);
   const remoteUpdated = toMillis(remoteCard.updatedAt);
 
   if (localUpdated !== remoteUpdated) {
     return localUpdated > remoteUpdated;
   }
-
-  const [localReps, localLastReview, localDue] = getCardProgressScore(localCard.card);
-  const [remoteReps, remoteLastReview, remoteDue] = getCardProgressScore(remoteCard.card);
-
-  if (localReps !== remoteReps) return localReps > remoteReps;
-  if (localLastReview !== remoteLastReview) return localLastReview > remoteLastReview;
-  if (localDue !== remoteDue) return localDue > remoteDue;
 
   return true;
 }
