@@ -170,7 +170,7 @@ function median(values: number[]): number | undefined {
   return sorted[middle];
 }
 
-function buildRetrievalDrillProfile(
+export function buildRetrievalDrillProfile(
   word: Word,
   logs: ReviewLog[],
 ): RetrievalDrillProfile {

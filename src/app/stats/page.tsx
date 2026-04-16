@@ -21,7 +21,15 @@ import {
   Gauge,
   Lock,
   TrendingUp,
+  HeartPulse,
+  ShieldAlert,
+  AlertTriangle,
+  LifeBuoy,
+  ArrowUpRight,
+  ArrowDownRight,
+  Minus,
 } from "lucide-react";
+import { useRetrievalHealth } from "@/hooks/use-retrieval-health";
 import type { ReviewLog } from "@/lib/types";
 import { DIFFICULTY_CONFIG, TIER_UNLOCK_LEVELS } from "@/lib/types";
 
@@ -113,6 +121,7 @@ const TIER_INFO: Record<string, { label: string; color: string; bg: string; bord
 export default function StatsPage() {
   const { seedStatus } = useBootstrap();
   const { profile, dueCount, wordCount, loading } = useStats();
+  const retrieval = useRetrievalHealth();
   const [recentLogs, setRecentLogs] = useState<ReviewLog[]>([]);
 
   useEffect(() => {
@@ -396,6 +405,123 @@ export default function StatsPage() {
           </Card>
         </motion.div>
       </div>
+
+      {/* ── Retrieval Health ──────────────────────────────────────────── */}
+      {!retrieval.loading && (
+        <motion.div {...fadeUp(0.36)}>
+          <Card size="sm">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <HeartPulse className="size-4 text-rose-400" />
+                Retrieval Health
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Headline metrics with trend arrows */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Unassisted Recall */}
+                <div className="rounded-xl bg-muted/30 p-3 space-y-1">
+                  <p className="text-[10px] font-medium text-muted-foreground">Unassisted Recall</p>
+                  <p className={`text-2xl font-bold tabular-nums ${accuracyColor(retrieval.unassistedRate)}`}>
+                    {retrieval.unassistedRate}%
+                  </p>
+                  {retrieval.unassistedRateDelta !== null && (
+                    <p className="flex items-center gap-0.5 text-[10px]">
+                      {retrieval.unassistedRateDelta > 0 ? (
+                        <ArrowUpRight className="size-3 text-emerald-400" />
+                      ) : retrieval.unassistedRateDelta < 0 ? (
+                        <ArrowDownRight className="size-3 text-red-400" />
+                      ) : (
+                        <Minus className="size-3 text-muted-foreground" />
+                      )}
+                      <span className={
+                        retrieval.unassistedRateDelta > 0
+                          ? "text-emerald-400"
+                          : retrieval.unassistedRateDelta < 0
+                            ? "text-red-400"
+                            : "text-muted-foreground"
+                      }>
+                        {retrieval.unassistedRateDelta > 0 ? "+" : ""}
+                        {retrieval.unassistedRateDelta}pp vs last week
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Retrieval Speed */}
+                <div className="rounded-xl bg-muted/30 p-3 space-y-1">
+                  <p className="text-[10px] font-medium text-muted-foreground">Retrieval Speed</p>
+                  <p className="text-2xl font-bold tabular-nums text-muted-foreground">
+                    {retrieval.medianLatencyMs !== null
+                      ? `${(retrieval.medianLatencyMs / 1000).toFixed(1)}s`
+                      : "\u2014"}
+                  </p>
+                  {retrieval.latencyDeltaMs !== null && (
+                    <p className="flex items-center gap-0.5 text-[10px]">
+                      {retrieval.latencyDeltaMs < -50 ? (
+                        <ArrowDownRight className="size-3 text-emerald-400" />
+                      ) : retrieval.latencyDeltaMs > 50 ? (
+                        <ArrowUpRight className="size-3 text-red-400" />
+                      ) : (
+                        <Minus className="size-3 text-muted-foreground" />
+                      )}
+                      <span className={
+                        retrieval.latencyDeltaMs < -50
+                          ? "text-emerald-400"
+                          : retrieval.latencyDeltaMs > 50
+                            ? "text-red-400"
+                            : "text-muted-foreground"
+                      }>
+                        {retrieval.latencyDeltaMs > 0 ? "+" : ""}
+                        {(retrieval.latencyDeltaMs / 1000).toFixed(1)}s vs last week
+                      </span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Supporting counts */}
+              <div className="space-y-2">
+                {[
+                  {
+                    icon: ShieldAlert,
+                    label: "Cue-Dependent Words",
+                    value: retrieval.cueDependentWordCount,
+                    color: retrieval.cueDependentWordCount > 0 ? "text-amber-400" : "text-emerald-400",
+                  },
+                  {
+                    icon: AlertTriangle,
+                    label: "TOT This Week",
+                    value: retrieval.totThisWeek,
+                    color: retrieval.totThisWeek > 0 ? "text-amber-400" : "text-emerald-400",
+                  },
+                  {
+                    icon: LifeBuoy,
+                    label: "In Rescue Stage",
+                    value: retrieval.rescueWordCount,
+                    color: retrieval.rescueWordCount > 3
+                      ? "text-red-400"
+                      : retrieval.rescueWordCount > 0
+                        ? "text-amber-400"
+                        : "text-emerald-400",
+                  },
+                ].map(({ icon: Icon, label, value, color }) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Icon className="size-3.5" />
+                      {label}
+                    </span>
+                    <span className={`text-xs font-bold tabular-nums ${color}`}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       {/* ── Training History ────────────────────────────────────────────── */}
       <motion.div {...fadeUp(0.42)}>
