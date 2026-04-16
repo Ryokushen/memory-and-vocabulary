@@ -39,6 +39,11 @@ All notable changes to this project should be documented in this file.
 - Review logs now carry explicit `session_id` values, and sync uses them to preserve distinct same-day sessions across devices instead of inferring everything from time gaps
 - Added a Supabase migration for the `review_logs` table, indexes, and RLS policies required by review-log sync, including compatibility upgrades for older table shapes
 - Daily new-word limits and streak/day tracking now use the player's local calendar day instead of UTC rollover
+- Review-card reconciliation now prefers actual scheduler progress over raw `updated_at`, preventing a freshly seeded device from overwriting more advanced due-card state from another device
+- Rapid Retrieval now separates a read phase from a timed retrieval phase so the timer measures recall speed, not reading speed
+- Rapid Retrieval grading uses a proportional fast threshold (60% of timeout) instead of a static 3s cutoff, and the warning bar scales to 30% of timeout
+- Retrieval-only timer ranges tightened for all drill stages now that reading time is excluded
+- New Retrieval Health section on the stats page surfaces unassisted recall rate with week-over-week trend, median retrieval speed with trend, cue-dependent word count, weekly TOT incidents, and rescue-stage word count
 - Stats page "Words Due" to "To Review" (only counts previously-seen cards past due date)
 - Updated public and project documentation to describe Rapid Retrieval as verbal fluency training and to narrow scientific claims around vocabulary retrieval rather than broad brain-training promises
 - Session assembly now prioritizes TOT-captured words within due/new buckets and biases them toward Recall and Rapid Retrieval

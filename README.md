@@ -27,6 +27,7 @@ What it does not currently claim:
 - Local-first storage with Dexie/IndexedDB
 - Optional Supabase sync with GitHub OAuth for cross-device backup of profile state, review data, custom words, associations, and TOT capture summaries
 - Review-log sync that keeps daily limits consistent across browsers
+- Review-card reconciliation that preserves progressed due cards when a freshly seeded device syncs against an already-trained device
 - PWA support with offline fallback via Serwist
 
 ## Game Modes
@@ -35,7 +36,7 @@ What it does not currently claim:
 |------|--------|------------------|
 | **Recall** | Clean definition-to-word retrieval | See a definition and type the word, with hints available only while the word is still in a support phase. |
 | **Context** | Word choice in context | Type a stronger replacement first, then fall back to assisted options only if needed. |
-| **Rapid Retrieval** | Fast verbal access | See a definition, type the word under an adaptive timer, and recover with a rescue cue only when the drill profile still calls for it. |
+| **Rapid Retrieval** | Fast verbal access | Read a definition at your own pace, then start a timed retrieval phase where you type the word under an adaptive timer. A rescue cue appears only when the drill profile still calls for it. |
 | **Association** | Elaborative encoding | Create a vivid text association for a word, then later recall from that association. |
 
 ## Real-World Capture Loop
@@ -136,6 +137,8 @@ If you apply the latest Supabase migrations, cloud sync also carries custom word
 
 - [20260413222000_add_custom_words_and_tot_capture_sync.sql](/C:/Users/593528/Documents/Project%20AI/LexForge/memory-and-vocabulary/supabase/migrations/20260413222000_add_custom_words_and_tot_capture_sync.sql:1)
 
+If two devices ever disagree about due-review counts after one of them starts from a fresh seed, update to the latest build and sync from the device with the more progressed review state first. Review-card reconciliation now prefers real scheduler progress over a newer seed timestamp.
+
 ## Research Notes
 
 Research documentation lives in the companion Obsidian vault. The current app is aligned with:
@@ -152,9 +155,18 @@ The app intentionally avoids stronger claims until the mechanics and data suppor
 - **Gamification Psychology** - reinforcement design, motivation, and overjustification risks
 - **Gamification Psychology (Web)** - novelty effects and practical product patterns
 
+## Retrieval Health Stats
+
+The stats page includes a Retrieval Health section that tracks whether training is actually improving retrieval over time:
+
+- **Unassisted Recall** — percentage of reviews that were clean exact recalls without cues, with a week-over-week trend arrow
+- **Retrieval Speed** — median latency for correct unassisted recalls, with a week-over-week trend arrow
+- **Cue-Dependent Words** — words where at least 2 of the last 3 reviews required a cue
+- **TOT This Week** — words with a real-world tip-of-the-tongue capture this calendar week
+- **In Rescue Stage** — words currently classified as struggling by the adaptive drill system
+
 ## Near-Term Roadmap
 
-- retrieval-focused stats for cue dependence, latency, and weekly TOT incidents
 - broader cross-device verification of custom word and TOT sync under real usage
 - deeper context-production drills and transfer tasks beyond single-word replacement
 - adaptive use of RPG stats in session generation
