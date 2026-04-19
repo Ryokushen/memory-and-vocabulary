@@ -280,6 +280,10 @@ describe("sync review logs", () => {
           captured_at: "2026-04-13T12:00:00.000Z",
           updated_at: "2026-04-13T12:05:00.000Z",
           count: 2,
+          event_ids: [
+            "legacy:lucid:2026-04-13T12:05:00.000Z:0",
+            "legacy:lucid:2026-04-13T12:05:00.000Z:1",
+          ],
         }),
       ],
       options: { onConflict: "user_id,normalized_word_key" },
@@ -416,7 +420,12 @@ describe("sync review logs", () => {
         context: "I blanked on lucid in conversation.",
         capturedAt: "2026-04-13T12:00:00.000Z",
         updatedAt: "2026-04-13T12:10:00.000Z",
-        count: 2,
+        count: 3,
+        eventIds: [
+          "legacy:lucid:2026-04-13T12:05:00.000Z:0",
+          "legacy:lucid:2026-04-13T12:10:00.000Z:0",
+          "legacy:lucid:2026-04-13T12:10:00.000Z:1",
+        ],
       },
     });
   });
@@ -467,6 +476,10 @@ describe("sync review logs", () => {
         capturedAt: "2026-04-13T12:00:00.000Z",
         updatedAt: "2026-04-13T12:00:00.000Z",
         count: 2,
+        eventIds: [
+          "legacy:lucid:2026-04-13T12:00:00.000Z:0",
+          "legacy:lucid:2026-04-13T12:00:00.000Z:1",
+        ],
       },
     });
   });

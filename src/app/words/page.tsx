@@ -30,6 +30,8 @@ import { useStats } from "@/hooks/use-stats";
 import type { TOTCaptureSource, Word } from "@/lib/types";
 import { TIER_UNLOCK_LEVELS, TOT_CAPTURE_SOURCES } from "@/lib/types";
 import {
+  createTOTEventId,
+  getTOTEventIds,
   isDuplicateWord,
   isTierLocked,
   normalizeWord,
@@ -320,6 +322,11 @@ export default function WordsPage() {
     const capturedAt = new Date().toISOString();
 
     if (existingTOTWord?.id) {
+      const eventIds = [
+        ...getTOTEventIds(existingTOTWord, existingTOTWord.totCapture),
+        createTOTEventId(),
+      ];
+
       await db.words.update(existingTOTWord.id, {
         totCapture: {
           source: totForm.source,
@@ -327,10 +334,13 @@ export default function WordsPage() {
           context,
           capturedAt,
           updatedAt: capturedAt,
-          count: (existingTOTWord.totCapture?.count ?? 0) + 1,
+          count: eventIds.length,
+          eventIds,
         },
       });
     } else {
+      const eventIds = [createTOTEventId()];
+
       await addWordWithCard({
         word: targetWord,
         definition,
@@ -343,7 +353,8 @@ export default function WordsPage() {
           context,
           capturedAt,
           updatedAt: capturedAt,
-          count: 1,
+          count: eventIds.length,
+          eventIds,
         },
         createdAt: new Date(),
       });

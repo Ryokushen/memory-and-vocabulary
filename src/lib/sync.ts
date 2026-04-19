@@ -1,5 +1,10 @@
 import type { User } from "@supabase/supabase-js";
-import { normalizeWord } from "./word-library";
+import {
+  createLegacyTOTEventIds,
+  createTOTEventId,
+  getTOTEventIds,
+  normalizeWord,
+} from "./word-library";
 import { toLocalDateKey } from "./date";
 import { supabase } from "./supabase";
 import { db, getOrCreateProfile } from "./db";
@@ -90,6 +95,7 @@ type CloudTOTCaptureRow = {
   context?: string | null;
   captured_at: string;
   count: number;
+  event_ids?: unknown;
   updated_at?: string | null;
 };
 
@@ -221,6 +227,20 @@ function mergeCustomWord(localWord: Word, remoteWord: Omit<Word, "id">): Partial
   };
 }
 
+function getCloudTOTEventIds(
+  row: CloudTOTCaptureRow): string[] {
+  const explicitIds = normalizeTextArray(row.event_ids);
+  if (explicitIds.length > 0) {
+    return [...new Set(explicitIds)];
+  }
+
+  return createLegacyTOTEventIds(
+    getCloudWordLookupKey(row),
+    row.count,
+    row.updated_at ?? row.captured_at,
+  );
+}
+
 function mergeTOTCapture(
   localWord: Word,
   remoteRow: CloudTOTCaptureRow,
@@ -229,6 +249,14 @@ function mergeTOTCapture(
   const remoteUpdatedAt = remoteRow.updated_at ?? remoteRow.captured_at;
   const localUpdatedAt = localCapture?.updatedAt ?? localCapture?.capturedAt;
   const remoteIsNewer = toMillis(remoteUpdatedAt) >= toMillis(localUpdatedAt);
+  const localEventIds = getTOTEventIds(localWord, localCapture);
+  const remoteEventIds = getCloudTOTEventIds(remoteRow);
+  const mergedEventIds = mergeUniqueStrings(localEventIds, remoteEventIds);
+  const mergedCount = Math.max(
+    localCapture?.count ?? 0,
+    remoteRow.count,
+    mergedEventIds.length,
+  );
 
   return {
     source: remoteIsNewer
@@ -237,7 +265,8 @@ function mergeTOTCapture(
     weakSubstitute: pickRicherText(localCapture?.weakSubstitute, remoteRow.weak_substitute),
     context: pickRicherText(localCapture?.context, remoteRow.context),
     capturedAt: maxIso(localCapture?.capturedAt, remoteRow.captured_at),
-    count: Math.max(localCapture?.count ?? 0, remoteRow.count),
+    count: mergedCount,
+    eventIds: mergedEventIds.length > 0 ? mergedEventIds : undefined,
     updatedAt: maxIso(localUpdatedAt, remoteUpdatedAt),
   };
 }
@@ -877,17 +906,22 @@ async function pushTOTCaptures(user: User) {
   const words = await db.words.toArray();
   const rows = words
     .filter((word) => word.totCapture)
-    .map((word) => ({
-      user_id: user.id,
-      word_key: word.word,
-      normalized_word_key: normalizeWord(word.word),
-      source: word.totCapture!.source,
-      weak_substitute: word.totCapture!.weakSubstitute ?? null,
-      context: word.totCapture!.context ?? null,
-      captured_at: word.totCapture!.capturedAt,
-      count: word.totCapture!.count,
-      updated_at: word.totCapture!.updatedAt ?? word.totCapture!.capturedAt,
-    }));
+    .map((word) => {
+      const eventIds = getTOTEventIds(word, word.totCapture);
+
+      return {
+        user_id: user.id,
+        word_key: word.word,
+        normalized_word_key: normalizeWord(word.word),
+        source: word.totCapture!.source,
+        weak_substitute: word.totCapture!.weakSubstitute ?? null,
+        context: word.totCapture!.context ?? null,
+        captured_at: word.totCapture!.capturedAt,
+        count: Math.max(word.totCapture!.count, eventIds.length),
+        event_ids: eventIds,
+        updated_at: word.totCapture!.updatedAt ?? word.totCapture!.capturedAt,
+      };
+    });
 
   for (const chunk of chunkRows(rows)) {
     const { error } = await supabase

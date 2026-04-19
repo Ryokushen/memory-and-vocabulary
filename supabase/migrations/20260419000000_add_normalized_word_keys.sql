@@ -127,11 +127,19 @@ create index if not exists custom_words_user_normalized_word_key_idx
   on public.custom_words (user_id, normalized_word_key);
 
 alter table public.word_tot_captures
-  add column if not exists normalized_word_key text;
+  add column if not exists normalized_word_key text,
+  add column if not exists event_ids jsonb;
 
 update public.word_tot_captures
 set normalized_word_key = lower(trim(coalesce(word_key, '')))
 where normalized_word_key is null;
+
+update public.word_tot_captures
+set event_ids = (
+  select coalesce(jsonb_agg(format('legacy:%s:%s:%s', normalized_word_key, coalesce(updated_at, captured_at), index - 1)), '[]'::jsonb)
+  from generate_series(1, greatest(count, 0)) as index
+)
+where event_ids is null;
 
 alter table public.word_tot_captures
   alter column normalized_word_key set not null;

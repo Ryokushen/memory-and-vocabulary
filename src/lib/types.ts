@@ -34,6 +34,7 @@ export interface TOTCapture {
   capturedAt: string;
   updatedAt?: string;
   count: number;
+  eventIds?: string[];
 }
 
 // ── Review ──────────────────────────────────────────────────────────────

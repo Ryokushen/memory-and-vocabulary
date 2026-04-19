@@ -546,7 +546,12 @@ describe("sync integration", () => {
             context: "I blanked on lucid in conversation.",
             capturedAt: "2026-04-13T08:10:00.000Z",
             updatedAt: "2026-04-13T08:15:00.000Z",
-            count: 2,
+            count: 3,
+            eventIds: [
+              "legacy:lucid:2026-04-13T08:05:00.000Z:0",
+              "legacy:lucid:2026-04-13T08:15:00.000Z:0",
+              "legacy:lucid:2026-04-13T08:15:00.000Z:1",
+            ],
           }),
         }),
       ]),
