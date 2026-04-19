@@ -142,31 +142,31 @@ vi.mock("./supabase", () => ({
           upsertCloudRows(
             normalizedRows,
             cloudState.review_cards,
-            (row) => `${row.user_id}:${row.word_key}`,
+            (row) => `${row.user_id}:${row.normalized_word_key ?? row.word_key}`,
           );
         } else if (table === "review_logs") {
           upsertCloudRows(
             normalizedRows,
             cloudState.review_logs,
-            (row) => `${row.user_id}:${row.word_key}:${row.reviewed_at}`,
+            (row) => `${row.user_id}:${row.normalized_word_key ?? row.word_key}:${row.reviewed_at}`,
           );
         } else if (table === "word_associations") {
           upsertCloudRows(
             normalizedRows,
             cloudState.word_associations,
-            (row) => `${row.user_id}:${row.word_key}`,
+            (row) => `${row.user_id}:${row.normalized_word_key ?? row.word_key}`,
           );
         } else if (table === "custom_words") {
           upsertCloudRows(
             normalizedRows,
             cloudState.custom_words,
-            (row) => `${row.user_id}:${row.word_key}`,
+            (row) => `${row.user_id}:${row.normalized_word_key ?? row.word_key}`,
           );
         } else if (table === "word_tot_captures") {
           upsertCloudRows(
             normalizedRows,
             cloudState.word_tot_captures,
-            (row) => `${row.user_id}:${row.word_key}`,
+            (row) => `${row.user_id}:${row.normalized_word_key ?? row.word_key}`,
           );
         }
 
@@ -383,6 +383,7 @@ describe("sync integration", () => {
       weakSubstitute: "clear",
       context: "I blanked on lucid in conversation.",
       capturedAt: "2026-04-13T08:00:00.000Z",
+      updatedAt: "2026-04-13T08:00:00.000Z",
       count: 1,
     };
 
@@ -391,12 +392,14 @@ describe("sync integration", () => {
     expect(cloudState.custom_words).toEqual([
       expect.objectContaining({
         word_key: "equanimity",
+        normalized_word_key: "equanimity",
         definition: "mental calmness under pressure",
       }),
     ]);
     expect(cloudState.word_tot_captures).toEqual([
       expect.objectContaining({
         word_key: "lucid",
+        normalized_word_key: "lucid",
         source: "speech",
         count: 1,
       }),
@@ -436,6 +439,7 @@ describe("sync integration", () => {
       expect.arrayContaining([
         expect.objectContaining({
           word_key: "equanimity",
+          normalized_word_key: "equanimity",
         }),
       ]),
     );
@@ -443,7 +447,107 @@ describe("sync integration", () => {
       expect.arrayContaining([
         expect.objectContaining({
           word_key: "lucid",
+          normalized_word_key: "lucid",
           count: 1,
+        }),
+      ]),
+    );
+  });
+
+  it("normalizes custom-word casing across devices", async () => {
+    activeDevice.state = {
+      words: [makeCustomWord(1, "Equanimity")],
+      reviewCards: [makeCard(1, 1, "2026-04-13T08:06:00.000Z", "2026-04-13T08:06:00.000Z")],
+      reviewLogs: [],
+      profile: makeProfile({ updatedAt: "2026-04-13T08:10:00.000Z" }),
+    };
+
+    await pushToCloud(makeUser());
+
+    activeDevice.state = {
+      words: [],
+      reviewCards: [],
+      reviewLogs: [],
+      profile: makeProfile({ updatedAt: "2026-04-13T18:10:00.000Z" }),
+    };
+    cloudState.custom_words = [
+      {
+        user_id: "user-1",
+        word_key: "equanimity",
+        normalized_word_key: "equanimity",
+        definition: "mental calmness under pressure",
+        examples: ["Equanimity kept the discussion steady."],
+        synonyms: [],
+        created_at: "2026-04-13T08:00:00.000Z",
+        updated_at: "2026-04-13T08:10:00.000Z",
+      },
+    ];
+
+    await syncOnLogin(makeUser());
+
+    expect(activeDevice.state.words).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          word: "equanimity",
+          tier: "custom",
+        }),
+      ]),
+    );
+    expect(cloudState.custom_words).toEqual([
+      expect.objectContaining({
+        word_key: "equanimity",
+        normalized_word_key: "equanimity",
+      }),
+    ]);
+  });
+
+  it("preserves richer TOT details while keeping the newer source and count", async () => {
+    activeDevice.state = {
+      words: [
+        {
+          ...makeWord(1, "Lucid"),
+          totCapture: {
+            source: "speech",
+            weakSubstitute: "clear",
+            context: "I blanked on lucid in conversation.",
+            capturedAt: "2026-04-13T08:00:00.000Z",
+            updatedAt: "2026-04-13T08:05:00.000Z",
+            count: 1,
+          },
+        },
+      ],
+      reviewCards: [makeCard(1, 1, "2026-04-13T08:05:00.000Z", "2026-04-13T08:05:00.000Z")],
+      reviewLogs: [],
+      profile: makeProfile({ updatedAt: "2026-04-13T08:10:00.000Z" }),
+    };
+    cloudState.word_tot_captures = [
+      {
+        user_id: "user-1",
+        word_key: "lucid",
+        normalized_word_key: "lucid",
+        source: "writing",
+        weak_substitute: null,
+        context: null,
+        captured_at: "2026-04-13T08:10:00.000Z",
+        count: 2,
+        updated_at: "2026-04-13T08:15:00.000Z",
+      },
+    ];
+
+    await syncOnLogin(makeUser());
+
+    expect(activeDevice.state.words).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          word: "Lucid",
+          totCapture: expect.objectContaining({
+            source: "writing",
+            weakSubstitute: "clear",
+            context: "I blanked on lucid in conversation.",
+            capturedAt: "2026-04-13T08:10:00.000Z",
+            updatedAt: "2026-04-13T08:15:00.000Z",
+            count: 2,
+          }),
         }),
       ]),
     );

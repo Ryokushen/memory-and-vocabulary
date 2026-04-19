@@ -32,6 +32,7 @@ export interface TOTCapture {
   weakSubstitute?: string;
   context?: string;
   capturedAt: string;
+  updatedAt?: string;
   count: number;
 }
 

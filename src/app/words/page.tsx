@@ -326,6 +326,7 @@ export default function WordsPage() {
           weakSubstitute,
           context,
           capturedAt,
+          updatedAt: capturedAt,
           count: (existingTOTWord.totCapture?.count ?? 0) + 1,
         },
       });
@@ -341,6 +342,7 @@ export default function WordsPage() {
           weakSubstitute,
           context,
           capturedAt,
+          updatedAt: capturedAt,
           count: 1,
         },
         createdAt: new Date(),

@@ -1,4 +1,5 @@
 import type { User } from "@supabase/supabase-js";
+import { normalizeWord } from "./word-library";
 import { toLocalDateKey } from "./date";
 import { supabase } from "./supabase";
 import { db, getOrCreateProfile } from "./db";
@@ -41,6 +42,7 @@ type CloudProfileRow = {
 type CloudReviewCardRow = {
   user_id: string;
   word_key: string;
+  normalized_word_key?: string | null;
   card: ReviewCard["card"];
   updated_at?: string | null;
 };
@@ -48,6 +50,7 @@ type CloudReviewCardRow = {
 type CloudReviewLogRow = {
   user_id: string;
   word_key: string;
+  normalized_word_key?: string | null;
   session_id?: string | null;
   rating: number;
   response_time_ms: number;
@@ -61,6 +64,7 @@ type CloudReviewLogRow = {
 type CloudAssociationRow = {
   user_id: string;
   word_key: string;
+  normalized_word_key?: string | null;
   association: string;
   updated_at?: string | null;
 };
@@ -68,6 +72,7 @@ type CloudAssociationRow = {
 type CloudCustomWordRow = {
   user_id: string;
   word_key: string;
+  normalized_word_key?: string | null;
   definition: string;
   examples?: unknown;
   pronunciation?: string | null;
@@ -79,6 +84,7 @@ type CloudCustomWordRow = {
 type CloudTOTCaptureRow = {
   user_id: string;
   word_key: string;
+  normalized_word_key?: string | null;
   source: TOTCaptureSource;
   weak_substitute?: string | null;
   context?: string | null;
@@ -102,6 +108,17 @@ type MergedReviewStats = {
   estimatedSessions: number;
   sessionCountsByDay: Record<string, number>;
 };
+
+function getCloudWordLookupKey(row: {
+  word_key: string;
+  normalized_word_key?: string | null;
+}): string {
+  return normalizeWord(row.normalized_word_key ?? row.word_key);
+}
+
+function getLocalWordLookupKey(word: Pick<Word, "word">): string {
+  return normalizeWord(word.word);
+}
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Unknown cloud sync error";
@@ -176,7 +193,7 @@ function getWordSyncUpdatedAt(word: Word): string {
   return maxIso(
     word.createdAt.toISOString(),
     word.associationUpdatedAt,
-    word.totCapture?.capturedAt,
+    word.totCapture?.updatedAt ?? word.totCapture?.capturedAt,
   );
 }
 
@@ -210,23 +227,18 @@ function mergeTOTCapture(
 ): NonNullable<Word["totCapture"]> {
   const localCapture = localWord.totCapture;
   const remoteUpdatedAt = remoteRow.updated_at ?? remoteRow.captured_at;
-  const localUpdatedAt = localCapture?.capturedAt;
+  const localUpdatedAt = localCapture?.updatedAt ?? localCapture?.capturedAt;
   const remoteIsNewer = toMillis(remoteUpdatedAt) >= toMillis(localUpdatedAt);
 
   return {
     source: remoteIsNewer
       ? remoteRow.source
       : (localCapture?.source ?? remoteRow.source),
-    weakSubstitute: remoteIsNewer
-      ? (remoteRow.weak_substitute ?? undefined)
-      : localCapture?.weakSubstitute,
-    context: remoteIsNewer
-      ? (remoteRow.context ?? undefined)
-      : localCapture?.context,
-    capturedAt: remoteIsNewer
-      ? remoteRow.captured_at
-      : (localCapture?.capturedAt ?? remoteRow.captured_at),
+    weakSubstitute: pickRicherText(localCapture?.weakSubstitute, remoteRow.weak_substitute),
+    context: pickRicherText(localCapture?.context, remoteRow.context),
+    capturedAt: maxIso(localCapture?.capturedAt, remoteRow.captured_at),
     count: Math.max(localCapture?.count ?? 0, remoteRow.count),
+    updatedAt: maxIso(localUpdatedAt, remoteUpdatedAt),
   };
 }
 
@@ -562,12 +574,12 @@ async function reconcileProfile(
 }
 
 async function reconcileReviewCards(cloudCards: CloudReviewCardRow[], words: Word[]) {
-  const wordIdMap = new Map(words.map((word) => [word.word, word.id]));
+  const wordIdMap = new Map(words.map((word) => [getLocalWordLookupKey(word), word.id]));
   const localCards = (await db.reviewCards.toArray()).map(normalizeReviewCard);
   const localCardsByWordId = new Map(localCards.map((card) => [card.wordId, card]));
 
   for (const row of cloudCards) {
-    const wordId = wordIdMap.get(row.word_key);
+    const wordId = wordIdMap.get(getCloudWordLookupKey(row));
     if (!wordId) continue;
 
     const remoteCard = cloudCardToLocal(row, wordId);
@@ -596,7 +608,7 @@ async function reconcileReviewLogs(
   cloudLogs: CloudReviewLogRow[],
   words: Word[],
 ): Promise<MergedReviewStats> {
-  const wordIdMap = new Map(words.map((word) => [word.word, word.id]));
+  const wordIdMap = new Map(words.map((word) => [getLocalWordLookupKey(word), word.id]));
   const existingLogs = await db.reviewLogs.toArray();
   const existingKeys = new Set(
     existingLogs.map(
@@ -605,7 +617,7 @@ async function reconcileReviewLogs(
   );
 
   for (const row of cloudLogs) {
-    const wordId = wordIdMap.get(row.word_key);
+    const wordId = wordIdMap.get(getCloudWordLookupKey(row));
     if (!wordId) continue;
 
     const reviewedAt = new Date(row.reviewed_at);
@@ -630,10 +642,10 @@ async function reconcileReviewLogs(
 }
 
 async function reconcileAssociations(cloudAssociations: CloudAssociationRow[], words: Word[]) {
-  const localWordsByKey = new Map(words.map((word) => [word.word, word]));
+  const localWordsByKey = new Map(words.map((word) => [getLocalWordLookupKey(word), word]));
 
   for (const row of cloudAssociations) {
-    const localWord = localWordsByKey.get(row.word_key);
+    const localWord = localWordsByKey.get(getCloudWordLookupKey(row));
     if (!localWord) continue;
 
     const localAssociation = localWord.association?.trim();
@@ -644,7 +656,7 @@ async function reconcileAssociations(cloudAssociations: CloudAssociationRow[], w
         association: cloudAssociation,
         associationUpdatedAt: row.updated_at ?? new Date(0).toISOString(),
       });
-      localWordsByKey.set(row.word_key, {
+      localWordsByKey.set(getCloudWordLookupKey(row), {
         ...localWord,
         association: cloudAssociation,
         associationUpdatedAt: row.updated_at ?? new Date(0).toISOString(),
@@ -668,7 +680,7 @@ async function reconcileAssociations(cloudAssociations: CloudAssociationRow[], w
         association: cloudAssociation,
         associationUpdatedAt: row.updated_at ?? new Date(0).toISOString(),
       });
-      localWordsByKey.set(row.word_key, {
+      localWordsByKey.set(getCloudWordLookupKey(row), {
         ...localWord,
         association: cloudAssociation,
         associationUpdatedAt: row.updated_at ?? new Date(0).toISOString(),
@@ -686,30 +698,30 @@ async function reconcileCustomWords(cloudCustomWords: CloudCustomWordRow[]) {
   const localCustomWordsByKey = new Map(
     localWords
       .filter((word) => word.tier === "custom")
-      .map((word) => [word.word, word]),
+      .map((word) => [getLocalWordLookupKey(word), word]),
   );
 
   for (const row of cloudCustomWords) {
-    const localWord = localCustomWordsByKey.get(row.word_key);
+    const localWord = localCustomWordsByKey.get(getCloudWordLookupKey(row));
     const remoteWord = cloudCustomWordToLocal(row);
 
     if (!localWord) {
       const id = await db.words.add(remoteWord as Word);
-      localCustomWordsByKey.set(row.word_key, { ...remoteWord, id });
+      localCustomWordsByKey.set(getLocalWordLookupKey({ word: remoteWord.word }), { ...remoteWord, id });
       continue;
     }
 
     const mergedWord = mergeCustomWord(localWord, remoteWord);
     await db.words.update(localWord.id!, mergedWord);
-    localCustomWordsByKey.set(row.word_key, { ...localWord, ...mergedWord });
+    localCustomWordsByKey.set(getLocalWordLookupKey(localWord), { ...localWord, ...mergedWord });
   }
 }
 
 async function reconcileTOTCaptures(cloudTOTCaptures: CloudTOTCaptureRow[], words: Word[]) {
-  const localWordsByKey = new Map(words.map((word) => [word.word, word]));
+  const localWordsByKey = new Map(words.map((word) => [getLocalWordLookupKey(word), word]));
 
   for (const row of cloudTOTCaptures) {
-    const localWord = localWordsByKey.get(row.word_key);
+    const localWord = localWordsByKey.get(getCloudWordLookupKey(row));
     if (!localWord) continue;
 
     const mergedTOTCapture = mergeTOTCapture(localWord, row);
@@ -767,6 +779,7 @@ async function pushReviewCards(user: User) {
     .map((card) => ({
       user_id: user.id,
       word_key: wordMap.get(card.wordId)!,
+      normalized_word_key: normalizeWord(wordMap.get(card.wordId)!),
       card: card.card,
       updated_at: card.updatedAt,
     }));
@@ -774,7 +787,7 @@ async function pushReviewCards(user: User) {
   for (const chunk of chunkRows(rows)) {
     const { error } = await supabase
       .from("review_cards")
-      .upsert(chunk, { onConflict: "user_id,word_key" });
+      .upsert(chunk, { onConflict: "user_id,normalized_word_key" });
 
     if (error) throw error;
   }
@@ -791,6 +804,7 @@ async function pushReviewLogs(user: User) {
     .map((log) => ({
       user_id: user.id,
       word_key: wordMap.get(log.wordId)!,
+      normalized_word_key: normalizeWord(wordMap.get(log.wordId)!),
       session_id: log.sessionId ?? null,
       rating: log.rating,
       response_time_ms: log.responseTimeMs,
@@ -804,7 +818,7 @@ async function pushReviewLogs(user: User) {
   for (const chunk of chunkRows(rows)) {
     const { error } = await supabase
       .from("review_logs")
-      .upsert(chunk, { onConflict: "user_id,word_key,reviewed_at" });
+      .upsert(chunk, { onConflict: "user_id,normalized_word_key,reviewed_at" });
 
     if (error) throw error;
   }
@@ -818,6 +832,7 @@ async function pushAssociations(user: User) {
     .map((word) => ({
       user_id: user.id,
       word_key: word.word,
+      normalized_word_key: normalizeWord(word.word),
       association: word.association!,
       updated_at: word.associationUpdatedAt ?? word.createdAt.toISOString(),
     }));
@@ -825,7 +840,7 @@ async function pushAssociations(user: User) {
   for (const chunk of chunkRows(rows)) {
     const { error } = await supabase
       .from("word_associations")
-      .upsert(chunk, { onConflict: "user_id,word_key" });
+      .upsert(chunk, { onConflict: "user_id,normalized_word_key" });
 
     if (error) throw error;
   }
@@ -839,6 +854,7 @@ async function pushCustomWords(user: User) {
     .map((word) => ({
       user_id: user.id,
       word_key: word.word,
+      normalized_word_key: normalizeWord(word.word),
       definition: word.definition,
       examples: word.examples,
       pronunciation: word.pronunciation ?? null,
@@ -850,7 +866,7 @@ async function pushCustomWords(user: User) {
   for (const chunk of chunkRows(rows)) {
     const { error } = await supabase
       .from("custom_words")
-      .upsert(chunk, { onConflict: "user_id,word_key" });
+      .upsert(chunk, { onConflict: "user_id,normalized_word_key" });
 
     if (error) throw error;
   }
@@ -864,18 +880,19 @@ async function pushTOTCaptures(user: User) {
     .map((word) => ({
       user_id: user.id,
       word_key: word.word,
+      normalized_word_key: normalizeWord(word.word),
       source: word.totCapture!.source,
       weak_substitute: word.totCapture!.weakSubstitute ?? null,
       context: word.totCapture!.context ?? null,
       captured_at: word.totCapture!.capturedAt,
       count: word.totCapture!.count,
-      updated_at: word.totCapture!.capturedAt,
+      updated_at: word.totCapture!.updatedAt ?? word.totCapture!.capturedAt,
     }));
 
   for (const chunk of chunkRows(rows)) {
     const { error } = await supabase
       .from("word_tot_captures")
-      .upsert(chunk, { onConflict: "user_id,word_key" });
+      .upsert(chunk, { onConflict: "user_id,normalized_word_key" });
 
     if (error) throw error;
   }

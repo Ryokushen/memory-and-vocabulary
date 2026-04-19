@@ -232,7 +232,7 @@ describe("sync review logs", () => {
           reviewed_at: "2026-04-11T08:15:00.000Z",
         }),
       ],
-      options: { onConflict: "user_id,word_key,reviewed_at" },
+      options: { onConflict: "user_id,normalized_word_key,reviewed_at" },
     });
   });
 
@@ -246,6 +246,7 @@ describe("sync review logs", () => {
           weakSubstitute: "clear",
           context: "I said clear when I wanted lucid.",
           capturedAt: "2026-04-13T12:00:00.000Z",
+          updatedAt: "2026-04-13T12:05:00.000Z",
           count: 2,
         },
       },
@@ -258,12 +259,13 @@ describe("sync review logs", () => {
         expect.objectContaining({
           user_id: "user-1",
           word_key: "equanimity",
+          normalized_word_key: "equanimity",
           definition: "equanimity definition",
           examples: ["equanimity example"],
           synonyms: [],
         }),
       ],
-      options: { onConflict: "user_id,word_key" },
+      options: { onConflict: "user_id,normalized_word_key" },
     });
 
     expect(tableState.word_tot_captures.upserts[0]).toEqual({
@@ -271,14 +273,16 @@ describe("sync review logs", () => {
         expect.objectContaining({
           user_id: "user-1",
           word_key: "lucid",
+          normalized_word_key: "lucid",
           source: "speech",
           weak_substitute: "clear",
           context: "I said clear when I wanted lucid.",
           captured_at: "2026-04-13T12:00:00.000Z",
+          updated_at: "2026-04-13T12:05:00.000Z",
           count: 2,
         }),
       ],
-      options: { onConflict: "user_id,word_key" },
+      options: { onConflict: "user_id,normalized_word_key" },
     });
   });
 
@@ -357,11 +361,71 @@ describe("sync review logs", () => {
     expect(tableState.review_logs.upserts).toHaveLength(1);
   });
 
+  it("normalizes casing for custom word sync keys", async () => {
+    dbMock.words.toArray.mockResolvedValue([
+      makeCustomWord(1, "Equanimity"),
+    ]);
+
+    await pushToCloud(makeUser());
+
+    expect(tableState.custom_words.upserts[0]).toEqual({
+      rows: [
+        expect.objectContaining({
+          word_key: "Equanimity",
+          normalized_word_key: "equanimity",
+        }),
+      ],
+      options: { onConflict: "user_id,normalized_word_key" },
+    });
+  });
+
+  it("merges richer local TOT details even when the remote row is newer", async () => {
+    tableState.word_tot_captures.rows = [
+      {
+        user_id: "user-1",
+        word_key: "lucid",
+        normalized_word_key: "lucid",
+        source: "writing",
+        weak_substitute: null,
+        context: null,
+        captured_at: "2026-04-13T12:00:00.000Z",
+        count: 2,
+        updated_at: "2026-04-13T12:10:00.000Z",
+      },
+    ];
+    dbMock.words.toArray.mockResolvedValue([
+      {
+        ...makeWord(1, "Lucid"),
+        totCapture: {
+          source: "speech",
+          weakSubstitute: "clear",
+          context: "I blanked on lucid in conversation.",
+          capturedAt: "2026-04-13T11:55:00.000Z",
+          updatedAt: "2026-04-13T12:05:00.000Z",
+          count: 1,
+        },
+      },
+    ]);
+
+    await syncOnLogin(makeUser());
+
+    expect(dbMock.words.update).toHaveBeenCalledWith(1, {
+      totCapture: {
+        source: "writing",
+        weakSubstitute: "clear",
+        context: "I blanked on lucid in conversation.",
+        capturedAt: "2026-04-13T12:00:00.000Z",
+        updatedAt: "2026-04-13T12:10:00.000Z",
+        count: 2,
+      },
+    });
+  });
   it("pulls remote custom words and TOT capture summaries on login", async () => {
     tableState.custom_words.rows = [
       {
         user_id: "user-1",
         word_key: "equanimity",
+        normalized_word_key: "equanimity",
         definition: "mental calmness under pressure",
         examples: ["Equanimity helped during the argument."],
         synonyms: ["calmness"],
@@ -373,6 +437,7 @@ describe("sync review logs", () => {
       {
         user_id: "user-1",
         word_key: "lucid",
+        normalized_word_key: "lucid",
         source: "speech",
         weak_substitute: "clear",
         context: "I stalled before saying lucid.",
@@ -400,6 +465,7 @@ describe("sync review logs", () => {
         weakSubstitute: "clear",
         context: "I stalled before saying lucid.",
         capturedAt: "2026-04-13T12:00:00.000Z",
+        updatedAt: "2026-04-13T12:00:00.000Z",
         count: 2,
       },
     });
@@ -528,10 +594,11 @@ describe("sync review logs", () => {
         expect.objectContaining({
           user_id: "user-1",
           word_key: "lucid",
+          normalized_word_key: "lucid",
           updated_at: "2026-04-11T09:00:00.000Z",
         }),
       ],
-      options: { onConflict: "user_id,word_key" },
+      options: { onConflict: "user_id,normalized_word_key" },
     });
     expect(tableState.profiles.upserts[0]).toEqual({
       rows: expect.objectContaining({
