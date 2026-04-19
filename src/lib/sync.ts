@@ -755,7 +755,7 @@ async function reconcileTOTCaptures(cloudTOTCaptures: CloudTOTCaptureRow[], word
 
     const mergedTOTCapture = mergeTOTCapture(localWord, row);
     await db.words.update(localWord.id!, { totCapture: mergedTOTCapture });
-    localWordsByKey.set(row.word_key, { ...localWord, totCapture: mergedTOTCapture });
+    localWordsByKey.set(getCloudWordLookupKey(row), { ...localWord, totCapture: mergedTOTCapture });
   }
 }
 
