@@ -172,11 +172,11 @@ export default function SessionPage() {
     setLeaveSaving(true);
 
     try {
-      const savedCount = await commitPartialSession();
-      if (typeof window !== "undefined" && savedCount > 0) {
+      await commitPartialSession();
+      if (typeof window !== "undefined" && answeredCount > 0) {
         window.sessionStorage.setItem(
           SESSION_EXIT_STORAGE_KEY,
-          JSON.stringify({ savedCount }),
+          JSON.stringify({ savedCount: answeredCount }),
         );
       }
       resetSession();
