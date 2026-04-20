@@ -334,7 +334,10 @@ export default function WordsPage() {
           context,
           capturedAt,
           updatedAt: capturedAt,
-          count: eventIds.length,
+          count: Math.max(
+            existingTOTWord.totCapture?.count ?? 0,
+            eventIds.length,
+          ),
           eventIds,
         },
       });
