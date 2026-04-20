@@ -171,9 +171,92 @@ function median(values: number[]): number | undefined {
   return sorted[middle];
 }
 
+const DRILL_STAGE_INFLUENCE: Record<RetrievalDrillProfile["stage"], number> = {
+  rescue: 0.35,
+  stabilize: 0.55,
+  fluent: 0.75,
+};
+
+function getDrillStatBalance(stats?: Partial<RPGStats>): {
+  recallDelta: number;
+  perceptionDelta: number;
+} {
+  const recallStat = Math.max(0, stats?.recall ?? 0);
+  const perceptionStat = Math.max(0, stats?.perception ?? 0);
+  const total = recallStat + perceptionStat;
+
+  if (total <= 0) {
+    return { recallDelta: 0, perceptionDelta: 0 };
+  }
+
+  const neutralShare = 0.5;
+  const recallShare = recallStat / total;
+  const perceptionShare = perceptionStat / total;
+
+  return {
+    recallDelta: clamp((recallShare - neutralShare) / neutralShare, -1, 1),
+    perceptionDelta: clamp((perceptionShare - neutralShare) / neutralShare, -1, 1),
+  };
+}
+
+function tuneRapidTimeoutMs(
+  rawTimeoutMs: number,
+  stage: RetrievalDrillProfile["stage"],
+  stats?: Partial<RPGStats>,
+): number {
+  const { perceptionDelta } = getDrillStatBalance(stats);
+  const stageInfluence = DRILL_STAGE_INFLUENCE[stage];
+  const timeoutMultiplier = clamp(
+    1 - perceptionDelta * 0.3 * stageInfluence,
+    0.8,
+    1.2,
+  );
+  const adjustedTimeout = Math.round(rawTimeoutMs * timeoutMultiplier);
+
+  if (stage === "rescue") {
+    return clamp(adjustedTimeout, 4500, 6500);
+  }
+
+  if (stage === "stabilize") {
+    return clamp(adjustedTimeout, 3500, 5200);
+  }
+
+  return clamp(adjustedTimeout, 2500, 3800);
+}
+
+function tuneRapidCueRevealMs(
+  stage: RetrievalDrillProfile["stage"],
+  exactStreak: number,
+  rapidTimeoutMs: number,
+  stats?: Partial<RPGStats>,
+): number | null {
+  if (stage === "fluent" && exactStreak >= 3) {
+    return null;
+  }
+
+  const { recallDelta } = getDrillStatBalance(stats);
+  const stageInfluence = DRILL_STAGE_INFLUENCE[stage];
+  const baseOffsetMs = stage === "rescue"
+    ? 1800
+    : stage === "stabilize"
+      ? 1200
+      : 800;
+  const minRevealMs = stage === "fluent" ? 1500 : 1800;
+  const minGapMs = stage === "fluent" ? 300 : stage === "stabilize" ? 400 : 500;
+  const offsetMultiplier = clamp(
+    1 - recallDelta * 0.35 * stageInfluence,
+    0.7,
+    1.35,
+  );
+  const cueOffsetMs = Math.round(baseOffsetMs * offsetMultiplier);
+
+  return clamp(rapidTimeoutMs - cueOffsetMs, minRevealMs, rapidTimeoutMs - minGapMs);
+}
+
 export function buildRetrievalDrillProfile(
   word: Word,
   logs: ReviewLog[],
+  stats?: Partial<RPGStats>,
 ): RetrievalDrillProfile {
   const recentLogs = [...logs]
     .sort((left, right) => right.reviewedAt.getTime() - left.reviewedAt.getTime())
@@ -216,19 +299,18 @@ export function buildRetrievalDrillProfile(
 
   // Ranges measure retrieval-only time (read phase is separate)
   const baselineLatency = recentLatencyMs ?? DEFAULT_RAPID_TIMEOUT_MS;
-  const rapidTimeoutMs = stage === "rescue"
-    ? clamp(baselineLatency + 1400, 4500, 6500)
+  const rawRapidTimeoutMs = stage === "rescue"
+    ? baselineLatency + 1400
     : stage === "stabilize"
-      ? clamp(baselineLatency + 900, 3500, 5200)
-      : clamp(baselineLatency + 400, 2500, 3800);
-
-  const rapidCueRevealMs = stage === "fluent"
-    ? exactStreak >= 3
-      ? null
-      : clamp(rapidTimeoutMs - 800, 1500, rapidTimeoutMs - 300)
-    : stage === "stabilize"
-      ? clamp(rapidTimeoutMs - 1200, 1800, rapidTimeoutMs - 400)
-      : clamp(rapidTimeoutMs - 1800, 1800, rapidTimeoutMs - 500);
+      ? baselineLatency + 900
+      : baselineLatency + 400;
+  const rapidTimeoutMs = tuneRapidTimeoutMs(rawRapidTimeoutMs, stage, stats);
+  const rapidCueRevealMs = tuneRapidCueRevealMs(
+    stage,
+    exactStreak,
+    rapidTimeoutMs,
+    stats,
+  );
 
   return {
     stage,
@@ -464,6 +546,7 @@ async function getNewWordsIntroducedToday(existingLogs?: ReviewLog[]): Promise<n
 export async function loadSessionWords(
   difficulty: Difficulty = "normal",
   level: number = 1,
+  stats?: Partial<RPGStats>,
 ): Promise<SessionWord[]> {
   const config = DIFFICULTY_CONFIG[difficulty];
   const sessionSize = config.sessionSize;
@@ -495,7 +578,7 @@ export async function loadSessionWords(
       sessionWords.push({
         word,
         reviewCard: rc,
-        drillProfile: buildRetrievalDrillProfile(word, wordLogs),
+        drillProfile: buildRetrievalDrillProfile(word, wordLogs, stats),
       });
     }
   }

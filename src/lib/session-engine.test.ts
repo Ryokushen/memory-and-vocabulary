@@ -44,6 +44,7 @@ vi.mock("./gamification", () => ({
 
 import {
   autoGrade,
+  buildRetrievalDrillProfile,
   createSessionId,
   finalizeSession,
   getAvailableNewCount,
@@ -411,6 +412,110 @@ describe("session engine", () => {
     expect(ratios.speed).toBeGreaterThan(0.3);
     expect(ratios.context).toBeLessThan(0.2);
     expect(ratios.association).toBeLessThan(0.15);
+  });
+
+  it("tightens rescue timers when perception is stronger while keeping rescue safeguards", () => {
+    const word = makeWord(1, 1, {
+      source: "speech",
+      capturedAt: "2026-04-10T07:00:00.000Z",
+      count: 2,
+    });
+    const logs = [
+      makeReviewLog(1, "2026-04-10T11:45:00.000Z", {
+        rating: 1,
+        correct: false,
+        responseTimeMs: 5400,
+        retrievalKind: "failed",
+      }),
+      makeReviewLog(1, "2026-04-09T09:10:00.000Z", {
+        rating: 2,
+        cueLevel: 1,
+        responseTimeMs: 4300,
+        retrievalKind: "assisted",
+      }),
+    ];
+
+    const lowPerception = buildRetrievalDrillProfile(word, logs, {
+      recall: 20,
+      retention: 12,
+      perception: 4,
+      creativity: 8,
+    });
+    const highPerception = buildRetrievalDrillProfile(word, logs, {
+      recall: 20,
+      retention: 12,
+      perception: 42,
+      creativity: 8,
+    });
+
+    expect(lowPerception.stage).toBe("rescue");
+    expect(highPerception.stage).toBe("rescue");
+    expect(highPerception.rapidTimeoutMs).toBeLessThan(lowPerception.rapidTimeoutMs);
+    expect(highPerception.rapidTimeoutMs).toBeGreaterThanOrEqual(4500);
+    expect(highPerception.recallHintEnabled).toBe(true);
+  });
+
+  it("delays rescue cue reveal in stabilize stage when recall is stronger", () => {
+    const word = makeWord(1);
+    const logs = [
+      makeReviewLog(1, "2026-04-10T11:45:00.000Z", {
+        responseTimeMs: 2600,
+      }),
+    ];
+
+    const lowRecall = buildRetrievalDrillProfile(word, logs, {
+      recall: 4,
+      retention: 12,
+      perception: 20,
+      creativity: 8,
+    });
+    const highRecall = buildRetrievalDrillProfile(word, logs, {
+      recall: 44,
+      retention: 12,
+      perception: 20,
+      creativity: 8,
+    });
+
+    expect(lowRecall.stage).toBe("stabilize");
+    expect(highRecall.stage).toBe("stabilize");
+    expect(lowRecall.rapidCueRevealMs).not.toBeNull();
+    expect(highRecall.rapidCueRevealMs).not.toBeNull();
+    expect((highRecall.rapidCueRevealMs ?? 0)).toBeGreaterThan(lowRecall.rapidCueRevealMs ?? 0);
+  });
+
+  it("keeps fluent safeguards even when stats differ", () => {
+    const word = makeWord(1);
+    const logs = [
+      makeReviewLog(1, "2026-04-10T11:45:00.000Z", {
+        responseTimeMs: 1900,
+      }),
+      makeReviewLog(1, "2026-04-09T11:45:00.000Z", {
+        responseTimeMs: 2000,
+      }),
+      makeReviewLog(1, "2026-04-08T11:45:00.000Z", {
+        responseTimeMs: 2100,
+      }),
+    ];
+
+    const lowStats = buildRetrievalDrillProfile(word, logs, {
+      recall: 2,
+      retention: 2,
+      perception: 2,
+      creativity: 2,
+    });
+    const highStats = buildRetrievalDrillProfile(word, logs, {
+      recall: 50,
+      retention: 35,
+      perception: 45,
+      creativity: 30,
+    });
+
+    expect(lowStats.stage).toBe("fluent");
+    expect(highStats.stage).toBe("fluent");
+    expect(lowStats.recallHintEnabled).toBe(false);
+    expect(highStats.recallHintEnabled).toBe(false);
+    expect(lowStats.rapidCueRevealMs).toBeNull();
+    expect(highStats.rapidCueRevealMs).toBeNull();
   });
 
   it("always grades association create prompts as Good", async () => {

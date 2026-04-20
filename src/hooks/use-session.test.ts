@@ -102,6 +102,25 @@ describe("useSession", () => {
     } satisfies SessionSummary);
   });
 
+  it("passes profile stats into session loading so drill tuning can adapt", async () => {
+    const words = [makeSessionWord(1)];
+    loadSessionWordsMock.mockResolvedValue(words);
+
+    const { result } = renderHook(() => useSession());
+    const stats = {
+      recall: 12,
+      retention: 9,
+      perception: 15,
+      creativity: 7,
+    };
+
+    await act(async () => {
+      await result.current.startSession("normal", 3, stats);
+    });
+
+    expect(loadSessionWordsMock).toHaveBeenCalledWith("normal", 3, stats);
+  });
+
   it("ignores duplicate submissions while an answer is processing and allows the next word afterward", async () => {
     const words = [makeSessionWord(1), makeSessionWord(2)];
     loadSessionWordsMock.mockResolvedValue(words);

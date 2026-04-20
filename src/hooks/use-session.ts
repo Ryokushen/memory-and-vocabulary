@@ -96,7 +96,11 @@ export function useSession() {
     partialCommitDoneRef.current = false;
     partialCommitPromiseRef.current = null;
     sessionStatsRef.current = stats;
-    const sessionWords = await loadSessionWords(difficulty ?? "normal", level ?? 1);
+    const sessionWords = await loadSessionWords(
+      difficulty ?? "normal",
+      level ?? 1,
+      stats,
+    );
     if (sessionWords.length === 0) {
       setState("idle");
       return;
