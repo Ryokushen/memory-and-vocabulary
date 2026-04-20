@@ -194,7 +194,6 @@ describe("useSession", () => {
       result: makeResult(1),
       updatedCard: words[0].reviewCard,
     });
-
     const partialSummary: SessionSummary = {
       results: [makeResult(1)],
       totalCorrect: 1,

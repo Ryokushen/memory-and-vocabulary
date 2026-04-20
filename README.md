@@ -28,6 +28,8 @@ What it does not currently claim:
 - Optional Supabase sync with GitHub OAuth for cross-device backup of profile state, review data, custom words, associations, and TOT capture summaries
 - Review-log sync that keeps daily limits consistent across browsers
 - Review-card reconciliation that preserves progressed due cards when a freshly seeded device syncs against an already-trained device
+- Partial session progress now saves when you leave training early
+- Dashboard quest card now shows backlog separately from the next quest mix
 - PWA support with offline fallback via Serwist
 
 ## Game Modes
