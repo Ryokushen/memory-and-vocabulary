@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useSession } from "@/hooks/use-session";
@@ -15,12 +15,32 @@ import { SessionProgress } from "@/components/session/session-progress";
 import { XPAward } from "@/components/session/xp-award";
 import { BattleScene } from "@/components/session/battle-scene";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, BookOpen, ArrowLeft, RotateCcw } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertTriangle,
+  BookOpen,
+  ArrowLeft,
+  RotateCcw,
+  DoorOpen,
+  LoaderCircle,
+} from "lucide-react";
+
+const SESSION_EXIT_STORAGE_KEY = "lexforge-session-exit-summary";
 
 export default function SessionPage() {
   const router = useRouter();
   const { profile, loading: statsLoading } = useStats();
   const { seedStatus, seedError, retrySeed } = useBootstrap();
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [leaveSaving, setLeaveSaving] = useState(false);
   const {
     state,
     currentWord,
@@ -36,6 +56,7 @@ export default function SessionPage() {
     submitAnswer,
     nextWord,
     resetSession,
+    commitPartialSession,
   } = useSession();
 
   useEffect(() => {
@@ -43,6 +64,12 @@ export default function SessionPage() {
       startSession(profile.difficulty, profile.level);
     }
   }, [state, startSession, profile, seedStatus]);
+
+  const answeredCount = results.length;
+  const leaveDescription =
+    answeredCount === 0
+      ? "You have not answered any words yet. Leaving now will discard this session."
+      : `${answeredCount} answered ${answeredCount === 1 ? "word" : "words"} will be saved before you return to the dashboard.`;
 
   if (state === "loading" || statsLoading || (state === "idle" && seedStatus === "seeding")) {
     return (
@@ -140,8 +167,59 @@ export default function SessionPage() {
   if (!currentWord) return null;
 
   const lastResult = results[results.length - 1] ?? null;
+
+  async function handleLeaveSession() {
+    setLeaveSaving(true);
+
+    try {
+      const savedCount = await commitPartialSession();
+      if (typeof window !== "undefined" && savedCount > 0) {
+        window.sessionStorage.setItem(
+          SESSION_EXIT_STORAGE_KEY,
+          JSON.stringify({ savedCount }),
+        );
+      }
+      resetSession();
+      router.push("/");
+    } finally {
+      setLeaveSaving(false);
+      setLeaveDialogOpen(false);
+    }
+  }
+
   return (
     <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+      <div className="flex justify-end">
+        <Dialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+          <DialogTrigger render={<Button variant="outline" size="sm" className="gap-2" />}>
+            <DoorOpen className="size-4" />
+            Leave Session
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Leave training?</DialogTitle>
+              <DialogDescription>
+                {leaveDescription}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                onClick={() => void handleLeaveSession()}
+                disabled={leaveSaving}
+                className="gap-2"
+              >
+                {leaveSaving ? (
+                  <LoaderCircle className="size-4 animate-spin" />
+                ) : (
+                  <DoorOpen className="size-4" />
+                )}
+                {answeredCount > 0 ? "Leave and Save Progress" : "Leave Session"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
       <SessionProgress current={currentIndex} total={totalWords} results={results} currentMode={currentMode} />
 
       <BattleScene

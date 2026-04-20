@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { useStats } from "@/hooks/use-stats";
 import { useBootstrap } from "@/lib/bootstrap-context";
@@ -11,9 +12,28 @@ import { DifficultySelector } from "@/components/dashboard/difficulty-selector";
 import { Button } from "@/components/ui/button";
 import { DIFFICULTY_CONFIG } from "@/lib/types";
 
+const SESSION_EXIT_STORAGE_KEY = "lexforge-session-exit-summary";
+
 export default function Dashboard() {
   const { seedStatus, seedError, retrySeed } = useBootstrap();
   const { profile, dueCount, newCount, wordCount, loading, setDifficulty } = useStats();
+  const [savedProgressMessage] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+
+    const raw = window.sessionStorage.getItem(SESSION_EXIT_STORAGE_KEY);
+    if (!raw) return null;
+
+    window.sessionStorage.removeItem(SESSION_EXIT_STORAGE_KEY);
+
+    try {
+      const parsed = JSON.parse(raw) as { savedCount?: number };
+      if (!parsed.savedCount) return null;
+
+      return `${parsed.savedCount} ${parsed.savedCount === 1 ? "word" : "words"} saved from your last session.`;
+    } catch {
+      return null;
+    }
+  });
 
   if (loading || !profile) {
     return (
@@ -47,6 +67,11 @@ export default function Dashboard() {
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-4 space-y-4">
+      {savedProgressMessage && (
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          {savedProgressMessage}
+        </div>
+      )}
       <CharacterBanner profile={profile} />
       <QuestCard
         dueCount={dueCount}
