@@ -13,6 +13,7 @@ import type {
   RetrievalDrillProfile,
   ReviewCard,
   ReviewLog,
+  RPGStats,
   SessionResult,
   SessionSummary,
   SessionWord,
@@ -292,13 +293,125 @@ function prioritizeSessionWords(sessionWords: SessionWord[]): SessionWord[] {
 }
 
 /** Decide game mode for a session word. Mix of all four modes. */
+type ModeWeights = Record<GameMode, number>;
+type StatDrivenMode = "recall" | "speed" | "association";
+
+const STAT_STAGE_INFLUENCE: Record<RetrievalDrillProfile["stage"], number> = {
+  rescue: 0.45,
+  stabilize: 0.7,
+  fluent: 0.9,
+};
+
+function normalizeModeWeights(weights: ModeWeights): ModeWeights {
+  const safeWeights: ModeWeights = {
+    recall: Math.max(0, weights.recall),
+    context: Math.max(0, weights.context),
+    speed: Math.max(0, weights.speed),
+    association: Math.max(0, weights.association),
+  };
+
+  const total = Object.values(safeWeights).reduce((sum, value) => sum + value, 0);
+  if (total <= 0) {
+    return {
+      recall: 1,
+      context: 0,
+      speed: 0,
+      association: 0,
+    };
+  }
+
+  return {
+    recall: safeWeights.recall / total,
+    context: safeWeights.context / total,
+    speed: safeWeights.speed / total,
+    association: safeWeights.association / total,
+  };
+}
+
+function applyStatBias(
+  weights: ModeWeights,
+  stage: RetrievalDrillProfile["stage"],
+  stats?: Partial<RPGStats>,
+): ModeWeights {
+  if (!stats) {
+    return normalizeModeWeights(weights);
+  }
+
+  const relevantStats = {
+    recall: Math.max(0, stats.recall ?? 0),
+    speed: Math.max(0, stats.perception ?? 0),
+    association: Math.max(0, stats.creativity ?? 0),
+  };
+
+  const totalStat = Object.values(relevantStats).reduce((sum, value) => sum + value, 0);
+  if (totalStat <= 0) {
+    return normalizeModeWeights(weights);
+  }
+
+  const stageInfluence = STAT_STAGE_INFLUENCE[stage];
+  const neutralShare = 1 / 3;
+  const baseScale = 0.9;
+  const adjusted: ModeWeights = { ...weights };
+
+  (Object.keys(relevantStats) as StatDrivenMode[]).forEach((mode) => {
+    const statShare = relevantStats[mode] / totalStat;
+    const biasMultiplier = 1 + (statShare - neutralShare) * baseScale * stageInfluence;
+    adjusted[mode] = Math.max(0.01, adjusted[mode] * biasMultiplier);
+  });
+
+  return normalizeModeWeights(adjusted);
+}
+
+function getBaseModeWeights(
+  stage: RetrievalDrillProfile["stage"],
+  hasContext: boolean,
+  needsAdaptiveDrill: boolean,
+): ModeWeights {
+  if (needsAdaptiveDrill) {
+    if (stage === "rescue") {
+      return hasContext
+        ? { recall: 0.6, speed: 0.3, context: 0.07, association: 0.03 }
+        : { recall: 0.6, speed: 0.3, context: 0, association: 0.1 };
+    }
+
+    if (stage === "fluent") {
+      return hasContext
+        ? { recall: 0.4, speed: 0.25, context: 0.25, association: 0.1 }
+        : { recall: 0.6, speed: 0.25, context: 0, association: 0.15 };
+    }
+
+    return hasContext
+      ? { recall: 0.45, speed: 0.35, context: 0.15, association: 0.05 }
+      : { recall: 0.45, speed: 0.35, context: 0, association: 0.2 };
+  }
+
+  return hasContext
+    ? { recall: 0.4, speed: 0.15, context: 0.3, association: 0.15 }
+    : { recall: 0.7, speed: 0.15, context: 0, association: 0.15 };
+}
+
+function pickModeFromWeights(weights: ModeWeights, roll: number): GameMode {
+  const normalized = normalizeModeWeights(weights);
+  let cutoff = normalized.recall;
+  if (roll < cutoff) return "recall";
+
+  cutoff += normalized.speed;
+  if (roll < cutoff) return "speed";
+
+  cutoff += normalized.context;
+  if (roll < cutoff) return "context";
+
+  return "association";
+}
+
 export function pickMode(
   word: Word,
   forceMode?: GameMode,
   drillProfile?: RetrievalDrillProfile,
+  stats?: Partial<RPGStats>,
 ): GameMode {
   if (forceMode) return forceMode;
-  const roll = Math.random();
+
   const hasTOTCapture = Boolean(word.totCapture);
   const hasContext = getContextSentence(word) !== null;
   const stage = drillProfile?.stage ?? "stabilize";
@@ -306,25 +419,10 @@ export function pickMode(
     || stage === "rescue"
     || (stage === "stabilize" && (drillProfile?.recentCueRate ?? 0) > 0);
 
-  if (needsAdaptiveDrill) {
-    if (stage === "rescue") {
-      if (roll < 0.6) return "recall";
-      if (roll < 0.9) return "speed";
-      if (hasContext && roll < 0.97) return "context";
-      return "association";
-    }
+  const baseWeights = getBaseModeWeights(stage, hasContext, needsAdaptiveDrill);
+  const weightedModeMix = applyStatBias(baseWeights, stage, stats);
 
-    if (roll < 0.45) return "recall";
-    if (roll < 0.8) return "speed";
-    if (hasContext && roll < 0.95) return "context";
-    return "association";
-  }
-
-  // ~15% association, ~15% speed, ~30% context (if available), ~40% recall
-  if (roll < 0.15) return "association";
-  if (roll < 0.30) return "speed";
-  if (hasContext && roll < 0.60) return "context";
-  return "recall";
+  return pickModeFromWeights(weightedModeMix, Math.random());
 }
 
 /** Get unlocked tiers for a given level. */

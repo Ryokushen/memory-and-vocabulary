@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ReviewCard, ReviewLog, SessionWord, Word } from "./types";
+import type {
+  GameMode,
+  ReviewCard,
+  ReviewLog,
+  RetrievalDrillProfile,
+  SessionWord,
+  Word,
+} from "./types";
 
 const dbMock = vi.hoisted(() => ({
   reviewLogs: {
@@ -125,6 +132,29 @@ function makeReviewLog(
     retrievalKind: "exact",
     reviewedAt: new Date(reviewedAt),
     ...overrides,
+  };
+}
+
+function sampleModeRatios(
+  picker: () => GameMode,
+  iterations: number = 20000,
+): Record<GameMode, number> {
+  const counts: Record<GameMode, number> = {
+    recall: 0,
+    context: 0,
+    speed: 0,
+    association: 0,
+  };
+
+  for (let index = 0; index < iterations; index++) {
+    counts[picker()] += 1;
+  }
+
+  return {
+    recall: counts.recall / iterations,
+    context: counts.context / iterations,
+    speed: counts.speed / iterations,
+    association: counts.association / iterations,
   };
 }
 
@@ -259,20 +289,7 @@ describe("session engine", () => {
 
   it("matches the intended mode distribution when context is available", () => {
     const word = makeWord(1);
-    const counts = {
-      recall: 0,
-      context: 0,
-      speed: 0,
-      association: 0,
-    };
-
-    for (let index = 0; index < 20000; index++) {
-      counts[pickMode(word)]++;
-    }
-
-    const ratios = Object.fromEntries(
-      Object.entries(counts).map(([mode, count]) => [mode, count / 20000]),
-    );
+    const ratios = sampleModeRatios(() => pickMode(word));
 
     expect(ratios.association).toBeGreaterThan(0.1);
     expect(ratios.association).toBeLessThan(0.2);
@@ -284,6 +301,101 @@ describe("session engine", () => {
     expect(ratios.recall).toBeLessThan(0.45);
   });
 
+  it("biases fluent-mode weighting toward the strongest RPG stat", () => {
+    const word = makeWord(1);
+    const fluentProfile: RetrievalDrillProfile = {
+      stage: "fluent",
+      exactStreak: 3,
+      recentCueRate: 0,
+      recentFailureCount: 0,
+      recallHintEnabled: false,
+      rapidTimeoutMs: 3200,
+      rapidCueRevealMs: null,
+    };
+
+    const baseline = sampleModeRatios(() =>
+      pickMode(word, undefined, fluentProfile, {
+        recall: 10,
+        retention: 10,
+        perception: 10,
+        creativity: 10,
+      }),
+    );
+
+    const recallFocused = sampleModeRatios(() =>
+      pickMode(word, undefined, fluentProfile, {
+        recall: 40,
+        retention: 10,
+        perception: 5,
+        creativity: 5,
+      }),
+    );
+
+    const perceptionFocused = sampleModeRatios(() =>
+      pickMode(word, undefined, fluentProfile, {
+        recall: 5,
+        retention: 10,
+        perception: 40,
+        creativity: 5,
+      }),
+    );
+
+    const creativityFocused = sampleModeRatios(() =>
+      pickMode(word, undefined, fluentProfile, {
+        recall: 5,
+        retention: 10,
+        perception: 5,
+        creativity: 40,
+      }),
+    );
+
+    expect(recallFocused.recall).toBeGreaterThan(baseline.recall + 0.03);
+    expect(perceptionFocused.speed).toBeGreaterThan(baseline.speed + 0.03);
+    expect(creativityFocused.association).toBeGreaterThan(baseline.association + 0.02);
+  });
+
+  it("keeps rescue drilling recall-first even when perception is much higher", () => {
+    const word = makeWord(1, 1, {
+      source: "speech",
+      weakSubstitute: "thing",
+      context: "I kept saying thing instead of the right word.",
+      capturedAt: "2026-04-10T08:00:00.000Z",
+      count: 2,
+    });
+
+    const rescueProfile: RetrievalDrillProfile = {
+      stage: "rescue",
+      exactStreak: 0,
+      recentCueRate: 0.5,
+      recentFailureCount: 2,
+      recallHintEnabled: true,
+      rapidTimeoutMs: 5600,
+      rapidCueRevealMs: 3400,
+    };
+
+    const balanced = sampleModeRatios(() =>
+      pickMode(word, undefined, rescueProfile, {
+        recall: 20,
+        retention: 20,
+        perception: 20,
+        creativity: 20,
+      }),
+    );
+
+    const perceptionFocused = sampleModeRatios(() =>
+      pickMode(word, undefined, rescueProfile, {
+        recall: 5,
+        retention: 10,
+        perception: 40,
+        creativity: 5,
+      }),
+    );
+
+    expect(perceptionFocused.speed).toBeGreaterThan(balanced.speed + 0.02);
+    expect(perceptionFocused.recall).toBeGreaterThan(perceptionFocused.speed);
+    expect(perceptionFocused.recall).toBeGreaterThan(0.45);
+  });
+
   it("biases TOT-captured words toward recall and rapid retrieval", () => {
     const word = makeWord(1, 1, {
       source: "speech",
@@ -292,20 +404,8 @@ describe("session engine", () => {
       capturedAt: "2026-04-10T08:00:00.000Z",
       count: 2,
     });
-    const counts = {
-      recall: 0,
-      context: 0,
-      speed: 0,
-      association: 0,
-    };
 
-    for (let index = 0; index < 20000; index++) {
-      counts[pickMode(word)]++;
-    }
-
-    const ratios = Object.fromEntries(
-      Object.entries(counts).map(([mode, count]) => [mode, count / 20000]),
-    );
+    const ratios = sampleModeRatios(() => pickMode(word));
 
     expect(ratios.recall).toBeGreaterThan(0.4);
     expect(ratios.speed).toBeGreaterThan(0.3);

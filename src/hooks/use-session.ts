@@ -5,6 +5,7 @@ import type {
   AnswerMetadata,
   ContextSentence,
   GameMode,
+  RPGStats,
   SessionState,
   SessionWord,
   SessionResult,
@@ -43,6 +44,7 @@ export function useSession() {
   const summaryRef = useRef<SessionSummary | null>(null);
   const partialCommitPromiseRef = useRef<Promise<void> | null>(null);
   const partialCommitDoneRef = useRef(false);
+  const sessionStatsRef = useRef<RPGStats | undefined>(undefined);
 
   const currentWord = words[currentIndex] ?? null;
   const sessionSeed = words[0]?.word.id ?? 0;
@@ -66,7 +68,12 @@ export function useSession() {
   }, [summary]);
 
   const configurePrompt = useCallback((word: SessionWord) => {
-    const mode = pickMode(word.word, undefined, word.drillProfile);
+    const mode = pickMode(
+      word.word,
+      undefined,
+      word.drillProfile,
+      sessionStatsRef.current,
+    );
     if (mode === "context") {
       setCurrentMode("context");
       setCurrentContextSentence(getContextSentence(word.word));
@@ -79,11 +86,16 @@ export function useSession() {
     }
   }, []);
 
-  const startSession = useCallback(async (difficulty?: "easy" | "normal" | "hard", level?: number) => {
+  const startSession = useCallback(async (
+    difficulty?: "easy" | "normal" | "hard",
+    level?: number,
+    stats?: RPGStats,
+  ) => {
     setState("loading");
     submittingRef.current = false;
     partialCommitDoneRef.current = false;
     partialCommitPromiseRef.current = null;
+    sessionStatsRef.current = stats;
     const sessionWords = await loadSessionWords(difficulty ?? "normal", level ?? 1);
     if (sessionWords.length === 0) {
       setState("idle");
@@ -207,6 +219,7 @@ export function useSession() {
     partialCommitDoneRef.current = false;
     partialCommitPromiseRef.current = null;
     summaryRef.current = null;
+    sessionStatsRef.current = undefined;
     setState("idle");
     setWords([]);
     setCurrentIndex(0);

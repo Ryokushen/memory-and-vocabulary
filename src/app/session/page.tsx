@@ -61,7 +61,7 @@ export default function SessionPage() {
 
   useEffect(() => {
     if (state === "idle" && profile && seedStatus !== "seeding") {
-      startSession(profile.difficulty, profile.level);
+      startSession(profile.difficulty, profile.level, profile.stats);
     }
   }, [state, startSession, profile, seedStatus]);
 
