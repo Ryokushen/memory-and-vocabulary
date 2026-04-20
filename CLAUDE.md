@@ -10,7 +10,7 @@ Local-first RPG vocabulary trainer. Next.js 16 App Router, Dexie/IndexedDB, ts-f
 npm run dev      # local dev server
 npm run lint     # ESLint
 npm run build    # production build (--webpack)
-npm run test     # Vitest (59 tests)
+npm run test     # Vitest (61 tests)
 ```
 
 ## Architecture
@@ -28,7 +28,8 @@ npm run test     # Vitest (59 tests)
 - **Rapid Retrieval has two phases**: a read phase (untimed, definition displayed) and a retrieval phase (timed countdown). The timer measures recall speed, not reading speed. Grading uses proportional thresholds relative to the timeout.
 - **Review logs carry retrieval metadata**: `cueLevel`, `retrievalKind`, and `responseTimeMs` on every log entry. These feed back into drill profiles and stats.
 - **Sync hardening is already shipped**: normalized word keys, additive TOT merge behavior, explicit `session_id` handling, review-card reconciliation, and retryable background sync are in `master`. Treat these as existing behavior — avoid re-implementing them.
-- **RPG stats are currently decorative**: they grow from performance but do not yet influence session generation. This is a planned next step.
+- **RPG stats now influence session generation**: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association mode weighting in `pickMode` while still respecting rescue/stabilize/fluent drill stages.
+- **Next RPG tuning step**: hint pressure and timer behavior are still mostly stage-driven and can be personalized further with stats.
 
 ## Testing
 

@@ -19,7 +19,7 @@ All notable changes to this project should be documented in this file.
 - TOT capture flow in the word library now records real-world blanking moments with source, weak substitute, and context, and can create a new custom word if needed
 - Adaptive retrieval drilling now keeps recent TOT words in rescue/stabilize phases until they regain repeated clean exact recalls, with hint access and rapid timers changing by recent performance
 - Cross-device sync now carries custom words and TOT capture summaries, with merge logic that restores custom entries locally before replaying cards, logs, associations, and TOT state
-- Automated coverage now spans 59 tests across scheduler, session, sync, and hook logic
+- Automated coverage now spans 61 tests across scheduler, session, sync, and hook logic
 
 ### Changed
 
@@ -51,6 +51,7 @@ All notable changes to this project should be documented in this file.
 - Stats page "Words Due" to "To Review" (only counts previously-seen cards past due date)
 - Updated public and project documentation to describe Rapid Retrieval as verbal fluency training and to narrow scientific claims around vocabulary retrieval rather than broad brain-training promises
 - Session assembly now prioritizes TOT-captured words within due/new buckets and biases them toward Recall and Rapid Retrieval
+- Session mode selection now blends drill stage + RPG stats so Recall / Perception / Creativity influence Recall / Rapid Retrieval / Association weighting while preserving rescue/stabilize/fluent guardrails
 - Build no longer fails when Supabase env vars are absent; cloud sync now remains optional at build time
 - Added a compatibility-safe Supabase migration for per-user `custom_words` and `word_tot_captures` sync, including support for older `custom_words` schemas that already use `word` plus an `id` primary key
 - Adjusted ESLint ignores so generated Serwist service worker artifacts in `public/` no longer pollute lint results

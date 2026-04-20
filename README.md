@@ -31,7 +31,8 @@ What it does not currently claim:
 - Sync hardening for normalized word keys, additive TOT capture merges, explicit session IDs in review logs, and background sync recovery
 - Partial session progress now saves when you leave training early
 - Dashboard quest card now shows backlog separately from the next quest mix
-- 59 automated tests across scheduler, session, sync, and hooks
+- Session mode selection is now stat-aware: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association while preserving rescue/stabilize/fluent drill-stage constraints
+- 61 automated tests across scheduler, session, sync, and hooks
 - PWA support with offline fallback via Serwist
 
 ## Game Modes
@@ -66,12 +67,12 @@ Recent retrieval quality now changes how a word is trained.
 
 | Stat | Represents | Current use |
 |------|------------|-------------|
-| **Recall** | Clean word retrieval | Grows from definition-to-word success. |
-| **Retention** | Long-term review stability | Grows from spaced-review performance over time. |
-| **Perception** | Rapid verbal retrieval under time pressure | Grows from Rapid Retrieval results. |
-| **Creativity** | Association building and contextual flexibility | Grows from association and contextual work. |
+| **Recall** | Clean word retrieval | Grows from definition-to-word success and now increases the chance of Recall prompts in session mode selection. |
+| **Retention** | Long-term review stability | Grows from spaced-review performance over time; still mostly progression-facing for now. |
+| **Perception** | Rapid verbal retrieval under time pressure | Grows from Rapid Retrieval results and now increases the chance of Rapid Retrieval prompts. |
+| **Creativity** | Association building and contextual flexibility | Grows from association and contextual work and now increases the chance of Association prompts. |
 
-The RPG stats are currently player-facing summaries and rewards. A later step is to use them more directly to adapt hints, pacing, and mode weighting.
+Mode selection is now stat-aware: Recall / Perception / Creativity shape the Recall / Rapid Retrieval / Association mix while still honoring rescue/stabilize/fluent drill-stage guardrails. The next tuning step is to extend this into stat-aware hint pressure and timer behavior.
 
 Other progression systems:
 - XP comes from session performance, streak bonuses, and fast clean retrieval.
@@ -184,6 +185,6 @@ These foundations are already in `master` and should be treated as existing beha
 
 For the up-to-date "already shipped vs next" checklist, see [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
-- adaptive use of RPG stats in session generation (mode weighting, hint pressure, and timer tuning)
+- extend stat-aware adaptation beyond mode weighting into hint pressure and timer tuning
 - deeper context-production drills and transfer tasks beyond single-word replacement
 - targeted regression tests around newly introduced sync changes (without reworking shipped sync hardening)
