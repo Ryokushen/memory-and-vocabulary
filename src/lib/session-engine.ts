@@ -217,6 +217,19 @@ const LIKELY_OBJECT_CUE_TOKENS = new Set([
   "your",
 ]);
 
+const LIKELY_ADVERBIAL_TAIL_TOKENS = new Set([
+  "already",
+  "earlier",
+  "here",
+  "later",
+  "now",
+  "soon",
+  "there",
+  "today",
+  "tomorrow",
+  "yesterday",
+]);
+
 const DISALLOWED_CLAUSE_CONTINUATION_TOKENS = new Set([
   "about",
   "after",
@@ -243,18 +256,103 @@ const DISALLOWED_CLAUSE_CONTINUATION_TOKENS = new Set([
   "without",
 ]);
 
+const CONTEXT_ANCHOR_STOPWORDS = new Set([
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "but",
+  "by",
+  "for",
+  "from",
+  "if",
+  "in",
+  "into",
+  "is",
+  "it",
+  "of",
+  "on",
+  "or",
+  "the",
+  "to",
+  "was",
+  "were",
+  "with",
+]);
+
+function isTransferContextPromptKind(kind?: ContextPrompt["kind"]): boolean {
+  return kind === "produce" || kind === "rewrite";
+}
+
+function getContextAnchorTokens(sourceSentence?: string): string[] {
+  if (!sourceSentence) {
+    return [];
+  }
+
+  const highlightedWeakWordMatch = sourceSentence.match(/\*\*([^*]+)\*\*/);
+  const weakWordTokens = new Set(tokenizeProductionText(highlightedWeakWordMatch?.[1] ?? ""));
+
+  return [...new Set(tokenizeProductionText(sourceSentence).filter(
+    (token) => !CONTEXT_ANCHOR_STOPWORDS.has(token) && !weakWordTokens.has(token),
+  ))];
+}
+
+function hasContextAnchorOverlap(answerTokens: string[], sourceSentence?: string): boolean {
+  const anchorTokens = getContextAnchorTokens(sourceSentence);
+  if (anchorTokens.length === 0) {
+    return false;
+  }
+
+  const overlapCount = anchorTokens.filter((token) => answerTokens.includes(token)).length;
+  return overlapCount >= Math.min(2, anchorTokens.length);
+}
+
 function isLikelyDerivedVerbToken(token: string): boolean {
   return /(?:ed|ing|ize|ise|ify|ate|en)$/.test(token);
 }
 
+function isLikelyModifierToken(token: string): boolean {
+  return /(?:ous|ful|ive|al|ic|less|able|ible|ary|ory|ent|ant|ish|ed)$/.test(token);
+}
+
 function hasLikelyDerivedPredicate(tokens: string[]): boolean {
   return tokens.some((token, index) => {
-    if (!isLikelyDerivedVerbToken(token) || index === 0) {
+    if (!isLikelyDerivedVerbToken(token) || index < 2) {
+      return false;
+    }
+
+    const nextToken = tokens[index + 1];
+    if (!nextToken) {
+      return false;
+    }
+
+    const onlyTrailingToken = index === tokens.length - 2;
+    if (onlyTrailingToken && (nextToken.endsWith("ly") || LIKELY_ADVERBIAL_TAIL_TOKENS.has(nextToken))) {
       return false;
     }
 
     const previousToken = tokens[index - 1];
-    return LIKELY_PERSONAL_SUBJECT_TOKENS.has(previousToken) || LIKELY_VERB_TOKENS.has(previousToken);
+    const leadingToken = tokens[index - 2];
+    if (LIKELY_PERSONAL_SUBJECT_TOKENS.has(previousToken) || LIKELY_VERB_TOKENS.has(previousToken)) {
+      return true;
+    }
+
+    if (DISALLOWED_CLAUSE_CONTINUATION_TOKENS.has(previousToken)) {
+      return false;
+    }
+
+    if (
+      index === 2
+      && LIKELY_OBJECT_CUE_TOKENS.has(leadingToken)
+      && isLikelyModifierToken(previousToken)
+    ) {
+      return false;
+    }
+
+    return true;
   });
 }
 
@@ -310,6 +408,31 @@ function hasSingleSentenceShape(
   return false;
 }
 
+function normalizeComparableSentence(text: string): string {
+  return tokenizeProductionText(text).join(" ");
+}
+
+function buildCanonicalRewriteSentence(sourceSentence: string, expected: string): string | undefined {
+  if (!sourceSentence.includes("**")) {
+    return undefined;
+  }
+
+  return sourceSentence.replace(/\*\*([^*]+)\*\*/, expected);
+}
+
+function matchesCanonicalRewrite(answer: string, expected: string, sourceSentence?: string): boolean {
+  if (!sourceSentence) {
+    return false;
+  }
+
+  const canonicalRewrite = buildCanonicalRewriteSentence(sourceSentence, expected);
+  if (!canonicalRewrite) {
+    return false;
+  }
+
+  return normalizeComparableSentence(answer) === normalizeComparableSentence(canonicalRewrite);
+}
+
 /** Auto-grade an answer based on edit distance. */
 export function autoGrade(
   answer: string,
@@ -334,17 +457,12 @@ export function autoGrade(
   return { rating: 1, correct: false, cueLevel: normalizedCueLevel, retrievalKind: "failed" };
 }
 
-/** Grade a context mode answer. Replacement prompts use exact-word grading; production prompts require target-word use inside a sentence. */
-export function gradeContextAnswer(
+function gradeSentenceLikeContextAnswer(
   answer: string,
   expected: string,
-  cueLevel: CueLevel = 0,
-  promptKind: ContextPrompt["kind"] = "replace",
+  cueLevel: CueLevel,
+  sourceSentence?: string,
 ): GradeResult {
-  if (promptKind !== "produce") {
-    return autoGrade(answer, expected, cueLevel);
-  }
-
   const normalizedCueLevel = normalizeCueLevel(cueLevel);
   const expectedTokens = tokenizeProductionText(expected);
   const answerTokens = tokenizeProductionText(answer);
@@ -357,12 +475,18 @@ export function gradeContextAnswer(
 
     return !insideMatchedPhrase && !expectedTokenSet.has(token);
   }).length;
-  const sentenceLike = answerTokens.length >= 3
+  const canonicalRewriteMatch = matchesCanonicalRewrite(answer, expected, sourceSentence);
+  const sentenceLike = canonicalRewriteMatch || (
+    answerTokens.length >= 3
     && nonTargetTokenCount >= 2
     && new Set(answerTokens).size > expectedTokenSet.size
-    && hasSingleSentenceShape(answer, answerTokens, phraseMatch);
+    && hasSingleSentenceShape(answer, answerTokens, phraseMatch)
+  );
+  const preservesContextAnchor = sourceSentence
+    ? hasContextAnchorOverlap(answerTokens, sourceSentence)
+    : true;
 
-  if (!sentenceLike || !phraseMatch) {
+  if (!sentenceLike || !phraseMatch || !preservesContextAnchor) {
     return { rating: 1, correct: false, cueLevel: normalizedCueLevel, retrievalKind: "failed" };
   }
 
@@ -376,6 +500,26 @@ export function gradeContextAnswer(
   }
 
   return { rating: 2, correct: true, cueLevel: normalizedCueLevel, retrievalKind: "approximate" };
+}
+
+/** Grade a context mode answer. Replacement prompts use exact-word grading; production/transfer prompts require target-word use inside a sentence. */
+export function gradeContextAnswer(
+  answer: string,
+  expected: string,
+  cueLevel: CueLevel = 0,
+  promptKind: ContextPrompt["kind"] = "replace",
+  sourceSentence?: string,
+): GradeResult {
+  if (promptKind === "replace") {
+    return autoGrade(answer, expected, cueLevel);
+  }
+
+  return gradeSentenceLikeContextAnswer(
+    answer,
+    expected,
+    cueLevel,
+    promptKind === "rewrite" ? sourceSentence : undefined,
+  );
 }
 
 const SPEED_FAST_MS = 3000; // static fallback when no timeout is known
@@ -441,6 +585,17 @@ export function buildContextPrompt(
     return { ...sentence, kind: "replace" };
   }
 
+  if (stage === "fluent") {
+    return {
+      kind: "rewrite",
+      sentence: sentence.sentence,
+      weakWord: sentence.weakWord,
+      answer: sentence.answer,
+      definition: word.definition,
+      example: word.examples[0],
+    };
+  }
+
   return {
     kind: "produce",
     answer: word.word,
@@ -451,7 +606,7 @@ export function buildContextPrompt(
 
 function isCleanExactLog(log: ReviewLog): boolean {
   return (
-    log.contextPromptKind !== "produce"
+    !isTransferContextPromptKind(log.contextPromptKind)
     && log.correct
     && log.retrievalKind === "exact"
     && normalizeCueLevel(log.cueLevel) === 0
@@ -460,7 +615,7 @@ function isCleanExactLog(log: ReviewLog): boolean {
 
 function isSupportDependentLog(log: ReviewLog): boolean {
   return normalizeCueLevel(log.cueLevel) === 1
-    || (log.contextPromptKind !== "produce" && log.retrievalKind === "assisted");
+    || (!isTransferContextPromptKind(log.contextPromptKind) && log.retrievalKind === "assisted");
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -573,7 +728,7 @@ export function buildRetrievalDrillProfile(
     .sort((left, right) => right.reviewedAt.getTime() - left.reviewedAt.getTime());
   const recentLogs = sortedLogs.slice(0, 4);
   const recentRetrievalLogs = sortedLogs
-    .filter((log) => log.contextPromptKind !== "produce")
+    .filter((log) => !isTransferContextPromptKind(log.contextPromptKind))
     .slice(0, 4);
 
   let exactStreak = 0;
@@ -960,6 +1115,7 @@ export async function processAnswer(
       contextExpected,
       cueLevel,
       answerMetadata?.contextPromptKind,
+      answerMetadata?.contextSourceSentence,
     );
   } else {
     gradeResult = autoGrade(answer, sessionWord.word.word, cueLevel);

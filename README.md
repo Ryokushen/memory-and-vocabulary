@@ -32,8 +32,8 @@ What it does not currently claim:
 - Partial session progress now saves when you leave training early
 - Dashboard quest card now shows backlog separately from the next quest mix
 - Session generation is now stat-aware across both mode selection and retrieval drill timing: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association, and live profile stats now tune rapid-retrieval timeout pressure and rescue-cue timing while preserving rescue/stabilize/fluent drill-stage constraints
-- Context mode now has two typed-first variants: replacement prompts for rescue words and target-word sentence production for more stable words, both with deterministic grading and cue-aware fallback
-- 79 automated tests across scheduler, session, sync, stats helpers, and hooks
+- Context mode now has three typed-first variants: replacement prompts for rescue words, target-word sentence production for stabilize words, and fluent rewrite prompts that preserve the original scenario with deterministic grading and cue-aware fallback
+- 87 automated tests across scheduler, session, sync, stats helpers, and hooks
 - PWA support with offline fallback via Serwist
 
 ## Game Modes
@@ -186,6 +186,6 @@ These foundations are already in `master` and should be treated as existing beha
 
 For the up-to-date "already shipped vs next" checklist, see [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
-- deepen context-production beyond the new target-word sentence variant into rewrite/scenario transfer work
+- deepen Context transfer beyond the new fluent rewrite slice into richer scenario variation only if deterministic grading can stay sane
 - broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces
 - targeted regression tests around newly introduced sync changes (without reworking shipped sync hardening)

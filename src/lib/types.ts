@@ -145,6 +145,8 @@ export interface AnswerMetadata {
   /** Retrieval-only time in ms (excludes read phase). Used by Rapid Retrieval. */
   retrievalTimeMs?: number;
   contextPromptKind?: ContextPromptKind;
+  /** Source sentence for deterministic rewrite-context grading. Ephemeral; not persisted to review logs. */
+  contextSourceSentence?: string;
 }
 
 export type SessionState =
@@ -156,7 +158,7 @@ export type SessionState =
 
 // ── Context Mode ────────────────────────────────────────────────────────
 
-export type ContextPromptKind = "replace" | "produce";
+export type ContextPromptKind = "replace" | "produce" | "rewrite";
 
 export interface ContextSentence {
   kind?: "replace";
@@ -173,7 +175,16 @@ export interface ContextProductionPrompt {
   example?: string;
 }
 
-export type ContextPrompt = ContextSentence | ContextProductionPrompt;
+export interface ContextRewritePrompt {
+  kind: "rewrite";
+  sentence: string;
+  weakWord: string;
+  answer: string;
+  definition: string;
+  example?: string;
+}
+
+export type ContextPrompt = ContextSentence | ContextProductionPrompt | ContextRewritePrompt;
 
 export interface SessionSummary {
   results: SessionResult[];

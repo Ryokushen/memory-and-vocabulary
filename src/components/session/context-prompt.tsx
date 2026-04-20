@@ -64,8 +64,12 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const productionPrompt = prompt.kind === "produce" ? prompt : null;
-  const replacementPrompt = prompt.kind === "produce" ? null : prompt;
-  const isProductionPrompt = productionPrompt !== null;
+  const rewritePrompt = prompt.kind === "rewrite" ? prompt : null;
+  const sentencePrompt = productionPrompt ?? rewritePrompt;
+  const replacementPrompt = prompt.kind === "produce" || prompt.kind === "rewrite"
+    ? null
+    : prompt;
+  const isSentencePrompt = sentencePrompt !== null;
   const choices = useMemo(
     () => (replacementPrompt ? getChoices(replacementPrompt) : []),
     [replacementPrompt],
@@ -76,9 +80,15 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
       : null,
     [replacementPrompt],
   );
+  const rewriteParts = useMemo(
+    () => rewritePrompt
+      ? rewritePrompt.sentence.split(`**${rewritePrompt.weakWord}**`)
+      : null,
+    [rewritePrompt],
+  );
 
   useEffect(() => {
-    if (isProductionPrompt) {
+    if (isSentencePrompt) {
       textareaRef.current?.focus();
       return;
     }
@@ -86,12 +96,12 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
     if (!showChoices) {
       inputRef.current?.focus();
     }
-  }, [isProductionPrompt, prompt, showChoices]);
+  }, [isSentencePrompt, prompt, showChoices]);
 
   const revealChoices = useCallback(() => {
-    if (isProductionPrompt || showChoices || selected !== null) return;
+    if (isSentencePrompt || showChoices || selected !== null) return;
     setShowChoices(true);
-  }, [isProductionPrompt, selected, showChoices]);
+  }, [isSentencePrompt, selected, showChoices]);
 
   const handleTypedSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -119,18 +129,19 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
     setTimeout(() => onSubmit(choice, { cueLevel: 1, contextPromptKind: "replace" }), 300);
   }, [onSubmit, selected]);
 
-  const handleProductionSubmit = (event: React.FormEvent) => {
+  const handleSentenceSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!typedAnswer.trim() || !isProductionPrompt) return;
+    if (!typedAnswer.trim() || !sentencePrompt) return;
 
     onSubmit(typedAnswer.trim(), {
       cueLevel: showCue ? 1 : 0,
-      contextPromptKind: "produce",
+      contextPromptKind: sentencePrompt.kind,
+      contextSourceSentence: rewritePrompt?.sentence,
     });
   };
 
   useEffect(() => {
-    if (isProductionPrompt) {
+    if (isSentencePrompt) {
       return;
     }
 
@@ -150,12 +161,14 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [choices, handleSelect, isProductionPrompt, selected, showChoices]);
+  }, [choices, handleSelect, isSentencePrompt, selected, showChoices]);
 
-  if (isProductionPrompt && productionPrompt) {
+  if (sentencePrompt) {
+    const isRewritePrompt = sentencePrompt.kind === "rewrite";
+
     return (
       <motion.div
-        key={`${productionPrompt.answer}-produce`}
+        key={`${sentencePrompt.answer}-${sentencePrompt.kind}`}
         initial={{ opacity: 0, x: 40 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -40 }}
@@ -166,7 +179,9 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
             <div className="flex items-center gap-1.5 text-emerald-500">
               <Replace className="size-3.5" />
               <span className="text-xs font-semibold uppercase tracking-widest">Context</span>
-              <span className="text-xs text-muted-foreground ml-1">Use it naturally</span>
+              <span className="text-xs text-muted-foreground ml-1">
+                {isRewritePrompt ? "Rewrite the scene with the target word" : "Use it naturally"}
+              </span>
             </div>
 
             <motion.div
@@ -177,29 +192,51 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-md border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-sm font-semibold text-emerald-400 dark:text-emerald-300">
-                  {productionPrompt.answer}
+                  {sentencePrompt.answer}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  Write one sentence using this word naturally.
+                  {isRewritePrompt
+                    ? "Rewrite the sentence below using this word while keeping the same scene."
+                    : "Write one sentence using this word naturally."}
                 </span>
               </div>
               <p className="text-sm leading-relaxed text-foreground/90">
-                {productionPrompt.definition}
+                {sentencePrompt.definition}
               </p>
             </motion.div>
+
+            {isRewritePrompt && rewriteParts && rewritePrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+                className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-3 text-sm leading-relaxed"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                  Rewrite this scene
+                </p>
+                {rewriteParts[0]}
+                <span className="inline-block bg-amber-500/15 text-amber-400 dark:text-amber-300 px-1.5 py-0.5 rounded-md font-semibold border border-amber-500/20">
+                  {rewritePrompt.weakWord}
+                </span>
+                {rewriteParts[1]}
+              </motion.div>
+            )}
 
             <motion.form
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              onSubmit={handleProductionSubmit}
+              onSubmit={handleSentenceSubmit}
               className="space-y-2.5"
             >
               <textarea
                 ref={textareaRef}
                 value={typedAnswer}
                 onChange={(event) => setTypedAnswer(event.target.value)}
-                placeholder={`Write one sentence using "${productionPrompt.answer}"...`}
+                placeholder={isRewritePrompt
+                  ? `Rewrite the sentence using "${sentencePrompt.answer}"...`
+                  : `Write one sentence using "${sentencePrompt.answer}"...`}
                 className="min-h-[112px] w-full rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm leading-relaxed outline-none transition focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/15"
                 autoComplete="off"
                 autoCorrect="off"
@@ -212,7 +249,7 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
                   disabled={!typedAnswer.trim()}
                 >
                   <Send className="size-4" />
-                  Submit Sentence
+                  {isRewritePrompt ? "Submit Rewrite" : "Submit Sentence"}
                 </Button>
                 <Button
                   type="button"
@@ -237,11 +274,11 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
                   <span className="text-sm font-medium">Cue</span>
                 </div>
                 <p className="text-sm leading-relaxed text-foreground/90">
-                  {productionPrompt.definition}
+                  {sentencePrompt.definition}
                 </p>
-                {productionPrompt.example && (
+                {sentencePrompt.example && (
                   <p className="text-xs text-muted-foreground">
-                    Example: {productionPrompt.example}
+                    Example: {sentencePrompt.example}
                   </p>
                 )}
               </motion.div>

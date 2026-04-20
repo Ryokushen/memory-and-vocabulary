@@ -129,12 +129,17 @@ describe("useRetrievalHealth", () => {
     unmount();
   });
 
-  it("reports no current retrieval rate when the week only contains production-context reviews", async () => {
+  it("reports no current retrieval rate when the week only contains transfer-context reviews", async () => {
     const logs = [
       makeReviewLog(1, "2026-04-09T12:00:00.000Z", {
         rating: 2,
         retrievalKind: "assisted",
         contextPromptKind: "produce",
+      }),
+      makeReviewLog(2, "2026-04-08T12:00:00.000Z", {
+        rating: 2,
+        retrievalKind: "assisted",
+        contextPromptKind: "rewrite",
       }),
     ];
 

@@ -35,7 +35,7 @@ function median(values: number[]): number | undefined {
 }
 
 function isRetrievalDrillLog(log: ReviewLog): boolean {
-  return log.contextPromptKind !== "produce";
+  return log.contextPromptKind !== "produce" && log.contextPromptKind !== "rewrite";
 }
 
 function isCleanExact(log: ReviewLog): boolean {
