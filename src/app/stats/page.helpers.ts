@@ -7,7 +7,9 @@ export type RecentRetrievalMetrics = {
 };
 
 export function getRecentRetrievalMetrics(logs: ReviewLog[]): RecentRetrievalMetrics {
-  const retrievalLogs = logs.filter((log) => log.contextPromptKind !== "produce");
+  const retrievalLogs = logs.filter(
+    (log) => log.contextPromptKind !== "produce" && log.contextPromptKind !== "rewrite",
+  );
 
   if (retrievalLogs.length === 0) {
     return {

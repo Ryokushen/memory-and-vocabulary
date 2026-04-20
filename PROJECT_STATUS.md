@@ -19,17 +19,17 @@ These capabilities are already in `master` and should be treated as baseline beh
 
 ## Current Product Gap
 
-- RPG stats now drive both session mode weighting and retrieval-drill timing, and Context mode now includes a first production-oriented sentence prompt. The remaining gap is deeper rewrite/scenario transfer work plus broader stat-aware personalization in other training surfaces.
+- RPG stats now drive both session mode weighting and retrieval-drill timing, and Context mode now spans replacement, target-word production, and a first fluent rewrite-transfer prompt. The remaining gap is broader stat-aware personalization in other training surfaces plus any future Context transfer depth beyond this deterministic rewrite slice.
 
 ## Active Next Priorities
 
-1. Expand context mode beyond the current target-word sentence prompt into rewrite/scenario transfer drills.
-2. Broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces.
-3. Add targeted regression tests around newly introduced sync changes (without reworking shipped sync architecture).
+1. Broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces.
+2. Add targeted regression tests around newly introduced sync changes (without reworking shipped sync architecture).
+3. If Context mode needs another step, deepen transfer beyond the current rewrite slice without introducing LLM grading or bloated UX.
 
 ## Verification Baseline
 
-- `npm run test` (79 passing tests)
+- `npm run test` (87 passing tests)
 - `npm run build` (Next.js production build + TypeScript checks)
 
 ## Scope Guardrail

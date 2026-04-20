@@ -279,13 +279,15 @@ describe("useSession", () => {
     );
   });
 
-  it("passes production-context prompt metadata into grading when context mode is active", async () => {
+  it("passes context prompt metadata into grading when context mode is active", async () => {
     const words = [makeSessionWord(1)];
     loadSessionWordsMock.mockResolvedValue(words);
     pickModeMock.mockReturnValue("context");
     buildContextPromptMock.mockReturnValue({
-      kind: "produce",
-      answer: "word-1",
+      kind: "rewrite",
+      answer: "meticulous",
+      sentence: "The **weak** sentence confused everyone.",
+      weakWord: "weak",
       definition: "definition-1",
       example: "example-1",
     });
@@ -304,20 +306,69 @@ describe("useSession", () => {
     });
 
     await act(async () => {
-      await result.current.submitAnswer("I used word-1 in a sentence.", {
+      await result.current.submitAnswer("The meticulous sentence confused everyone.", {
         cueLevel: 1,
-        contextPromptKind: "produce",
+        contextPromptKind: "rewrite",
+        contextSourceSentence: "The **weak** sentence confused everyone.",
       });
     });
 
     expect(processAnswerMock).toHaveBeenCalledWith(
       words[0],
-      "I used word-1 in a sentence.",
+      "The meticulous sentence confused everyone.",
       expect.any(Number),
       "session-abc",
       "context",
-      "word-1",
-      { cueLevel: 1, contextPromptKind: "produce" },
+      "meticulous",
+      {
+        cueLevel: 1,
+        contextPromptKind: "rewrite",
+        contextSourceSentence: "The **weak** sentence confused everyone.",
+      },
+    );
+  });
+
+  it("defaults rewrite-context metadata from the active prompt when the UI omits it", async () => {
+    const words = [makeSessionWord(1)];
+    loadSessionWordsMock.mockResolvedValue(words);
+    pickModeMock.mockReturnValue("context");
+    buildContextPromptMock.mockReturnValue({
+      kind: "rewrite",
+      answer: "meticulous",
+      sentence: "The **weak** sentence confused everyone.",
+      weakWord: "weak",
+      definition: "definition-1",
+      example: "example-1",
+    });
+    processAnswerMock.mockResolvedValue({
+      result: {
+        ...makeResult(1),
+        mode: "context",
+      },
+      updatedCard: words[0].reviewCard,
+    });
+
+    const { result } = renderHook(() => useSession());
+
+    await act(async () => {
+      await result.current.startSession("normal", 1);
+    });
+
+    await act(async () => {
+      await result.current.submitAnswer("The meticulous sentence confused everyone.");
+    });
+
+    expect(processAnswerMock).toHaveBeenCalledWith(
+      words[0],
+      "The meticulous sentence confused everyone.",
+      expect.any(Number),
+      "session-abc",
+      "context",
+      "meticulous",
+      {
+        contextPromptKind: "rewrite",
+        contextSourceSentence: "The **weak** sentence confused everyone.",
+      },
     );
   });
 

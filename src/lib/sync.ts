@@ -297,7 +297,7 @@ function normalizeRetrievalKind(value: string | null | undefined, correct: boole
 }
 
 function normalizeContextPromptKind(value: string | null | undefined): ReviewLog["contextPromptKind"] {
-  if (value === "replace" || value === "produce") {
+  if (value === "replace" || value === "produce" || value === "rewrite") {
     return value;
   }
 

@@ -239,6 +239,44 @@ describe("sync review logs", () => {
     });
   });
 
+  it("preserves rewrite context prompt kinds when pushing review logs", async () => {
+    dbMock.words.toArray.mockResolvedValue([
+      makeWord(1, "lucid"),
+    ]);
+    dbMock.reviewLogs.toArray.mockResolvedValue([
+      {
+        id: 1,
+        wordId: 1,
+        rating: 2,
+        responseTimeMs: 2400,
+        correct: true,
+        cueLevel: 1,
+        retrievalKind: "assisted",
+        contextPromptKind: "rewrite",
+        reviewedAt: new Date("2026-04-11T08:25:00.000Z"),
+      },
+    ]);
+
+    await pushToCloud(makeUser());
+
+    expect(tableState.review_logs.upserts[0]).toEqual({
+      rows: [
+        expect.objectContaining({
+          user_id: "user-1",
+          word_key: "lucid",
+          rating: 2,
+          response_time_ms: 2400,
+          correct: true,
+          cue_level: 1,
+          retrieval_kind: "assisted",
+          context_prompt_kind: "rewrite",
+          reviewed_at: "2026-04-11T08:25:00.000Z",
+        }),
+      ],
+      options: { onConflict: "user_id,normalized_word_key,reviewed_at" },
+    });
+  });
+
   it("pushes custom words and TOT capture summaries to Supabase", async () => {
     dbMock.words.toArray.mockResolvedValue([
       makeCustomWord(1, "equanimity"),
@@ -370,6 +408,59 @@ describe("sync review logs", () => {
     expect(tableState.review_logs.upserts).toHaveLength(1);
   });
 
+  it("pulls rewrite context prompt metadata on login", async () => {
+    tableState.profiles.exists = true;
+    tableState.profiles.row = {
+      id: "user-1",
+      level: 3,
+      xp: 120,
+      xp_to_next_level: 300,
+      hp: 90,
+      max_hp: 100,
+      current_streak: 4,
+      longest_streak: 6,
+      last_session_date: "2026-04-11",
+      total_sessions: 12,
+      total_correct: 87,
+      total_reviewed: 105,
+      stats: { recall: 3, retention: 3, perception: 1, creativity: 0 },
+      difficulty: "normal",
+      updated_at: "2026-04-11T08:30:00.000Z",
+    };
+    tableState.review_logs.rows = [
+      {
+        user_id: "user-1",
+        word_key: "lucid",
+        rating: 2,
+        response_time_ms: 2400,
+        correct: true,
+        cue_level: 1,
+        retrieval_kind: "assisted",
+        context_prompt_kind: "rewrite",
+        reviewed_at: "2026-04-11T08:25:00.000Z",
+      },
+    ];
+
+    dbMock.words.toArray.mockResolvedValue([
+      makeWord(1, "lucid"),
+    ]);
+    dbMock.reviewLogs.toArray.mockResolvedValue([]);
+
+    await syncOnLogin(makeUser());
+
+    expect(dbMock.reviewLogs.add).toHaveBeenCalledWith({
+      wordId: 1,
+      sessionId: undefined,
+      rating: 2,
+      responseTimeMs: 2400,
+      correct: true,
+      cueLevel: 1,
+      retrievalKind: "assisted",
+      contextPromptKind: "rewrite",
+      reviewedAt: new Date("2026-04-11T08:25:00.000Z"),
+    });
+  });
+
   it("backfills context prompt metadata onto same-key local review logs during sync", async () => {
     tableState.profiles.exists = true;
     tableState.profiles.row = {
@@ -424,6 +515,63 @@ describe("sync review logs", () => {
     expect(dbMock.reviewLogs.add).not.toHaveBeenCalled();
     expect(dbMock.reviewLogs.update).toHaveBeenCalledWith(1, {
       contextPromptKind: "produce",
+    });
+  });
+
+  it("backfills rewrite context prompt metadata onto same-key local review logs during sync", async () => {
+    tableState.profiles.exists = true;
+    tableState.profiles.row = {
+      id: "user-1",
+      level: 3,
+      xp: 120,
+      xp_to_next_level: 300,
+      hp: 90,
+      max_hp: 100,
+      current_streak: 4,
+      longest_streak: 6,
+      last_session_date: "2026-04-11",
+      total_sessions: 12,
+      total_correct: 87,
+      total_reviewed: 105,
+      stats: { recall: 3, retention: 3, perception: 1, creativity: 0 },
+      difficulty: "normal",
+      updated_at: "2026-04-11T08:30:00.000Z",
+    };
+    tableState.review_logs.rows = [
+      {
+        user_id: "user-1",
+        word_key: "lucid",
+        rating: 2,
+        response_time_ms: 2400,
+        correct: true,
+        cue_level: 1,
+        retrieval_kind: "assisted",
+        context_prompt_kind: "rewrite",
+        reviewed_at: "2026-04-11T08:25:00.000Z",
+      },
+    ];
+
+    dbMock.words.toArray.mockResolvedValue([
+      makeWord(1, "lucid"),
+    ]);
+    dbMock.reviewLogs.toArray.mockResolvedValue([
+      {
+        id: 1,
+        wordId: 1,
+        rating: 2,
+        responseTimeMs: 2400,
+        correct: true,
+        cueLevel: 1,
+        retrievalKind: "assisted",
+        reviewedAt: new Date("2026-04-11T08:25:00.000Z"),
+      },
+    ]);
+
+    await syncOnLogin(makeUser());
+
+    expect(dbMock.reviewLogs.add).not.toHaveBeenCalled();
+    expect(dbMock.reviewLogs.update).toHaveBeenCalledWith(1, {
+      contextPromptKind: "rewrite",
     });
   });
 

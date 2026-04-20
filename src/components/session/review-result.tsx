@@ -49,9 +49,10 @@ export function ReviewResult({
           ? "ASC"
           : "RCL";
   const retrievalKind = result.retrievalKind ?? (result.correct ? "exact" : "failed");
-  const isProductionContext = result.mode === "context" && result.contextPromptKind === "produce";
+  const isTransferContext = result.mode === "context"
+    && (result.contextPromptKind === "produce" || result.contextPromptKind === "rewrite");
   const retrievalLabel =
-    isProductionContext
+    isTransferContext
       ? retrievalKind === "approximate"
         ? "Close"
         : retrievalKind === "failed"
@@ -67,7 +68,7 @@ export function ReviewResult({
               ? "Miss"
               : "Clean";
   const retrievalTone =
-    isProductionContext
+    isTransferContext
       ? retrievalKind === "approximate"
         ? "bg-orange-500/10 text-orange-500"
         : retrievalKind === "failed"

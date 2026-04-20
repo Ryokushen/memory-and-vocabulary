@@ -19,12 +19,17 @@ function makeReviewLog(
 }
 
 describe("getRecentRetrievalMetrics", () => {
-  it("returns no data when recent reviews are production-context only", () => {
+  it("returns no data when recent reviews are transfer-context only", () => {
     const metrics = getRecentRetrievalMetrics([
       makeReviewLog("2026-04-10T11:45:00.000Z", {
         rating: 2,
         retrievalKind: "assisted",
         contextPromptKind: "produce",
+      }),
+      makeReviewLog("2026-04-09T11:45:00.000Z", {
+        rating: 2,
+        retrievalKind: "assisted",
+        contextPromptKind: "rewrite",
       }),
     ]);
 

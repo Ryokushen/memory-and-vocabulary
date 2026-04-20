@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { CONTEXT_SENTENCES } from "./context-sentences";
 import type {
   GameMode,
   ReviewCard,
@@ -468,6 +469,58 @@ describe("session engine", () => {
     });
     expect(
       gradeContextAnswer(
+        "The meticulous confused team.",
+        "meticulous",
+        0,
+        "produce",
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
+        "My meticulous confused team.",
+        "meticulous",
+        0,
+        "produce",
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
+        "The catalyst caused.",
+        "catalyst",
+        0,
+        "produce",
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
+        "The meticulous plan drafted yesterday.",
+        "meticulous",
+        0,
+        "produce",
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
         "meticulous if it works",
         "meticulous",
         0,
@@ -572,7 +625,179 @@ describe("session engine", () => {
     });
   });
 
-  it("builds replacement prompts until a word has at least one clean retrieval, then upgrades to production prompts", () => {
+  it("grades rewrite-style context answers by target-word usage and scenario anchors", () => {
+    const sourceSentence = "The **weak** sentence confused everyone.";
+
+    expect(
+      gradeContextAnswer(
+        "The meticulous sentence confused everyone.",
+        "meticulous",
+        0,
+        "rewrite",
+        sourceSentence,
+      ),
+    ).toEqual({
+      rating: 2,
+      correct: true,
+      cueLevel: 0,
+      retrievalKind: "assisted",
+    });
+    expect(
+      gradeContextAnswer(
+        "The meticulus sentence confused everyone.",
+        "meticulous",
+        0,
+        "rewrite",
+        sourceSentence,
+      ),
+    ).toEqual({
+      rating: 2,
+      correct: true,
+      cueLevel: 0,
+      retrievalKind: "approximate",
+    });
+    expect(
+      gradeContextAnswer(
+        "The meticulous sentence confused everyone.",
+        "meticulous",
+        1,
+        "rewrite",
+        sourceSentence,
+      ),
+    ).toEqual({
+      rating: 2,
+      correct: true,
+      cueLevel: 1,
+      retrievalKind: "assisted",
+    });
+    expect(
+      gradeContextAnswer(
+        "Our meticulous office feels calm.",
+        "meticulous",
+        0,
+        "rewrite",
+        sourceSentence,
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
+        "The meticulous confused team.",
+        "meticulous",
+        0,
+        "rewrite",
+        sourceSentence,
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
+        "My meticulous confused team.",
+        "meticulous",
+        0,
+        "rewrite",
+        sourceSentence,
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
+        "Catalyst work is cause.",
+        "catalyst",
+        0,
+        "rewrite",
+        "The incident was the **cause** of a complete policy overhaul.",
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+    expect(
+      gradeContextAnswer(
+        "The meticulous sentence confused everyone. Another one.",
+        "meticulous",
+        0,
+        "rewrite",
+        sourceSentence,
+      ),
+    ).toEqual({
+      rating: 1,
+      correct: false,
+      cueLevel: 0,
+      retrievalKind: "failed",
+    });
+  });
+
+  it("accepts canonical rewrites from the shipped context-sentence bank", () => {
+    const allSentences = Object.values(CONTEXT_SENTENCES).flat();
+
+    expect(allSentences.length).toBeGreaterThan(0);
+
+    for (const prompt of allSentences) {
+      const canonicalRewrite = prompt.sentence.replace(`**${prompt.weakWord}**`, prompt.answer);
+      expect(
+        gradeContextAnswer(
+          canonicalRewrite,
+          prompt.answer,
+          0,
+          "rewrite",
+          prompt.sentence,
+        ),
+      ).toMatchObject({
+        correct: true,
+      });
+    }
+  });
+
+  it("uses the context sentence's canonical answer for fluent rewrite prompts", () => {
+    const word: Word = {
+      ...makeWord(99),
+      word: "concur",
+      definition: "to agree",
+      examples: ["The reviewers concurred."],
+      contextSentences: [
+        {
+          sentence: "All three reviewers **agreed** that the proposal was technically sound.",
+          weakWord: "agreed",
+          answer: "concurred",
+          distractors: ["concluded", "confirmed", "decided"],
+        },
+      ],
+    };
+
+    const prompt = buildContextPrompt(word, {
+      stage: "fluent",
+      exactStreak: 3,
+      recentCueRate: 0,
+      recentFailureCount: 0,
+      recallHintEnabled: false,
+      rapidTimeoutMs: 3200,
+      rapidCueRevealMs: null,
+    });
+
+    expect(prompt).toMatchObject({
+      kind: "rewrite",
+      answer: "concurred",
+      sentence: "All three reviewers **agreed** that the proposal was technically sound.",
+      weakWord: "agreed",
+    });
+  });
+
+  it("builds replacement prompts until a word has clean retrieval history, then upgrades from produce to rewrite", () => {
     const word = makeWord(1);
 
     const rescuePrompt = buildContextPrompt(word, {
@@ -629,8 +854,10 @@ describe("session engine", () => {
       example: "example-1",
     });
     expect(fluentPrompt).toMatchObject({
-      kind: "produce",
+      kind: "rewrite",
       answer: "word-1",
+      weakWord: "weak",
+      sentence: "A **weak** sentence.",
       definition: "definition-1",
       example: "example-1",
     });
@@ -1089,6 +1316,38 @@ describe("session engine", () => {
         contextPromptKind: "produce",
       }),
     );
+  });
+
+  it("treats transfer-style context answers as assisted usage so they do not inflate clean recall", async () => {
+    const sessionWord = makeSessionWord(1);
+    schedulerMock.gradeCard.mockResolvedValue(sessionWord.reviewCard);
+    const sourceSentence = "The **weak** sentence confused everyone.";
+
+    const { result } = await processAnswer(
+      sessionWord,
+      "The meticulous sentence confused everyone.",
+      1800,
+      "session-1",
+      "context",
+      "meticulous",
+      {
+        contextPromptKind: "rewrite",
+        contextSourceSentence: sourceSentence,
+      },
+    );
+
+    expect(result).toMatchObject({
+      mode: "context",
+      rating: 2,
+      correct: true,
+      retrievalKind: "assisted",
+      contextPromptKind: "rewrite",
+    });
+    expect(dbMock.reviewLogs.add).toHaveBeenCalledWith(expect.objectContaining({
+      rating: 2,
+      retrievalKind: "assisted",
+      contextPromptKind: "rewrite",
+    }));
   });
 
   it("downgrades hinted recall to assisted retrieval in the review log", async () => {

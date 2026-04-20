@@ -158,6 +158,8 @@ export function useSession() {
         ? {
           ...answerMetadata,
           contextPromptKind: answerMetadata?.contextPromptKind ?? currentContextPrompt.kind,
+          contextSourceSentence: answerMetadata?.contextSourceSentence
+            ?? (currentContextPrompt.kind === "rewrite" ? currentContextPrompt.sentence : undefined),
         }
         : answerMetadata;
       const responseTimeMs = resolvedAnswerMetadata?.retrievalTimeMs ?? (Date.now() - promptStartTime);
