@@ -4,6 +4,7 @@ import type { SeedWord, Word } from "./types";
 const dbMock = vi.hoisted(() => ({
   words: {
     toArray: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
@@ -40,7 +41,10 @@ vi.mock("./seed-words", () => ({
 
 import { seedDatabase } from "./seed";
 
-function makeExistingWord(word: string): Word {
+function makeExistingWord(
+  word: string,
+  overrides: Partial<Word> = {},
+): Word {
   return {
     id: 1,
     word,
@@ -49,6 +53,7 @@ function makeExistingWord(word: string): Word {
     synonyms: [],
     tier: 1,
     createdAt: new Date("2026-04-01T00:00:00.000Z"),
+    ...overrides,
   };
 }
 
@@ -70,5 +75,33 @@ describe("seed database", () => {
         association: undefined,
       }),
     );
+    expect(dbMock.words.update).not.toHaveBeenCalled();
+  });
+
+  it("reconciles tier on existing non-custom words when seed tier changed", async () => {
+    dbMock.words.toArray.mockResolvedValue([
+      makeExistingWord("lucid", { id: 11, tier: 2 }),
+      makeExistingWord("tenuous", { id: 12, tier: 1 }),
+    ]);
+
+    await seedDatabase();
+
+    expect(addWordWithCardMock).not.toHaveBeenCalled();
+    expect(dbMock.words.update).toHaveBeenCalledTimes(2);
+    expect(dbMock.words.update).toHaveBeenCalledWith(11, { tier: 1 });
+    expect(dbMock.words.update).toHaveBeenCalledWith(12, { tier: 2 });
+  });
+
+  it("leaves custom words and unchanged tiers untouched", async () => {
+    dbMock.words.toArray.mockResolvedValue([
+      makeExistingWord("lucid", { id: 21, tier: 1 }),
+      makeExistingWord("tenuous", { id: 22, tier: 2 }),
+      makeExistingWord("mytag", { id: 23, tier: "custom" }),
+    ]);
+
+    await seedDatabase();
+
+    expect(dbMock.words.update).not.toHaveBeenCalled();
+    expect(addWordWithCardMock).not.toHaveBeenCalled();
   });
 });

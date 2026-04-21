@@ -68,6 +68,7 @@ All notable changes to this project should be documented in this file.
 - Leave-session flow now type-checks cleanly in production builds (`commitPartialSession()` is treated as `void`, and saved-count messaging uses answered-word count)
 - Removed a spurious `## Research Foundation` heading from README
 - Cleaned minor lint issues across the app
+- Seed database now reconciles tier on existing non-custom words so rebalanced seed tiers propagate to users whose local DB was already populated (custom words untouched)
 
 ### Verified
 
