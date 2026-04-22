@@ -17,6 +17,12 @@ import {
 } from "@/components/ui/dialog";
 import { AlertTriangle, Lock, Plus, RotateCcw, Search } from "lucide-react";
 import { useStats } from "@/hooks/use-stats";
+import {
+  CUSTOM_CURRICULUM_INFO,
+  SEEDED_PHASE_INFO,
+  getCurriculumBadgeLabel,
+  getLexiconSummary,
+} from "@/lib/curriculum-copy";
 import type { TOTCaptureSource, Word } from "@/lib/types";
 import { TIER_UNLOCK_LEVELS, TOT_CAPTURE_SOURCES } from "@/lib/types";
 import {
@@ -38,11 +44,8 @@ const TIER_INFO: Record<
   string,
   { label: string; numeral: string; color: string }
 > = {
-  "1": { label: "Core Articulation", numeral: "I", color: "var(--sage)" },
-  "2": { label: "Precision Vocabulary", numeral: "II", color: "var(--lapis)" },
-  "3": { label: "Power Words", numeral: "III", color: "var(--crimson)" },
-  "4": { label: "Rarefied Lexicon", numeral: "IV", color: "var(--ember)" },
-  custom: { label: "Custom", numeral: "★", color: "var(--ember)" },
+  ...SEEDED_PHASE_INFO,
+  custom: CUSTOM_CURRICULUM_INFO,
 };
 
 const TOT_SOURCE_LABELS: Record<TOTCaptureSource, string> = {
@@ -139,7 +142,7 @@ function WordRow({
           </div>
         </div>
         <span className="lex-badge shrink-0" style={tierBadgeStyle(tier.color)}>
-          {word.tier === "custom" ? "Custom" : `Tier ${word.tier}`}
+          {getCurriculumBadgeLabel(word.tier)}
         </span>
         {word.totCapture && (
           <span
@@ -340,6 +343,7 @@ export default function WordsPage() {
     }
     return counts;
   }, [words]);
+  const customWordCount = tierCounts.custom ?? 0;
 
   const handleAdd = async () => {
     if (!newWord.trim() || !newDef.trim() || duplicateWord) return;
@@ -502,7 +506,7 @@ export default function WordsPage() {
             The Lexicon
           </h1>
           <p className="italic mt-1" style={{ color: "var(--muted-foreground)" }}>
-            {words.length} words gathered across three disciplines.
+            {getLexiconSummary(words.length, customWordCount)}
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -716,7 +720,7 @@ export default function WordsPage() {
                     className="uppercase-tracked text-[11px]"
                     style={{ color: info.color }}
                   >
-                    {group.tier === "custom" ? "Custom" : `Tier ${info.numeral}`}
+                    {group.tier === "custom" ? "Custom" : getCurriculumBadgeLabel(group.tier)}
                   </span>
                   <span className="text-xs" style={{ color: "var(--muted-foreground)" }}>
                     {info.label} · {(group.words.length + group.trackedLockedWords.length + group.hiddenLockedCount)} gathered
