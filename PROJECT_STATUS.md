@@ -19,18 +19,19 @@ These capabilities are already in `master` and should be treated as baseline beh
 
 ## Current Product Gap
 
-- RPG stats now drive both session mode weighting and retrieval-drill timing, and Context mode now spans replacement, target-word production, and a first fluent rewrite-transfer prompt. The remaining gap is broader stat-aware personalization in other training surfaces plus any future Context transfer depth beyond this deterministic rewrite slice.
+- RPG stats now drive both session mode weighting and retrieval-drill timing, and Context mode now spans replacement, target-word production, and a first fluent rewrite-transfer prompt. The remaining gaps are broader stat-aware personalization in other training surfaces, a frequency-grounded pass on seed-word phase ordering, plus any future Context transfer depth beyond this deterministic rewrite slice.
 
 ## Active Next Priorities
 
 1. Broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces.
 2. Add targeted regression tests around newly introduced sync changes (without reworking shipped sync architecture).
-3. If Context mode needs another step, deepen transfer beyond the current rewrite slice without introducing LLM grading or bloated UX.
+3. Re-rank the seeded word list against English usage frequency and decide whether the curriculum should stay at 3 phases or expand to 4. See [docs/word-frequency-audit.md](docs/word-frequency-audit.md).
+4. If Context mode needs another step, deepen transfer beyond the current rewrite slice without introducing LLM grading or bloated UX.
 
 ## Verification Baseline
 
 - `npm run lint`
-- `npm run test` (127 passing tests)
+- `npm run test` (132 passing tests)
 - `npm run build` (Next.js production build + TypeScript checks)
 
 ## Scope Guardrail

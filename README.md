@@ -130,6 +130,16 @@ npm run lint
 npm run build
 ```
 
+If you are running inside the Codex desktop app and the bundled app `node` fails to load native modules, use the repo-local verification helper instead of `npm`:
+
+```bash
+./scripts/verify.sh
+./scripts/verify.sh test
+./scripts/verify.sh build
+```
+
+The helper prefers the Codex workspace runtime Node at `~/.cache/codex-runtimes/...` and falls back to a non-Codex `node` on your `PATH`. You can override it explicitly with `LEXFORGE_NODE_BIN=/path/to/node`.
+
 If you want GitHub auth and cloud sync, create `.env.local` with your Supabase project URL and anon key:
 
 ```bash
@@ -189,3 +199,4 @@ For the up-to-date "already shipped vs next" checklist, see [PROJECT_STATUS.md](
 - deepen Context transfer beyond the new fluent rewrite slice into richer scenario variation only if deterministic grading can stay sane
 - broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces
 - targeted regression tests around newly introduced sync changes (without reworking shipped sync hardening)
+- re-rank the seeded vocabulary against English usage frequency and decide whether Lexforge should keep 3 phases or move to 4; current audit lives in [docs/word-frequency-audit.md](docs/word-frequency-audit.md)
