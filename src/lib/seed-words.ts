@@ -1,10 +1,13 @@
 import type { SeedWord } from "./types";
+import { SEED_WORDS_ADDITIONS_1 } from "./seed-words-additions-1";
+import { SEED_WORDS_ADDITIONS_2 } from "./seed-words-additions-2";
+import { SEED_WORDS_ADDITIONS_3 } from "./seed-words-additions-3";
 
 /**
- * Tier 1: Core Articulation — words that replace vague defaults.
- * ~50 words for MVP. Full corpus targets 200.
+ * Base shipped seed bank. Expansion batches are appended below until the
+ * canonical 700-word curriculum is fully authored.
  */
-export const SEED_WORDS: SeedWord[] = [
+const BASE_SEED_WORDS: SeedWord[] = [
   {
     word: "nuanced",
     definition: "Characterized by subtle shades of meaning or expression",
@@ -5422,5 +5425,12 @@ export const SEED_WORDS: SeedWord[] = [
     synonyms: ["incremental", "cyclical", "progressive"],
     tier: 3,
   },
+];
+
+export const SEED_WORDS: SeedWord[] = [
+  ...BASE_SEED_WORDS,
+  ...SEED_WORDS_ADDITIONS_1,
+  ...SEED_WORDS_ADDITIONS_2,
+  ...SEED_WORDS_ADDITIONS_3,
 ];
 

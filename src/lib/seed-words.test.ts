@@ -23,6 +23,15 @@ function parseCanonicalPhaseByWord(): Map<string, number> {
 }
 
 describe("seed word curriculum alignment", () => {
+  it("ships the full canonical 700-word curriculum", () => {
+    const phaseByWord = parseCanonicalPhaseByWord();
+    const shippedWords = new Set(SEED_WORDS.map((seed) => seed.word));
+    const missingWords = [...phaseByWord.keys()].filter((word) => !shippedWords.has(word));
+
+    expect(SEED_WORDS).toHaveLength(phaseByWord.size);
+    expect(missingWords).toEqual([]);
+  });
+
   it("keeps every shipped seed word aligned with the canonical curriculum phase", () => {
     const phaseByWord = parseCanonicalPhaseByWord();
 
