@@ -4,6 +4,14 @@ import type { Card } from "ts-fsrs";
 
 export type SeedTier = 1 | 2 | 3 | 4;
 export type WordTier = SeedTier | "custom";
+export type PipelineStage =
+  | "captured"
+  | "queued"
+  | "learning"
+  | "reviewing"
+  | "contextualizing"
+  | "productive"
+  | "mature";
 
 export interface Word {
   id?: number;
@@ -17,6 +25,8 @@ export interface Word {
   associationUpdatedAt?: string;
   contextSentences?: ContextSentence[];
   totCapture?: TOTCapture;
+  pipelineStage?: PipelineStage;
+  pipelineUpdatedAt?: string;
   createdAt: Date;
 }
 
