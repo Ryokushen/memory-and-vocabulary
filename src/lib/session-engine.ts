@@ -1,5 +1,9 @@
 import { db } from "./db";
 import { toLocalDateKey } from "./date";
+import {
+  getPipelineStage,
+  shouldAdvancePipelineStage,
+} from "./pipeline-stage";
 import { getDueCards, getNewCards, gradeCard, Rating } from "./scheduler";
 import { completeSession } from "./gamification";
 import { CONTEXT_SENTENCES } from "./context-sentences";
@@ -1155,6 +1159,23 @@ export async function processAnswer(
     reviewedAt: new Date(),
   };
   await db.reviewLogs.add(log);
+
+  const wordLogs = await db.reviewLogs
+    .where("wordId")
+    .equals(sessionWord.word.id!)
+    .toArray();
+  const nextPipelineStage = getPipelineStage(sessionWord.word, wordLogs);
+  if (
+    shouldAdvancePipelineStage(
+      sessionWord.word.pipelineStage,
+      nextPipelineStage,
+    )
+  ) {
+    await db.words.update(sessionWord.word.id!, {
+      pipelineStage: nextPipelineStage,
+      pipelineUpdatedAt: new Date().toISOString(),
+    });
+  }
 
   const result: SessionResult = {
     wordId: sessionWord.word.id!,

@@ -13,9 +13,11 @@ const dbMock = vi.hoisted(() => ({
   reviewLogs: {
     add: vi.fn(),
     toArray: vi.fn(),
+    where: vi.fn(),
   },
   words: {
     get: vi.fn(),
+    update: vi.fn(),
   },
 }));
 
@@ -138,6 +140,14 @@ function makeReviewLog(
   };
 }
 
+function mockWordLogs(logs: ReviewLog[]) {
+  dbMock.reviewLogs.where.mockReturnValue({
+    equals: vi.fn().mockReturnValue({
+      toArray: vi.fn().mockResolvedValue(logs),
+    }),
+  });
+}
+
 function sampleModeRatios(
   picker: () => GameMode,
   iterations: number = 20000,
@@ -166,6 +176,8 @@ describe("session engine", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-04-10T12:00:00.000Z"));
     vi.clearAllMocks();
+    dbMock.words.update.mockResolvedValue(1);
+    mockWordLogs([]);
   });
 
   it("auto-grades exact, fuzzy, and wrong answers", () => {
@@ -1274,6 +1286,73 @@ describe("session engine", () => {
         retrievalKind: "created",
       }),
     );
+  });
+
+  it("advances pipeline stage after clean recall without changing FSRS grading", async () => {
+    const sessionWord: SessionWord = {
+      ...makeSessionWord(1),
+      word: {
+        ...makeWord(1),
+        pipelineStage: "learning",
+      },
+    };
+    const updatedCard = makeReviewCard(1);
+    schedulerMock.gradeCard.mockResolvedValue(updatedCard);
+    mockWordLogs([
+      makeReviewLog(1, "2026-04-10T11:45:00.000Z", {
+        retrievalKind: "exact",
+        correct: true,
+      }),
+    ]);
+
+    await processAnswer(
+      sessionWord,
+      "word-1",
+      1600,
+      "session-1",
+      "recall",
+    );
+
+    expect(schedulerMock.gradeCard).toHaveBeenCalledWith(
+      sessionWord.reviewCard,
+      3,
+    );
+    expect(dbMock.words.update).toHaveBeenCalledWith(1, {
+      pipelineStage: "reviewing",
+      pipelineUpdatedAt: "2026-04-10T12:00:00.000Z",
+    });
+  });
+
+  it("does not demote mature words after successful production context", async () => {
+    const sessionWord: SessionWord = {
+      ...makeSessionWord(1),
+      word: {
+        ...makeWord(1),
+        word: "meticulous",
+        pipelineStage: "mature",
+      },
+    };
+    schedulerMock.gradeCard.mockResolvedValue(sessionWord.reviewCard);
+    mockWordLogs([
+      makeReviewLog(1, "2026-04-10T11:45:00.000Z", {
+        rating: 2,
+        correct: true,
+        retrievalKind: "assisted",
+        contextPromptKind: "produce",
+      }),
+    ]);
+
+    await processAnswer(
+      sessionWord,
+      "The inspector was meticulous during the final review.",
+      2200,
+      "session-1",
+      "context",
+      "meticulous",
+      { contextPromptKind: "produce" },
+    );
+
+    expect(dbMock.words.update).not.toHaveBeenCalled();
   });
 
   it("treats production-context answers as assisted usage so they do not inflate clean recall", async () => {
