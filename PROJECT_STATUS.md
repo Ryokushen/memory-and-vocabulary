@@ -33,6 +33,15 @@ These capabilities are already in `master` and should be treated as baseline beh
 4. Evolve the vocabulary pipeline beyond v1 with triage inbox, first-class vocabulary item entities, generated practice lanes, coverage metrics, and collocation/chunk modeling.
 5. Keep the canonical 700-word ranking authoritative for future seed updates. Reference material: [docs/700-word-retiering-plan.md](docs/700-word-retiering-plan.md), [docs/word-frequency-audit.md](docs/word-frequency-audit.md), [docs/word-addition-candidates.md](docs/word-addition-candidates.md).
 
+## Active Work In Progress
+
+- Pipeline v2 triage inbox is paused in worktree `.worktrees/pipeline-v2-triage-inbox` on branch `feature/pipeline-v2-triage-inbox`.
+- Design doc: [docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md](docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md).
+- Implementation plan: [docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md](docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md).
+- Completed: Task 1 capture triage types/helpers, committed as `f8b94aa` in the feature worktree after spec and code-quality review.
+- Paused: Task 2 after adding the failing seed backfill test. `src/lib/seed.test.ts` has an uncommitted partial patch; no Task 2 implementation is committed.
+- Resume at Task 2 Step 2 in the implementation plan.
+
 ## Verification Baseline
 
 - `npm run lint`

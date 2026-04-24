@@ -10,6 +10,20 @@
 
 ---
 
+## Pause Snapshot
+
+Status as of 2026-04-24:
+
+- Implementation is paused in worktree `.worktrees/pipeline-v2-triage-inbox` on branch `feature/pipeline-v2-triage-inbox`.
+- Task 1 is complete and committed as `f8b94aa feat: add capture triage helpers`.
+- Task 1 passed spec-compliance review and code-quality review. A minor follow-up from review was folded into the amended Task 1 commit.
+- Task 1 verification passed: `npm.cmd test -- --run src/lib/word-library.test.ts` and `npm.cmd run lint`.
+- Task 2 was interrupted after Step 1. The failing seed backfill test has been added to `src/lib/seed.test.ts` but is intentionally uncommitted.
+- No Task 2 implementation, review, or commit has been completed yet.
+- To resume: continue Task 2 at Step 2 in this plan, using the existing uncommitted `src/lib/seed.test.ts` patch as the failing-test starting point.
+
+---
+
 ## File Structure
 
 - Modify: `src/lib/types.ts`
@@ -55,7 +69,7 @@ Before editing Next.js page code, read the relevant local Next.js 16 docs in `no
 - Modify: `src/lib/word-library.ts`
 - Modify: `src/lib/word-library.test.ts`
 
-- [ ] **Step 1: Add failing helper tests**
+- [x] **Step 1: Add failing helper tests**
 
 Modify `src/lib/word-library.test.ts` imports:
 
@@ -202,7 +216,7 @@ describe("capture triage helpers", () => {
 });
 ```
 
-- [ ] **Step 2: Run helper tests to verify failure**
+- [x] **Step 2: Run helper tests to verify failure**
 
 Run:
 
@@ -212,7 +226,7 @@ npm run test -- --run src/lib/word-library.test.ts
 
 Expected: FAIL because the triage helpers and types do not exist.
 
-- [ ] **Step 3: Add capture triage types**
+- [x] **Step 3: Add capture triage types**
 
 Modify `src/lib/types.ts` near the TOT capture types:
 
@@ -232,7 +246,7 @@ export interface TOTCapture {
 }
 ```
 
-- [ ] **Step 4: Implement triage helpers**
+- [x] **Step 4: Implement triage helpers**
 
 Modify `src/lib/word-library.ts` imports:
 
@@ -302,7 +316,7 @@ export function archiveTOTCapture(word: Word, triagedAt: string): Partial<Word> 
 }
 ```
 
-- [ ] **Step 5: Run helper tests**
+- [x] **Step 5: Run helper tests**
 
 Run:
 
@@ -312,7 +326,7 @@ npm run test -- --run src/lib/word-library.test.ts
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/types.ts src/lib/word-library.ts src/lib/word-library.test.ts
@@ -328,7 +342,9 @@ git commit -m "feat: add capture triage helpers"
 - Modify: `src/lib/seed.test.ts`
 - Modify: `src/app/words/page.tsx`
 
-- [ ] **Step 1: Add failing seed backfill tests**
+- [x] **Step 1: Add failing seed backfill tests**
+
+Pause note: this step is applied in the working tree but not committed. Continue with Step 2 when resuming.
 
 Add this test to `src/lib/seed.test.ts`:
 
