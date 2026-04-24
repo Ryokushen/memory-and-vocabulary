@@ -1,7 +1,10 @@
 import type { PipelineStage, Word } from "@/lib/types";
+import { isPendingCapture } from "@/lib/word-library";
 import { TIER_UNLOCK_LEVELS } from "@/lib/types";
 
 const GROUP_ORDER = ["1", "2", "3", "4", "custom"] as const;
+
+export type WordLibraryViewFilter = "all" | Word["tier"] | "inbox";
 
 export function buildTierFilterLayout() {
   return {
@@ -12,6 +15,35 @@ export function buildTierFilterLayout() {
 
 export function getWordLibraryPipelineStage(word: Word): PipelineStage {
   return word.pipelineStage ?? (word.totCapture ? "captured" : "queued");
+}
+
+function matchesLibrarySearch(word: Word, normalizedSearch: string): boolean {
+  if (!normalizedSearch) return true;
+  return [
+    word.word,
+    word.definition,
+    word.totCapture?.weakSubstitute,
+    word.totCapture?.context,
+  ].some((value) => value?.toLowerCase().includes(normalizedSearch));
+}
+
+export function getInboxCount(words: Word[]): number {
+  return words.filter(isPendingCapture).length;
+}
+
+export function filterWordsForLibraryView(
+  words: Word[],
+  activeFilter: WordLibraryViewFilter,
+  search: string,
+): Word[] {
+  const normalizedSearch = search.trim().toLowerCase();
+  return words
+    .filter((word) => {
+      if (activeFilter === "inbox") return isPendingCapture(word);
+      if (activeFilter === "all") return true;
+      return word.tier === activeFilter;
+    })
+    .filter((word) => matchesLibrarySearch(word, normalizedSearch));
 }
 
 export type WordGroup = {

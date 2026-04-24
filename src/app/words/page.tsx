@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/lib/db";
 import { useBootstrap } from "@/lib/bootstrap-context";
@@ -30,17 +30,23 @@ import {
 import type { TOTCaptureSource, Word } from "@/lib/types";
 import { TIER_UNLOCK_LEVELS, TOT_CAPTURE_SOURCES } from "@/lib/types";
 import {
+  archiveTOTCapture,
   createTOTEventId,
+  getCaptureTriageStatus,
   getTOTEventIds,
   isDuplicateWord,
   isTierLocked,
+  keepTOTCapture,
   normalizeWord,
   type LibraryTierFilter,
 } from "@/lib/word-library";
 import {
   buildTierFilterLayout,
   buildWordGroups,
+  filterWordsForLibraryView,
+  getInboxCount,
   getWordLibraryPipelineStage,
+  type WordLibraryViewFilter,
 } from "./page.helpers";
 import { IllumCard } from "@/components/rpg/illum-card";
 import { HeronDivider } from "@/components/rpg/heron-divider";
@@ -101,11 +107,17 @@ function WordRow({
   word,
   isExpanded,
   onToggle,
+  onKeepCapture,
+  onArchiveCapture,
+  isTriaging,
   isLast,
 }: {
   word: Word;
   isExpanded: boolean;
   onToggle: () => void;
+  onKeepCapture: (word: Word) => void;
+  onArchiveCapture: (word: Word) => void;
+  isTriaging: boolean;
   isLast: boolean;
 }) {
   const tierKey = String(word.tier);
@@ -292,6 +304,31 @@ function WordRow({
                       {word.totCapture.context}
                     </p>
                   )}
+                  {getCaptureTriageStatus(word.totCapture) === "pending" && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        disabled={isTriaging}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onKeepCapture(word);
+                        }}
+                      >
+                        Keep
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isTriaging}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onArchiveCapture(word);
+                        }}
+                      >
+                        Archive
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -310,8 +347,10 @@ export default function WordsPage() {
   const playerLevel = profile?.level ?? 1;
   const [words, setWords] = useState<Word[]>([]);
   const [search, setSearch] = useState("");
-  const [activeTier, setActiveTier] = useState<LibraryTierFilter>("all");
+  const [activeTier, setActiveTier] = useState<WordLibraryViewFilter>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [triagingWordId, setTriagingWordId] = useState<number | null>(null);
+  const triagingWordIdRef = useRef<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [totDialogOpen, setTotDialogOpen] = useState(false);
 
@@ -320,7 +359,10 @@ export default function WordsPage() {
   const [newExample, setNewExample] = useState("");
   const [totForm, setTotForm] = useState(INITIAL_TOT_FORM);
   const duplicateWord = isDuplicateWord(newWord, words);
-  const selectedTierLocked = isTierLocked(activeTier, playerLevel);
+  const inboxCount = useMemo(() => getInboxCount(words), [words]);
+  const selectedTierLocked =
+    activeTier !== "inbox" &&
+    isTierLocked(activeTier as LibraryTierFilter, playerLevel);
   const normalizedTOTWord = normalizeWord(totForm.word);
   const existingTOTWord = useMemo(
     () => words.find((word) => normalizeWord(word.word) === normalizedTOTWord),
@@ -348,21 +390,10 @@ export default function WordsPage() {
     };
   }, [seedStatus]);
 
-  const filtered = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-
-    return words
-      .filter((w) => activeTier === "all" || w.tier === activeTier)
-      .filter((w) => {
-        if (!normalizedSearch) return true;
-        return [
-          w.word,
-          w.definition,
-          w.totCapture?.weakSubstitute,
-          w.totCapture?.context,
-        ].some((value) => value?.toLowerCase().includes(normalizedSearch));
-      });
-  }, [words, activeTier, search]);
+  const filtered = useMemo(
+    () => filterWordsForLibraryView(words, activeTier, search),
+    [words, activeTier, search],
+  );
 
   const grouped = useMemo(() => {
     if (activeTier !== "all") return null;
@@ -475,8 +506,63 @@ export default function WordsPage() {
     await loadWords();
   };
 
-  const tierFilters: { key: LibraryTierFilter; label: string }[] = [
+  const handleKeepCapture = async (word: Word) => {
+    if (!word.id || triagingWordIdRef.current !== null) return;
+    triagingWordIdRef.current = word.id;
+    setTriagingWordId(word.id);
+
+    try {
+      const current = await db.words.get(word.id);
+      if (
+        !current?.totCapture ||
+        getCaptureTriageStatus(current.totCapture) !== "pending"
+      ) {
+        await loadWords();
+        return;
+      }
+
+      await db.words.update(
+        word.id,
+        keepTOTCapture(current, new Date().toISOString()),
+      );
+      setExpandedId(null);
+      await loadWords();
+    } finally {
+      triagingWordIdRef.current = null;
+      setTriagingWordId(null);
+    }
+  };
+
+  const handleArchiveCapture = async (word: Word) => {
+    if (!word.id || triagingWordIdRef.current !== null) return;
+    triagingWordIdRef.current = word.id;
+    setTriagingWordId(word.id);
+
+    try {
+      const current = await db.words.get(word.id);
+      if (
+        !current?.totCapture ||
+        getCaptureTriageStatus(current.totCapture) !== "pending"
+      ) {
+        await loadWords();
+        return;
+      }
+
+      await db.words.update(
+        word.id,
+        archiveTOTCapture(current, new Date().toISOString()),
+      );
+      setExpandedId(null);
+      await loadWords();
+    } finally {
+      triagingWordIdRef.current = null;
+      setTriagingWordId(null);
+    }
+  };
+
+  const tierFilters: { key: WordLibraryViewFilter; label: string; count?: number }[] = [
     { key: "all", label: "All" },
+    { key: "inbox", label: "Inbox", count: inboxCount },
     { key: 1, label: "I" },
     { key: 2, label: "II" },
     { key: 3, label: "III" },
@@ -494,6 +580,9 @@ export default function WordsPage() {
             word={w}
             isExpanded={expandedId === w.id}
             onToggle={() => setExpandedId(expandedId === w.id ? null : (w.id ?? null))}
+            onKeepCapture={handleKeepCapture}
+            onArchiveCapture={handleArchiveCapture}
+            isTriaging={triagingWordId !== null}
             isLast={i === wordList.length - 1}
           />
         ))}
@@ -726,10 +815,12 @@ export default function WordsPage() {
             className={tierFilterLayout.stripClassName}
             style={{ border: "1px solid var(--line)", borderRadius: 3 }}
           >
-            {tierFilters.map(({ key, label }, i) => {
+            {tierFilters.map((filter, i) => {
+              const { key } = filter;
               const active = activeTier === key;
               const count = tierCounts[String(key)] || 0;
-              const locked = isTierLocked(key, playerLevel);
+              const locked =
+                key !== "inbox" && isTierLocked(key as LibraryTierFilter, playerLevel);
               return (
                 <button
                   key={String(key)}
@@ -744,13 +835,18 @@ export default function WordsPage() {
                   }}
                 >
                   {locked && <Lock className="size-3" />}
-                  {label}
-                  <span
-                    className="tabular-nums text-[10px]"
-                    style={{ opacity: active ? 0.8 : 0.6 }}
-                  >
-                    {count}
-                  </span>
+                  {filter.label}
+                  {filter.key === "inbox" && filter.count !== undefined && filter.count > 0
+                    ? ` ${filter.count}`
+                    : ""}
+                  {filter.key !== "inbox" && (
+                    <span
+                      className="tabular-nums text-[10px]"
+                      style={{ opacity: active ? 0.8 : 0.6 }}
+                    >
+                      {count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -860,7 +956,21 @@ export default function WordsPage() {
         renderWordList(filtered)
       ) : null}
 
-      {filtered.length === 0 && !selectedTierLocked && (
+      {filtered.length === 0 && activeTier === "inbox" && inboxCount === 0 && (
+        <IllumCard className="text-center py-10">
+          <Tome className="size-10 mx-auto mb-3" style={{ color: "var(--gold-deep)" }} />
+          <p className="font-display text-xl font-bold" style={{ color: "var(--ink)" }}>
+            Inbox Clear
+          </p>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
+            New blanking captures will appear here for review.
+          </p>
+        </IllumCard>
+      )}
+
+      {filtered.length === 0 &&
+        !selectedTierLocked &&
+        (activeTier !== "inbox" || inboxCount > 0) && (
         <div className="text-center py-10">
           <Tome
             size={28}

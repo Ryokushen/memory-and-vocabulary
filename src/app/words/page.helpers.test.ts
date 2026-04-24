@@ -3,14 +3,20 @@ import type { TOTCapture, Word } from "@/lib/types";
 import {
   buildTierFilterLayout,
   buildWordGroups,
+  filterWordsForLibraryView,
+  getInboxCount,
   getWordLibraryPipelineStage,
 } from "./page.helpers";
 
-function makeCapture(count: number): TOTCapture {
+function makeCapture(
+  count: number,
+  overrides: Partial<TOTCapture> = {},
+): TOTCapture {
   return {
     source: "speech",
     capturedAt: "2026-04-10T09:00:00.000Z",
     count,
+    ...overrides,
   };
 }
 
@@ -59,6 +65,48 @@ describe("getWordLibraryPipelineStage", () => {
       getWordLibraryPipelineStage(makeWord(1, 1, { totCapture: makeCapture(1) })),
     ).toBe("captured");
     expect(getWordLibraryPipelineStage(makeWord(2, 1))).toBe("queued");
+  });
+});
+
+describe("inbox helpers", () => {
+  it("counts only pending capture words", () => {
+    expect(
+      getInboxCount([
+        makeWord(1, 1, { totCapture: makeCapture(1) }),
+        makeWord(2, 1, {
+          totCapture: makeCapture(1, { triageStatus: "accepted" }),
+        }),
+        makeWord(3, 1, {
+          totCapture: makeCapture(1, { triageStatus: "archived" }),
+        }),
+        makeWord(4, 1),
+      ]),
+    ).toBe(1);
+  });
+
+  it("filters the inbox to pending captures before search", () => {
+    const pending = makeWord(1, 1, {
+      word: "meticulous",
+      definition: "careful",
+      totCapture: makeCapture(1, { context: "inspection meeting" }),
+    });
+    const accepted = makeWord(2, 1, {
+      word: "lucid",
+      definition: "clear",
+      totCapture: makeCapture(1, { triageStatus: "accepted" }),
+    });
+
+    expect(
+      filterWordsForLibraryView([pending, accepted], "inbox", "").map(
+        (word) => word.word,
+      ),
+    ).toEqual(["meticulous"]);
+    expect(
+      filterWordsForLibraryView([pending, accepted], "inbox", "inspection"),
+    ).toEqual([pending]);
+    expect(
+      filterWordsForLibraryView([pending, accepted], "inbox", "lucid"),
+    ).toEqual([]);
   });
 });
 
