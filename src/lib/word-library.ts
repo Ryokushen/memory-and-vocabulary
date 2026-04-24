@@ -1,4 +1,5 @@
-import type { SeedTier, TOTCapture, Word } from "./types";
+import type { CaptureTriageStatus, SeedTier, TOTCapture, Word } from "./types";
+import { maxPipelineStage } from "./pipeline-stage";
 import { TIER_UNLOCK_LEVELS } from "./types";
 
 export type LibraryTierFilter = "all" | SeedTier | "custom";
@@ -53,6 +54,62 @@ export function getTOTEventIds(
     legacyCount,
     capture?.updatedAt ?? capture?.capturedAt,
   );
+}
+
+export function getCaptureTriageStatus(
+  capture: Pick<TOTCapture, "triageStatus"> | undefined | null,
+): CaptureTriageStatus | null {
+  if (!capture) return null;
+  return capture.triageStatus ?? "pending";
+}
+
+export function isPendingCapture(word: Pick<Word, "totCapture">): boolean {
+  return getCaptureTriageStatus(word.totCapture) === "pending";
+}
+
+export function getPendingCaptureWords<T extends Pick<Word, "totCapture">>(
+  words: T[],
+): T[] {
+  return words.filter(isPendingCapture);
+}
+
+export function isCaptureTrainingActive(word: Pick<Word, "totCapture">): boolean {
+  return getCaptureTriageStatus(word.totCapture) === "accepted";
+}
+
+export function shouldIncludeNewWordInTraining(
+  word: Pick<Word, "totCapture">,
+): boolean {
+  const status = getCaptureTriageStatus(word.totCapture);
+  return status === null || status === "accepted";
+}
+
+export function keepTOTCapture(word: Word, triagedAt: string): Partial<Word> {
+  if (!word.totCapture) return {};
+
+  return {
+    totCapture: {
+      ...word.totCapture,
+      triageStatus: "accepted",
+      triagedAt,
+      updatedAt: triagedAt,
+    },
+    pipelineStage: maxPipelineStage(word.pipelineStage, "queued"),
+    pipelineUpdatedAt: triagedAt,
+  };
+}
+
+export function archiveTOTCapture(word: Word, triagedAt: string): Partial<Word> {
+  if (!word.totCapture) return {};
+
+  return {
+    totCapture: {
+      ...word.totCapture,
+      triageStatus: "archived",
+      triagedAt,
+      updatedAt: triagedAt,
+    },
+  };
 }
 
 export function isDuplicateWord(

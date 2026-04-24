@@ -31,6 +31,7 @@ export interface Word {
 }
 
 export type TOTCaptureSource = "speech" | "writing" | "reading" | "meeting" | "other";
+export type CaptureTriageStatus = "pending" | "accepted" | "archived";
 
 export const TOT_CAPTURE_SOURCES: TOTCaptureSource[] = [
   "speech",
@@ -48,6 +49,8 @@ export interface TOTCapture {
   updatedAt?: string;
   count: number;
   eventIds?: string[];
+  triageStatus?: CaptureTriageStatus;
+  triagedAt?: string;
 }
 
 // ── Review ──────────────────────────────────────────────────────────────
