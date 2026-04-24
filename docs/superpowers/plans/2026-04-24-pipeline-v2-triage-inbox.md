@@ -10,17 +10,15 @@
 
 ---
 
-## Pause Snapshot
+## Completion Snapshot
 
 Status as of 2026-04-24:
 
-- Implementation is paused in worktree `.worktrees/pipeline-v2-triage-inbox` on branch `feature/pipeline-v2-triage-inbox`.
-- Task 1 is complete and committed as `f8b94aa feat: add capture triage helpers`.
-- Task 1 passed spec-compliance review and code-quality review. A minor follow-up from review was folded into the amended Task 1 commit.
-- Task 1 verification passed: `npm.cmd test -- --run src/lib/word-library.test.ts` and `npm.cmd run lint`.
-- Task 2 was interrupted after Step 1. The failing seed backfill test has been added to `src/lib/seed.test.ts` but is intentionally uncommitted.
-- No Task 2 implementation, review, or commit has been completed yet.
-- To resume: continue Task 2 at Step 2 in this plan, using the existing uncommitted `src/lib/seed.test.ts` patch as the failing-test starting point.
+- Pipeline v2 triage inbox has been implemented, merged into `master`, verified, and pushed.
+- Completed commits include capture triage helpers, seed backfill, training/session gating, Word Library Inbox UI, sync merge preservation, and docs.
+- Follow-up commits added dashboard separation of eligible new training words vs. pending capture Inbox items, plus a local-only Supabase auth fallback for session completion without cloud env vars.
+- Verification passed on `master`: `npm.cmd run lint`, `npm.cmd test`, and `npm.cmd run build`.
+- Next pipeline slice: archive browsing/restore for captured words that were archived without deletion.
 
 ---
 

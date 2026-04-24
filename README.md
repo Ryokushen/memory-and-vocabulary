@@ -32,7 +32,7 @@ What it does not currently claim:
 - Review-card reconciliation that preserves progressed due cards when a freshly seeded device syncs against an already-trained device
 - Sync hardening for normalized word keys, additive TOT capture merges, explicit session IDs in review logs, and background sync recovery
 - Partial session progress now saves when you leave training early
-- Dashboard quest card now shows backlog separately from the next quest mix
+- Dashboard quest card now separates due reviews, eligible new words, and pending capture Inbox items
 - Session generation is now stat-aware across both mode selection and retrieval drill timing: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association, and live profile stats now tune rapid-retrieval timeout pressure and rescue-cue timing while preserving rescue/stabilize/fluent drill-stage constraints
 - Context mode now has three typed-first variants: replacement prompts for rescue words, target-word sentence production for stabilize words, and fluent rewrite prompts that preserve the original scenario with deterministic grading and cue-aware fallback
 - Automated test coverage across scheduler, session, sync, stats helpers, and hooks
@@ -129,10 +129,12 @@ src/
 
 ```bash
 npm install
-npm run dev
+npm run dev -- --webpack
 npm run lint
 npm run build
 ```
+
+Next.js 16 enables Turbopack by default, but Lexforge currently uses Serwist through webpack config. Use `--webpack` for local dev until the service-worker setup is migrated or disabled for Turbopack.
 
 If you are running inside the Codex desktop app and the bundled app `node` fails to load native modules, use the repo-local verification helper instead of `npm`:
 
@@ -202,13 +204,14 @@ The stats page also tracks acquisition lifecycle distribution:
 These foundations are already in `master` and should be treated as existing behavior, not backlog:
 
 - Cross-device sync with GitHub OAuth, review-log sync, and review-card reconciliation
-- Sync hardening for normalized word keys and additive TOT capture merge behavior
+- Sync hardening for normalized word keys, additive TOT capture merge behavior, and local-only auth fallback behavior
 - Explicit `session_id` handling in review logs to preserve same-day multi-device sessions
 - Background sync recovery + retry behavior
 - Partial session save-on-exit flow and dashboard resume message
 - Canonical 700-word, four-phase seeded curriculum with unlock gating
 - Vocabulary pipeline stage tracking for seeded, custom, and TOT-captured words
 - Word Library Inbox triage for captured words before they enter normal queued training
+- Dashboard distinction between eligible new training words and pending capture Inbox items
 
 ## Near-Term Roadmap
 
