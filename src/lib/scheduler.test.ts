@@ -48,7 +48,11 @@ function makeReviewCard({
   };
 }
 
-function makeWord(id: number, tier: Word["tier"]): Word {
+function makeWord(
+  id: number,
+  tier: Word["tier"],
+  overrides: Partial<Word> = {},
+): Word {
   return {
     id,
     word: `word-${id}`,
@@ -57,6 +61,7 @@ function makeWord(id: number, tier: Word["tier"]): Word {
     synonyms: [],
     tier,
     createdAt: new Date("2026-04-01T00:00:00.000Z"),
+    ...overrides,
   };
 }
 
@@ -111,10 +116,10 @@ describe("scheduler", () => {
 
   it("returns only due cards sorted by urgency", async () => {
     dbMock.reviewCards.toArray.mockResolvedValue([
-      makeReviewCard({ wordId: 1, due: "2026-04-10T11:50:00.000Z" }),
-      makeReviewCard({ wordId: 2, due: "2026-04-10T11:30:00.000Z" }),
-      makeReviewCard({ wordId: 3, due: "2026-04-10T13:00:00.000Z" }),
-      makeReviewCard({ wordId: 4, due: "2026-04-10T11:55:00.000Z" }),
+      makeReviewCard({ wordId: 1, due: "2026-04-10T11:50:00.000Z", state: 1 }),
+      makeReviewCard({ wordId: 2, due: "2026-04-10T11:30:00.000Z", state: 2 }),
+      makeReviewCard({ wordId: 3, due: "2026-04-10T13:00:00.000Z", state: 1 }),
+      makeReviewCard({ wordId: 4, due: "2026-04-10T11:00:00.000Z", state: 0 }),
     ]);
 
     const dueCards = await getDueCards(2);
@@ -141,6 +146,68 @@ describe("scheduler", () => {
     const newCards = await getNewCards(3, [1, "custom"]);
 
     expect(newCards.map((card) => card.wordId)).toEqual([1, 3]);
+  });
+
+  it("excludes pending and archived capture words from new-card selection", async () => {
+    const pendingCard = makeReviewCard({
+      wordId: 1,
+      due: "2026-04-10T10:00:00.000Z",
+      state: 0,
+    });
+    const acceptedCard = makeReviewCard({
+      wordId: 2,
+      due: "2026-04-10T10:00:00.000Z",
+      state: 0,
+    });
+    const archivedCard = makeReviewCard({
+      wordId: 3,
+      due: "2026-04-10T10:00:00.000Z",
+      state: 0,
+    });
+    const normalCard = makeReviewCard({
+      wordId: 4,
+      due: "2026-04-10T10:00:00.000Z",
+      state: 0,
+    });
+
+    dbMock.reviewCards.toArray.mockResolvedValue([
+      pendingCard,
+      acceptedCard,
+      archivedCard,
+      normalCard,
+    ]);
+    dbMock.words.toArray.mockResolvedValue([
+      makeWord(1, 1, {
+        totCapture: {
+          source: "speech",
+          capturedAt: "2026-04-10T00:00:00.000Z",
+          count: 1,
+          triageStatus: "pending",
+        },
+      }),
+      makeWord(2, 1, {
+        totCapture: {
+          source: "speech",
+          capturedAt: "2026-04-11T00:00:00.000Z",
+          count: 1,
+          triageStatus: "accepted",
+        },
+      }),
+      makeWord(3, 1, {
+        totCapture: {
+          source: "speech",
+          capturedAt: "2026-04-12T00:00:00.000Z",
+          count: 1,
+          triageStatus: "archived",
+        },
+      }),
+      makeWord(4, 1),
+    ]);
+
+    await expect(getNewCards(10, [1])).resolves.toEqual([
+      acceptedCard,
+      normalCard,
+    ]);
   });
 
   it("defaults newly added words to queued pipeline metadata", async () => {

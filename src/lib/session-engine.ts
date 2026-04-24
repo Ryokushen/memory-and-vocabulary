@@ -7,6 +7,7 @@ import {
 import { getDueCards, getNewCards, gradeCard, Rating } from "./scheduler";
 import { completeSession } from "./gamification";
 import { CONTEXT_SENTENCES } from "./context-sentences";
+import { isCaptureTrainingActive } from "./word-library";
 import type {
   AnswerMetadata,
   CueLevel,
@@ -753,7 +754,7 @@ export function buildRetrievalDrillProfile(
     .map((log) => log.responseTimeMs);
   const recentLatencyMs = median(exactLatencies);
 
-  const hasTOTCapture = Boolean(word.totCapture);
+  const hasTOTCapture = isCaptureTrainingActive(word);
   const cueRate = recentLogs.length === 0 ? 0 : cueLogs.length / recentLogs.length;
 
   let stage: RetrievalDrillProfile["stage"] = "rescue";
@@ -813,8 +814,10 @@ function prioritizeSessionWords(sessionWords: SessionWord[]): SessionWord[] {
       return leftIsNew - rightIsNew;
     }
 
-    const leftHasTOT = left.word.totCapture ? 0 : 1;
-    const rightHasTOT = right.word.totCapture ? 0 : 1;
+    const leftCaptureActive = isCaptureTrainingActive(left.word);
+    const rightCaptureActive = isCaptureTrainingActive(right.word);
+    const leftHasTOT = leftCaptureActive ? 0 : 1;
+    const rightHasTOT = rightCaptureActive ? 0 : 1;
     if (leftHasTOT !== rightHasTOT) {
       return leftHasTOT - rightHasTOT;
     }
@@ -830,16 +833,18 @@ function prioritizeSessionWords(sessionWords: SessionWord[]): SessionWord[] {
       return leftStage - rightStage;
     }
 
-    const countDelta =
-      (right.word.totCapture?.count ?? 0) - (left.word.totCapture?.count ?? 0);
-    if (countDelta !== 0) {
-      return countDelta;
-    }
+    if (leftCaptureActive && rightCaptureActive) {
+      const countDelta =
+        (right.word.totCapture?.count ?? 0) - (left.word.totCapture?.count ?? 0);
+      if (countDelta !== 0) {
+        return countDelta;
+      }
 
-    const recencyDelta =
-      getTOTCaptureTimestamp(right.word) - getTOTCaptureTimestamp(left.word);
-    if (recencyDelta !== 0) {
-      return recencyDelta;
+      const recencyDelta =
+        getTOTCaptureTimestamp(right.word) - getTOTCaptureTimestamp(left.word);
+      if (recencyDelta !== 0) {
+        return recencyDelta;
+      }
     }
 
     return left.word.word.localeCompare(right.word.word);
@@ -966,7 +971,7 @@ export function pickMode(
 ): GameMode {
   if (forceMode) return forceMode;
 
-  const hasTOTCapture = Boolean(word.totCapture);
+  const hasTOTCapture = isCaptureTrainingActive(word);
   const hasContext = getContextSentence(word) !== null;
   const stage = drillProfile?.stage ?? "stabilize";
   const needsAdaptiveDrill = hasTOTCapture

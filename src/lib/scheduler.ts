@@ -7,6 +7,7 @@ import {
 } from "ts-fsrs";
 import { db } from "./db";
 import type { ReviewCard, Word, WordTier } from "./types";
+import { shouldIncludeNewWordInTraining } from "./word-library";
 
 // ── FSRS instance ───────────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ export async function getDueCards(limit: number = 10): Promise<ReviewCard[]> {
   const now = new Date();
   const all = await db.reviewCards.toArray();
   const due = all
-    .filter((rc) => new Date(rc.card.due) <= now)
+    .filter((rc) => rc.card.state !== 0 && new Date(rc.card.due) <= now)
     .sort(
       (a, b) =>
         new Date(a.card.due).getTime() - new Date(b.card.due).getTime(),
@@ -63,18 +64,17 @@ export async function getNewCards(
 ): Promise<ReviewCard[]> {
   const all = await db.reviewCards.toArray();
   let newCards = all.filter((rc) => rc.card.state === 0);
+  const words = await db.words.toArray();
+  const wordsById = new Map(words.map((word) => [word.id, word]));
 
-  // Filter by unlocked tiers if specified
-  if (unlockedTiers) {
-    const wordIds = new Set<number>();
-    const words = await db.words.toArray();
-    for (const w of words) {
-      if (unlockedTiers.includes(w.tier as WordTier)) {
-        wordIds.add(w.id!);
-      }
+  newCards = newCards.filter((rc) => {
+    const word = wordsById.get(rc.wordId);
+    if (!word) return false;
+    if (unlockedTiers && !unlockedTiers.includes(word.tier as WordTier)) {
+      return false;
     }
-    newCards = newCards.filter((rc) => wordIds.has(rc.wordId));
-  }
+    return shouldIncludeNewWordInTraining(word);
+  });
 
   return newCards.slice(0, limit);
 }

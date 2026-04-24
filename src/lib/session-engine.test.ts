@@ -171,6 +171,21 @@ function sampleModeRatios(
   };
 }
 
+function makeDrillProfile(
+  overrides: Partial<RetrievalDrillProfile> = {},
+): RetrievalDrillProfile {
+  return {
+    stage: "stabilize",
+    exactStreak: 1,
+    recentCueRate: 0,
+    recentFailureCount: 0,
+    recallHintEnabled: true,
+    rapidTimeoutMs: 3000,
+    rapidCueRevealMs: 1800,
+    ...overrides,
+  };
+}
+
 describe("session engine", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -1014,6 +1029,114 @@ describe("session engine", () => {
     });
   });
 
+  it("does not keep pending captures in rescue solely because they were captured", () => {
+    const profile = buildRetrievalDrillProfile(
+      makeWord(1, 1, {
+        source: "speech",
+        capturedAt: "2026-04-10T00:00:00.000Z",
+        count: 1,
+        triageStatus: "pending",
+      }),
+      [],
+    );
+
+    expect(profile.stage).toBe("stabilize");
+  });
+
+  it("keeps accepted captures eligible for capture recovery support", () => {
+    const profile = buildRetrievalDrillProfile(
+      makeWord(1, 1, {
+        source: "speech",
+        capturedAt: "2026-04-10T00:00:00.000Z",
+        count: 1,
+        triageStatus: "accepted",
+      }),
+      [],
+    );
+
+    expect(profile.stage).toBe("rescue");
+  });
+
+  it("does not bias mode selection toward adaptive drills for archived captures", () => {
+    const word = {
+      ...makeWord(
+        1,
+        1,
+        {
+          source: "speech",
+          capturedAt: "2026-04-10T00:00:00.000Z",
+          count: 1,
+          triageStatus: "archived",
+        },
+      ),
+      contextSentences: [],
+    };
+
+    const randomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+    try {
+      expect(
+        pickMode(
+          word,
+          undefined,
+          { ...makeDrillProfile(), stage: "stabilize", recentCueRate: 0 },
+        ),
+      ).toBe("recall");
+    } finally {
+      randomSpy.mockRestore();
+    }
+  });
+
+  it("does not prioritize inactive captures over normal words by capture metadata", async () => {
+    schedulerMock.getDueCards.mockResolvedValue([
+      makeReviewCard(2, 1),
+      makeReviewCard(1, 1),
+    ]);
+    schedulerMock.getNewCards.mockResolvedValue([]);
+    dbMock.reviewLogs.toArray.mockResolvedValue([]);
+    dbMock.words.get.mockImplementation(async (wordId: number) => {
+      if (wordId === 2) {
+        return makeWord(2, 1, {
+          source: "speech",
+          capturedAt: "2026-04-10T11:00:00.000Z",
+          count: 99,
+          triageStatus: "pending",
+        });
+      }
+
+      return makeWord(1);
+    });
+
+    const sessionWords = await loadSessionWords("easy", 1);
+
+    expect(sessionWords.map((entry) => entry.word.id)).toEqual([1, 2]);
+  });
+
+  it("prioritizes accepted captures by count and recency", async () => {
+    schedulerMock.getDueCards.mockResolvedValue([
+      makeReviewCard(1, 1),
+      makeReviewCard(2, 1),
+      makeReviewCard(3, 1),
+    ]);
+    schedulerMock.getNewCards.mockResolvedValue([]);
+    dbMock.reviewLogs.toArray.mockResolvedValue([]);
+    dbMock.words.get.mockImplementation(async (wordId: number) =>
+      makeWord(wordId, 1, {
+        source: "speech",
+        capturedAt:
+          wordId === 2
+            ? "2026-04-10T11:00:00.000Z"
+            : "2026-04-10T10:00:00.000Z",
+        count: wordId === 3 ? 3 : 1,
+        triageStatus: "accepted",
+      }),
+    );
+
+    const sessionWords = await loadSessionWords("easy", 1);
+
+    expect(sessionWords.map((entry) => entry.word.id)).toEqual([3, 2, 1]);
+  });
+
   it("unlocks tiers at the configured level thresholds", () => {
     expect(getUnlockedTiers(1)).toEqual([1, "custom"]);
     expect(getUnlockedTiers(5)).toEqual([1, 2, "custom"]);
@@ -1095,6 +1218,7 @@ describe("session engine", () => {
       context: "I kept saying thing instead of the right word.",
       capturedAt: "2026-04-10T08:00:00.000Z",
       count: 2,
+      triageStatus: "accepted",
     });
 
     const rescueProfile: RetrievalDrillProfile = {
@@ -1137,6 +1261,7 @@ describe("session engine", () => {
       context: "I kept saying thing instead of the right word.",
       capturedAt: "2026-04-10T08:00:00.000Z",
       count: 2,
+      triageStatus: "accepted",
     });
 
     const ratios = sampleModeRatios(() => pickMode(word));
@@ -1538,6 +1663,7 @@ describe("session engine", () => {
           source: "speech",
           capturedAt: "2026-04-10T09:00:00.000Z",
           count: 1,
+          triageStatus: "accepted",
         });
       }
 
@@ -1546,6 +1672,7 @@ describe("session engine", () => {
           source: "writing",
           capturedAt: "2026-04-10T10:00:00.000Z",
           count: 3,
+          triageStatus: "accepted",
         });
       }
 
