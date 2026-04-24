@@ -428,6 +428,7 @@ export default function WordsPage() {
         existingStage && existingStage !== "queued" ? existingStage : "captured";
       const updates: Partial<Word> = {
         totCapture: {
+          ...(existingTOTWord.totCapture ?? {}),
           source: totForm.source,
           weakSubstitute,
           context,
@@ -435,6 +436,8 @@ export default function WordsPage() {
           updatedAt: capturedAt,
           count: Math.max(existingTOTWord.totCapture?.count ?? 0, eventIds.length),
           eventIds,
+          triageStatus: existingTOTWord.totCapture?.triageStatus ?? "pending",
+          triagedAt: existingTOTWord.totCapture?.triagedAt,
         },
       };
 
@@ -460,6 +463,7 @@ export default function WordsPage() {
           updatedAt: capturedAt,
           count: eventIds.length,
           eventIds,
+          triageStatus: "pending",
         },
         pipelineStage: "captured",
         pipelineUpdatedAt: capturedAt,

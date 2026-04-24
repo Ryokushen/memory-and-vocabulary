@@ -165,14 +165,72 @@ describe("seed database", () => {
       pipelineStage: "queued",
       pipelineUpdatedAt: expect.any(String),
     });
-    expect(dbMock.words.update).toHaveBeenCalledWith(13, {
-      pipelineStage: "captured",
-      pipelineUpdatedAt: expect.any(String),
-    });
+    expect(dbMock.words.update).toHaveBeenCalledWith(
+      13,
+      expect.objectContaining({
+        pipelineStage: "captured",
+        pipelineUpdatedAt: expect.any(String),
+        totCapture: expect.objectContaining({
+          triageStatus: "pending",
+          updatedAt: "2026-04-10T12:00:00.000Z",
+        }),
+      }),
+    );
     expect(dbMock.words.update).not.toHaveBeenCalledWith(
       12,
       expect.objectContaining({ pipelineStage: expect.any(String) }),
     );
+  });
+
+  it("backfills missing capture triage status to pending without overwriting decisions", async () => {
+    dbMock.words.toArray.mockResolvedValue([
+      makeExistingWord("lucid", {
+        id: 11,
+        totCapture: {
+          source: "speech",
+          capturedAt: "2026-04-10T12:00:00.000Z",
+          count: 1,
+        },
+      }),
+      makeExistingWord("tenuous", {
+        id: 12,
+        tier: 2,
+        totCapture: {
+          source: "writing",
+          capturedAt: "2026-04-11T12:00:00.000Z",
+          count: 1,
+          triageStatus: "accepted",
+          triagedAt: "2026-04-12T12:00:00.000Z",
+        },
+      }),
+      makeExistingWord("recondite", {
+        id: 13,
+        tier: 4,
+        totCapture: {
+          source: "reading",
+          capturedAt: "2026-04-13T12:00:00.000Z",
+          count: 1,
+          triageStatus: "archived",
+          triagedAt: "2026-04-14T12:00:00.000Z",
+        },
+      }),
+    ]);
+
+    await seedDatabase();
+
+    expect(dbMock.words.update).toHaveBeenCalledWith(11, {
+      totCapture: expect.objectContaining({
+        triageStatus: "pending",
+        updatedAt: "2026-04-10T12:00:00.000Z",
+      }),
+    });
+    const updateCalls = dbMock.words.update.mock.calls;
+    expect(
+      updateCalls.some(([id, updates]) => id === 12 && "totCapture" in updates),
+    ).toBe(false);
+    expect(
+      updateCalls.some(([id, updates]) => id === 13 && "totCapture" in updates),
+    ).toBe(false);
   });
 
   it("uses review history when backfilling missing pipeline stage", async () => {

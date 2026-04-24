@@ -43,6 +43,14 @@ export async function seedDatabase(): Promise<void> {
       updates.pipelineUpdatedAt = new Date().toISOString();
     }
 
+    if (local.totCapture && !local.totCapture.triageStatus) {
+      updates.totCapture = {
+        ...local.totCapture,
+        triageStatus: "pending",
+        updatedAt: local.totCapture.updatedAt ?? local.totCapture.capturedAt,
+      };
+    }
+
     if (Object.keys(updates).length > 0) {
       await db.words.update(local.id, updates);
     }
