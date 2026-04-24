@@ -958,7 +958,9 @@ export default function WordsPage() {
 
       {filtered.length === 0 && activeTier === "inbox" && inboxCount === 0 && (
         <IllumCard className="text-center py-10">
-          <Tome className="size-10 mx-auto mb-3" style={{ color: "var(--gold-deep)" }} />
+          <span className="block mx-auto mb-3 w-fit" style={{ color: "var(--gold-deep)" }}>
+            <Tome size={40} />
+          </span>
           <p className="font-display text-xl font-bold" style={{ color: "var(--ink)" }}>
             Inbox Clear
           </p>
