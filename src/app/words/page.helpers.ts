@@ -1,4 +1,4 @@
-import type { Word } from "@/lib/types";
+import type { PipelineStage, Word } from "@/lib/types";
 import { TIER_UNLOCK_LEVELS } from "@/lib/types";
 
 const GROUP_ORDER = ["1", "2", "3", "4", "custom"] as const;
@@ -8,6 +8,10 @@ export function buildTierFilterLayout() {
     viewportClassName: "max-w-full overflow-x-auto",
     stripClassName: "inline-flex min-w-max overflow-hidden",
   } as const;
+}
+
+export function getWordLibraryPipelineStage(word: Word): PipelineStage {
+  return word.pipelineStage ?? (word.totCapture ? "captured" : "queued");
 }
 
 export type WordGroup = {

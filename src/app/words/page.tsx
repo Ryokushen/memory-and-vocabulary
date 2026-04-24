@@ -23,6 +23,10 @@ import {
   getCurriculumBadgeLabel,
   getLexiconSummary,
 } from "@/lib/curriculum-copy";
+import {
+  getPipelineStageDescription,
+  getPipelineStageLabel,
+} from "@/lib/pipeline-stage";
 import type { TOTCaptureSource, Word } from "@/lib/types";
 import { TIER_UNLOCK_LEVELS, TOT_CAPTURE_SOURCES } from "@/lib/types";
 import {
@@ -36,6 +40,7 @@ import {
 import {
   buildTierFilterLayout,
   buildWordGroups,
+  getWordLibraryPipelineStage,
 } from "./page.helpers";
 import { IllumCard } from "@/components/rpg/illum-card";
 import { HeronDivider } from "@/components/rpg/heron-divider";
@@ -105,6 +110,7 @@ function WordRow({
 }) {
   const tierKey = String(word.tier);
   const tier = TIER_INFO[tierKey] ?? TIER_INFO.custom;
+  const pipelineStage = getWordLibraryPipelineStage(word);
 
   return (
     <div
@@ -116,7 +122,7 @@ function WordRow({
         onClick={onToggle}
         className="w-full text-left grid items-center gap-3 py-3 px-5 transition-colors hover:bg-[color-mix(in_oklab,var(--paper),var(--gold)_4%)]"
         style={{
-          gridTemplateColumns: "20px 1fr auto auto",
+          gridTemplateColumns: "20px 1fr auto auto auto",
           borderLeft: `4px solid ${tier.color}`,
         }}
       >
@@ -146,6 +152,9 @@ function WordRow({
         </div>
         <span className="lex-badge shrink-0" style={tierBadgeStyle(tier.color)}>
           {getCurriculumBadgeLabel(word.tier)}
+        </span>
+        <span className="lex-badge shrink-0" style={tierBadgeStyle("var(--lapis)")}>
+          {getPipelineStageLabel(pipelineStage)}
         </span>
         {word.totCapture && (
           <span
@@ -210,6 +219,27 @@ function WordRow({
                   ))}
                 </div>
               )}
+
+              <div
+                className="space-y-1 rounded-[var(--radius)] p-3"
+                style={{
+                  background: "color-mix(in oklab, var(--lapis), transparent 94%)",
+                  border: "1px solid color-mix(in oklab, var(--lapis), transparent 72%)",
+                }}
+              >
+                <p
+                  className="uppercase-tracked text-[10px]"
+                  style={{ color: "var(--lapis)" }}
+                >
+                  Pipeline Stage
+                </p>
+                <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+                  <span style={{ color: "var(--ink)" }}>
+                    {getPipelineStageLabel(pipelineStage)}:
+                  </span>{" "}
+                  {getPipelineStageDescription(pipelineStage)}
+                </p>
+              </div>
 
               {word.totCapture && (
                 <div
@@ -356,6 +386,8 @@ export default function WordsPage() {
       examples: newExample.trim() ? [newExample.trim()] : [],
       tier: "custom",
       synonyms: [],
+      pipelineStage: "queued",
+      pipelineUpdatedAt: new Date().toISOString(),
       createdAt: new Date(),
     });
     setNewWord("");
@@ -391,8 +423,10 @@ export default function WordsPage() {
         ...getTOTEventIds(existingTOTWord, existingTOTWord.totCapture),
         createTOTEventId(),
       ];
-
-      await db.words.update(existingTOTWord.id, {
+      const existingStage = existingTOTWord.pipelineStage;
+      const nextStage =
+        existingStage && existingStage !== "queued" ? existingStage : "captured";
+      const updates: Partial<Word> = {
         totCapture: {
           source: totForm.source,
           weakSubstitute,
@@ -402,7 +436,14 @@ export default function WordsPage() {
           count: Math.max(existingTOTWord.totCapture?.count ?? 0, eventIds.length),
           eventIds,
         },
-      });
+      };
+
+      if (nextStage !== existingStage) {
+        updates.pipelineStage = nextStage;
+        updates.pipelineUpdatedAt = capturedAt;
+      }
+
+      await db.words.update(existingTOTWord.id, updates);
     } else {
       const eventIds = [createTOTEventId()];
       await addWordWithCard({
@@ -420,6 +461,8 @@ export default function WordsPage() {
           count: eventIds.length,
           eventIds,
         },
+        pipelineStage: "captured",
+        pipelineUpdatedAt: capturedAt,
         createdAt: new Date(),
       });
     }

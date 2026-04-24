@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { TOTCapture, Word } from "@/lib/types";
-import { buildTierFilterLayout, buildWordGroups } from "./page.helpers";
+import {
+  buildTierFilterLayout,
+  buildWordGroups,
+  getWordLibraryPipelineStage,
+} from "./page.helpers";
 
 function makeCapture(count: number): TOTCapture {
   return {
@@ -35,6 +39,26 @@ describe("buildTierFilterLayout", () => {
     expect(layout.viewportClassName).toContain("overflow-x-auto");
     expect(layout.stripClassName).toContain("inline-flex");
     expect(layout.stripClassName).toContain("min-w-max");
+  });
+});
+
+describe("getWordLibraryPipelineStage", () => {
+  it("uses explicit pipeline stages before TOT or queued fallbacks", () => {
+    expect(
+      getWordLibraryPipelineStage(
+        makeWord(1, 1, {
+          pipelineStage: "productive",
+          totCapture: makeCapture(1),
+        }),
+      ),
+    ).toBe("productive");
+  });
+
+  it("falls back to captured for TOT words and queued for normal words", () => {
+    expect(
+      getWordLibraryPipelineStage(makeWord(1, 1, { totCapture: makeCapture(1) })),
+    ).toBe("captured");
+    expect(getWordLibraryPipelineStage(makeWord(2, 1))).toBe("queued");
   });
 });
 
