@@ -917,6 +917,53 @@ describe("session engine", () => {
     });
   });
 
+  it("holds scenario variation behind rewrite practice when creativity is weak", () => {
+    const word: Word = {
+      ...makeWord(99),
+      word: "meticulous",
+      definition: "showing great attention to detail",
+      examples: ["The inspector was meticulous."],
+      contextSentences: [
+        {
+          sentence: "The inspector wrote a **weak** report after the audit.",
+          weakWord: "weak",
+          answer: "meticulous",
+          distractors: ["careful", "formal", "strict"],
+        },
+      ],
+    };
+    const fluentProfile = makeDrillProfile({
+      stage: "fluent",
+      exactStreak: 4,
+      recallHintEnabled: false,
+      rapidCueRevealMs: null,
+    });
+
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 28,
+        retention: 22,
+        perception: 24,
+        creativity: 5,
+      }),
+    ).toMatchObject({
+      kind: "rewrite",
+      answer: "meticulous",
+      sentence: "The inspector wrote a **weak** report after the audit.",
+    });
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 18,
+        retention: 16,
+        perception: 14,
+        creativity: 34,
+      }),
+    ).toMatchObject({
+      kind: "scenario",
+      answer: "meticulous",
+    });
+  });
+
   it("grades scenario variation answers by target-word use and required scene anchors", () => {
     const anchors = ["inspector", "report", "audit"];
 

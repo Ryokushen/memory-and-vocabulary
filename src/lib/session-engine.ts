@@ -681,7 +681,7 @@ export function buildContextPrompt(
     }
 
     const scenarioAnchors = buildScenarioAnchors(sentence);
-    if (exactStreak >= 4 && scenarioAnchors.length > 0) {
+    if (exactStreak >= 4 && scenarioAnchors.length > 0 && !shouldHoldScenarioVariation(stats)) {
       return {
         kind: "scenario",
         answer: sentence.answer,
@@ -728,6 +728,18 @@ function shouldKeepContextPromptScaffolded(stats?: Partial<RPGStats>): boolean {
     stats.retention ?? 0,
     stats.perception ?? 0,
     stats.creativity ?? 0,
+  ]);
+}
+
+function shouldHoldScenarioVariation(stats?: Partial<RPGStats>): boolean {
+  if (!stats) {
+    return false;
+  }
+
+  return isStatMeaningfullyBehind(stats.creativity ?? 0, [
+    stats.recall ?? 0,
+    stats.retention ?? 0,
+    stats.perception ?? 0,
   ]);
 }
 

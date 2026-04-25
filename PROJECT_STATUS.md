@@ -27,18 +27,18 @@ These capabilities are already in `master` and should be treated as baseline beh
 - Practice-lane session integration: session words carry coverage routes, missing lanes can force the relevant mode, and collocation routes now produce deterministic context-style rewrite prompts
 - Stats-page training coverage transparency: aggregate lane coverage, automatic fill-input counts, and explicit FSRS-first copy without manual drill selection
 - Dashboard quest-card session-plan transparency: FSRS reviews first, eligible new-word backfill second, coverage signals shape prompt type, and Inbox captures stay held out
-- Stat-aware prompt support beyond Rapid Retrieval: weak Recall keeps Context prompts scaffolded longer, strong Recall permits production/rewrite transfer, and weak Creativity strengthens existing association mnemonics before recall
+- Stat-aware prompt support beyond Rapid Retrieval: weak Recall keeps Context prompts scaffolded longer, strong Recall permits production/rewrite transfer, and weak Creativity strengthens existing association mnemonics or holds deeply fluent Context work at rewrite before harder scenario variation
 - Deeper Context transfer: deeply fluent words can now get constrained scenario-variation prompts that require target-word use plus a source-scene anchor, graded deterministically without LLM review
 
 ## Current Product Gap
 
-- RPG stats now drive session mode weighting, retrieval-drill timing, and selected prompt support. Context mode spans replacement, target-word production, fluent rewrite-transfer, constrained scenario variation, and collocation rewrite prompts, with low Recall holding scaffolding longer. Association mode can now strengthen existing mnemonics when Creativity lags. The vocabulary pipeline tracks acquisition stage from capture through mature production with Inbox, Archive, Duplicates, `VocabularyItem`, coverage, and generated practice-lane foundations. The dashboard distinguishes eligible new training words from pending capture Inbox items, explains the automatic next-session order, the Word Library exposes per-word lane coverage in expanded rows, and Stats shows aggregate lane coverage as automatic training-engine signals. The remaining gap is deciding which transparency or coverage surfaces are actually useful after real session usage.
+- RPG stats now drive session mode weighting, retrieval-drill timing, and selected prompt support. Context mode spans replacement, target-word production, fluent rewrite-transfer, constrained scenario variation, and collocation rewrite prompts, with low Recall holding scaffolding longer and low Creativity holding scenario variation behind rewrite practice. Association mode can now strengthen existing mnemonics when Creativity lags. The vocabulary pipeline tracks acquisition stage from capture through mature production with Inbox, Archive, Duplicates, `VocabularyItem`, coverage, and generated practice-lane foundations. The dashboard distinguishes eligible new training words from pending capture Inbox items, explains the automatic next-session order, the Word Library exposes per-word lane coverage in expanded rows, and Stats shows aggregate lane coverage as automatic training-engine signals. The remaining gap is deciding which transparency or coverage surfaces are actually useful after real session usage.
 
 ## Active Next Priorities
 
-1. Broaden stat-aware support only where it can be tied to existing prompt quality signals.
-2. Decide whether scenario variation should feed a separate coverage metric after real usage, rather than adding another manual drill control.
-3. Decide whether coverage transparency needs a compact dashboard trend after real usage, rather than adding more busywork UI now.
+1. Decide whether scenario variation should feed a separate coverage metric after real usage, rather than adding another manual drill control.
+2. Decide whether coverage transparency needs a compact dashboard trend after real usage, rather than adding more busywork UI now.
+3. Broaden stat-aware support further only where it can be tied to existing prompt quality signals.
 4. Evolve the vocabulary pipeline beyond the transitional `VocabularyItem` bridge only after a persistence design is concrete.
 5. Keep the canonical 700-word ranking authoritative for future seed updates. Reference material: [docs/700-word-retiering-plan.md](docs/700-word-retiering-plan.md), [docs/word-frequency-audit.md](docs/word-frequency-audit.md), [docs/word-addition-candidates.md](docs/word-addition-candidates.md).
 
@@ -49,7 +49,7 @@ These capabilities are already in `master` and should be treated as baseline beh
 - Completed follow-up: local-only Supabase auth fallback prevents post-session crashes when cloud env vars are absent.
 - Completed follow-up: Word Library Archive browsing and Restore for archived captures, plus AppStatusBanner hydration stabilization.
 - Completed follow-up: Word Library Duplicates browsing and local merge workflow for exact normalized duplicates, preserving review continuity while removing absorbed duplicate rows.
-- Completed follow-up: `VocabularyItem` bridge, generated practice-lane routing, coverage summaries, collocation practice scaffolding, session integration for missing lane practice, Stats/Word Library/dashboard coverage transparency, stat-aware prompt support, and deterministic scenario-variation prompts for deeply fluent context practice.
+- Completed follow-up: `VocabularyItem` bridge, generated practice-lane routing, coverage summaries, collocation practice scaffolding, session integration for missing lane practice, Stats/Word Library/dashboard coverage transparency, stat-aware prompt support, deterministic scenario-variation prompts for deeply fluent context practice, and Creativity-aware scenario gating.
 - Historical triage design doc: [docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md](docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md).
 - Historical triage implementation plan: [docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md](docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md).
 

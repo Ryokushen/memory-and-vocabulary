@@ -30,8 +30,8 @@ npm run test     # Vitest suite
 - **Context mode now has five prompt variants**: rescue words use replacement-style prompts, stabilize words use typed target-word sentence production, fluent words can get rewrite-transfer prompts, deeply fluent words can get constrained scenario-variation prompts, and collocation routes preserve scene anchors with deterministic grading and cue fallback.
 - **Review logs carry retrieval metadata**: `cueLevel`, `retrievalKind`, and `responseTimeMs` on every log entry. These feed back into drill profiles and stats.
 - **Sync hardening is already shipped**: normalized word keys, additive TOT merge behavior, explicit `session_id` handling, review-card reconciliation, and retryable background sync are in `master`. Treat these as existing behavior — avoid re-implementing them.
-- **RPG stats now influence session generation**: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association mode weighting in `pickMode`, and live profile stats also personalize Rapid Retrieval timeout pressure plus rescue-cue timing inside `buildRetrievalDrillProfile` while still respecting rescue/stabilize/fluent drill stages.
-- **Next RPG tuning steps**: broaden stat-aware personalization into other training surfaces, decide whether scenario variation deserves a separate coverage signal after real usage, and keep the canonical 700-word ranking authoritative for future seed updates.
+- **RPG stats now influence session generation**: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association mode weighting in `pickMode`, and live profile stats also personalize Rapid Retrieval timeout pressure, rescue-cue timing, Context scaffolding, association strengthening, and whether deeply fluent Context work advances from rewrite into scenario variation.
+- **Next RPG tuning steps**: decide whether scenario variation deserves a separate coverage signal after real usage, broaden stat-aware personalization only where tied to prompt quality signals, and keep the canonical 700-word ranking authoritative for future seed updates.
 
 ## Testing
 

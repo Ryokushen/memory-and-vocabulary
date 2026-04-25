@@ -35,7 +35,7 @@ What it does not currently claim:
 - Sync hardening for normalized word keys, additive TOT capture merges, explicit session IDs in review logs, and background sync recovery
 - Partial session progress now saves when you leave training early
 - Dashboard quest card now separates due reviews, eligible new words, and pending capture Inbox items
-- Session generation is now stat-aware across mode selection, retrieval drill timing, and prompt support: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association, live profile stats tune rapid-retrieval timeout pressure and rescue-cue timing, low Recall keeps Context work more scaffolded, and low Creativity can strengthen existing mnemonics before association recall
+- Session generation is now stat-aware across mode selection, retrieval drill timing, and prompt support: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association, live profile stats tune rapid-retrieval timeout pressure and rescue-cue timing, low Recall keeps Context work more scaffolded, and low Creativity keeps flexible-use practice at rewrite or mnemonic-strengthening before harder recall/scene variation
 - Context mode now has five typed-first variants: replacement prompts for rescue words, target-word sentence production for stabilize words, fluent rewrite prompts, scenario variation prompts for deeply fluent words, and collocation rewrite prompts with deterministic grading and cue-aware fallback
 - Automated test coverage across scheduler, session, sync, stats helpers, and hooks
 - PWA support with offline fallback via Serwist
@@ -45,7 +45,7 @@ What it does not currently claim:
 | Mode | Trains | Shipped behavior |
 |------|--------|------------------|
 | **Recall** | Clean definition-to-word retrieval | See a definition and type the word, with hints available only while the word is still in a support phase. |
-| **Context** | Word choice, transfer, and collocation in context | Rescue words still use typed replacement with assisted fallback; more stable words can ask for target-word production, fluent rewrites, constrained scenario variation, or collocation rewrites; weak Recall keeps support in place longer. |
+| **Context** | Word choice, transfer, and collocation in context | Rescue words still use typed replacement with assisted fallback; more stable words can ask for target-word production, fluent rewrites, constrained scenario variation, or collocation rewrites; weak Recall keeps support in place longer, and weak Creativity holds deeply fluent words at rewrite before scenario variation. |
 | **Rapid Retrieval** | Fast verbal access | Read a definition at your own pace, then start a timed retrieval phase where you type the word under an adaptive timer. A rescue cue appears only when the drill profile still calls for it. |
 | **Association** | Elaborative encoding | Create or strengthen a vivid text association for a word, then later recall from that association. |
 
@@ -89,9 +89,9 @@ Recent retrieval quality now changes how a word is trained.
 | **Recall** | Clean word retrieval | Grows from definition-to-word success, increases the chance of Recall prompts, delays Rapid Retrieval rescue cues when strong, and keeps Context support in place when weak. |
 | **Retention** | Long-term review stability | Grows from spaced-review performance over time; still mostly progression-facing for now. |
 | **Perception** | Rapid verbal retrieval under time pressure | Grows from Rapid Retrieval results and now increases the chance of Rapid Retrieval prompts. |
-| **Creativity** | Association building and contextual flexibility | Grows from association and contextual work, increases the chance of Association prompts when strong, and favors mnemonic strengthening when weak. |
+| **Creativity** | Association building and contextual flexibility | Grows from association and contextual work, increases the chance of Association prompts when strong, favors mnemonic strengthening when weak, and gates whether deeply fluent Context work advances from rewrite into constrained scenario variation. |
 
-Mode selection is now stat-aware: Recall / Perception / Creativity shape the Recall / Rapid Retrieval / Association mix while still honoring rescue/stabilize/fluent drill-stage guardrails. Retrieval drills are stat-aware too: Perception tightens Rapid Retrieval timeout pressure, Recall delays rescue cue reveal when a word is stabilizing, and fluent words keep their no-cue safeguards. Prompt support also adapts inside selected modes without changing FSRS word scheduling.
+Mode selection is now stat-aware: Recall / Perception / Creativity shape the Recall / Rapid Retrieval / Association mix while still honoring rescue/stabilize/fluent drill-stage guardrails. Retrieval drills are stat-aware too: Perception tightens Rapid Retrieval timeout pressure, Recall delays rescue cue reveal when a word is stabilizing, and fluent words keep their no-cue safeguards. Prompt support also adapts inside selected modes without changing FSRS word scheduling: weak Recall keeps Context scaffolded, while weak Creativity holds flexible-use work at rewrite or mnemonic strengthening before harder transfer.
 
 Other progression systems:
 - XP comes from session performance, streak bonuses, and fast clean retrieval.
