@@ -9,6 +9,7 @@ const processAnswerMock = vi.hoisted(() => vi.fn());
 const finalizeSessionMock = vi.hoisted(() => vi.fn());
 const pickModeMock = vi.hoisted(() => vi.fn());
 const buildContextPromptMock = vi.hoisted(() => vi.fn());
+const getAssociationPromptPhaseMock = vi.hoisted(() => vi.fn());
 const createSessionIdMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/session-engine", () => ({
@@ -18,6 +19,7 @@ vi.mock("@/lib/session-engine", () => ({
   finalizeSession: finalizeSessionMock,
   pickMode: pickModeMock,
   buildContextPrompt: buildContextPromptMock,
+  getAssociationPromptPhase: getAssociationPromptPhaseMock,
 }));
 
 vi.mock("@/lib/sounds", () => ({
@@ -90,6 +92,7 @@ describe("useSession", () => {
     vi.setSystemTime(new Date("2026-04-10T12:00:00.000Z"));
     pickModeMock.mockReturnValue("recall");
     buildContextPromptMock.mockReturnValue(null);
+    getAssociationPromptPhaseMock.mockReturnValue("create");
     createSessionIdMock.mockReturnValue("session-abc");
     finalizeSessionMock.mockResolvedValue({
       results: [],
@@ -456,6 +459,7 @@ describe("useSession", () => {
       words[0].word,
       words[0].drillProfile,
       words[0].practiceLaneRoute,
+      undefined,
     );
     expect(processAnswerMock).toHaveBeenCalledWith(
       words[0],

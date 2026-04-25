@@ -48,6 +48,7 @@ vi.mock("./gamification", () => ({
 import {
   autoGrade,
   buildContextPrompt,
+  getAssociationPromptPhase,
   buildRetrievalDrillProfile,
   createSessionId,
   finalizeSession,
@@ -948,6 +949,109 @@ describe("session engine", () => {
       definition: "definition-1",
       example: "example-1",
     });
+  });
+
+  it("keeps context prompts more scaffolded when recall is weak", () => {
+    const word = makeWord(1);
+    const stabilizeProfile = makeDrillProfile({
+      stage: "stabilize",
+      exactStreak: 1,
+    });
+    const fluentProfile = makeDrillProfile({
+      stage: "fluent",
+      exactStreak: 3,
+      recallHintEnabled: false,
+      rapidCueRevealMs: null,
+    });
+
+    expect(
+      buildContextPrompt(word, stabilizeProfile, undefined, {
+        recall: 4,
+        retention: 20,
+        perception: 30,
+        creativity: 25,
+      }),
+    ).toMatchObject({
+      kind: "replace",
+      answer: "word-1",
+    });
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 4,
+        retention: 20,
+        perception: 30,
+        creativity: 25,
+      }),
+    ).toMatchObject({
+      kind: "produce",
+      answer: "word-1",
+    });
+  });
+
+  it("lets context prompts advance when recall is strong", () => {
+    const word = makeWord(1);
+    const stabilizeProfile = makeDrillProfile({
+      stage: "stabilize",
+      exactStreak: 1,
+    });
+    const fluentProfile = makeDrillProfile({
+      stage: "fluent",
+      exactStreak: 3,
+      recallHintEnabled: false,
+      rapidCueRevealMs: null,
+    });
+
+    expect(
+      buildContextPrompt(word, stabilizeProfile, undefined, {
+        recall: 40,
+        retention: 20,
+        perception: 8,
+        creativity: 12,
+      }),
+    ).toMatchObject({
+      kind: "produce",
+      answer: "word-1",
+    });
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 40,
+        retention: 20,
+        perception: 8,
+        creativity: 12,
+      }),
+    ).toMatchObject({
+      kind: "rewrite",
+      answer: "word-1",
+    });
+  });
+
+  it("uses creativity to choose whether association mode strengthens or recalls an association", () => {
+    const associated = {
+      ...makeSessionWord(1),
+      word: {
+        ...makeWord(1),
+        association: "A bright lantern cutting through fog.",
+      },
+    };
+
+    expect(getAssociationPromptPhase(makeSessionWord(2))).toBe("create");
+    expect(getAssociationPromptPhase(associated)).toBe("recall");
+    expect(
+      getAssociationPromptPhase(associated, {
+        recall: 35,
+        retention: 15,
+        perception: 28,
+        creativity: 6,
+      }),
+    ).toBe("create");
+    expect(
+      getAssociationPromptPhase(associated, {
+        recall: 12,
+        retention: 15,
+        perception: 14,
+        creativity: 40,
+      }),
+    ).toBe("recall");
   });
 
   it("keeps fluent retrieval profiles stable after successful production-context reviews", () => {

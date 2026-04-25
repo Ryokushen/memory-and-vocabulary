@@ -18,6 +18,7 @@ import {
   finalizeSession,
   pickMode,
   buildContextPrompt,
+  getAssociationPromptPhase,
 } from "@/lib/session-engine";
 import { getForcedSessionModeForPracticeLane } from "@/lib/practice-lane-session";
 import {
@@ -38,6 +39,7 @@ export function useSession() {
   const [currentMode, setCurrentMode] = useState<GameMode>("recall");
   const [currentContextPrompt, setCurrentContextPrompt] =
     useState<ContextPrompt | null>(null);
+  const [sessionStats, setSessionStats] = useState<RPGStats | undefined>(undefined);
   const submittingRef = useRef(false);
   const sessionIdRef = useRef<string | null>(null);
   const stateRef = useRef<SessionState>("idle");
@@ -45,7 +47,6 @@ export function useSession() {
   const summaryRef = useRef<SessionSummary | null>(null);
   const partialCommitPromiseRef = useRef<Promise<void> | null>(null);
   const partialCommitDoneRef = useRef(false);
-  const sessionStatsRef = useRef<RPGStats | undefined>(undefined);
 
   const currentWord = words[currentIndex] ?? null;
   const sessionSeed = words[0]?.word.id ?? 0;
@@ -53,7 +54,7 @@ export function useSession() {
   // Derive association phase from word data — no extra state needed
   const associationPhase: "create" | "recall" | null =
     currentMode === "association" && currentWord
-      ? currentWord.word.association ? "recall" : "create"
+      ? getAssociationPromptPhase(currentWord, sessionStats)
       : null;
 
   useEffect(() => {
@@ -68,18 +69,26 @@ export function useSession() {
     summaryRef.current = summary;
   }, [summary]);
 
-  const configurePrompt = useCallback((word: SessionWord) => {
+  const configurePrompt = useCallback((
+    word: SessionWord,
+    statsForPrompt: RPGStats | undefined = sessionStats,
+  ) => {
     const forcedMode = getForcedSessionModeForPracticeLane(word) ?? undefined;
     const mode = pickMode(
       word.word,
       forcedMode,
       word.drillProfile,
-      sessionStatsRef.current,
+      statsForPrompt,
     );
     if (mode === "context") {
       setCurrentMode("context");
       setCurrentContextPrompt(
-        buildContextPrompt(word.word, word.drillProfile, word.practiceLaneRoute),
+        buildContextPrompt(
+          word.word,
+          word.drillProfile,
+          word.practiceLaneRoute,
+          statsForPrompt,
+        ),
       );
     } else if (mode === "speed") {
       setCurrentMode("speed");
@@ -88,7 +97,7 @@ export function useSession() {
       setCurrentMode(mode);
       setCurrentContextPrompt(null);
     }
-  }, []);
+  }, [sessionStats]);
 
   const startSession = useCallback(async (
     difficulty?: "easy" | "normal" | "hard",
@@ -99,7 +108,7 @@ export function useSession() {
     submittingRef.current = false;
     partialCommitDoneRef.current = false;
     partialCommitPromiseRef.current = null;
-    sessionStatsRef.current = stats;
+    setSessionStats(stats);
     const sessionWords = await loadSessionWords(
       difficulty ?? "normal",
       level ?? 1,
@@ -115,7 +124,7 @@ export function useSession() {
     setResults([]);
     setSummary(null);
     setPromptStartTime(Date.now());
-    configurePrompt(sessionWords[0]);
+    configurePrompt(sessionWords[0], stats);
 
     setState("active");
   }, [configurePrompt]);
@@ -239,7 +248,7 @@ export function useSession() {
     partialCommitDoneRef.current = false;
     partialCommitPromiseRef.current = null;
     summaryRef.current = null;
-    sessionStatsRef.current = undefined;
+    setSessionStats(undefined);
     setState("idle");
     setWords([]);
     setCurrentIndex(0);

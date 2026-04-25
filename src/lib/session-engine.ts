@@ -585,6 +585,7 @@ export function buildContextPrompt(
   word: Word,
   drillProfile?: RetrievalDrillProfile,
   practiceLaneRoute?: PracticeLaneRoute,
+  stats?: Partial<RPGStats>,
 ): ContextPrompt | null {
   const sentence = getContextSentence(word);
   if (!sentence) {
@@ -607,11 +608,25 @@ export function buildContextPrompt(
 
   const stage = drillProfile?.stage ?? "stabilize";
   const exactStreak = drillProfile?.exactStreak ?? 0;
+  const keepScaffolded = shouldKeepContextPromptScaffolded(stats);
   if (stage === "rescue" || exactStreak < 1) {
     return { ...sentence, kind: "replace" };
   }
 
+  if (stage === "stabilize" && keepScaffolded && exactStreak < 2) {
+    return { ...sentence, kind: "replace" };
+  }
+
   if (stage === "fluent") {
+    if (keepScaffolded) {
+      return {
+        kind: "produce",
+        answer: word.word,
+        definition: word.definition,
+        example: word.examples[0],
+      };
+    }
+
     return {
       kind: "rewrite",
       sentence: sentence.sentence,
@@ -628,6 +643,50 @@ export function buildContextPrompt(
     definition: word.definition,
     example: word.examples[0],
   };
+}
+
+function isStatMeaningfullyBehind(value: number, others: number[]): boolean {
+  const strongestOther = Math.max(0, ...others);
+  if (strongestOther < 12) {
+    return false;
+  }
+
+  return Math.max(0, value) <= strongestOther * 0.5;
+}
+
+function shouldKeepContextPromptScaffolded(stats?: Partial<RPGStats>): boolean {
+  if (!stats) {
+    return false;
+  }
+
+  return isStatMeaningfullyBehind(stats.recall ?? 0, [
+    stats.retention ?? 0,
+    stats.perception ?? 0,
+    stats.creativity ?? 0,
+  ]);
+}
+
+function shouldStrengthenAssociation(stats?: Partial<RPGStats>): boolean {
+  if (!stats) {
+    return false;
+  }
+
+  return isStatMeaningfullyBehind(stats.creativity ?? 0, [
+    stats.recall ?? 0,
+    stats.retention ?? 0,
+    stats.perception ?? 0,
+  ]);
+}
+
+export function getAssociationPromptPhase(
+  sessionWord: SessionWord,
+  stats?: Partial<RPGStats>,
+): "create" | "recall" {
+  if (!sessionWord.word.association?.trim()) {
+    return "create";
+  }
+
+  return shouldStrengthenAssociation(stats) ? "create" : "recall";
 }
 
 function isCleanExactLog(log: ReviewLog): boolean {

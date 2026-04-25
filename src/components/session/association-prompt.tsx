@@ -16,10 +16,13 @@ interface AssociationPromptProps {
 }
 
 export function AssociationPrompt({ sessionWord, phase, onSubmit }: AssociationPromptProps) {
-  const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { word } = sessionWord;
+  const isStrengthening = phase === "create" && Boolean(word.association?.trim());
+  const [input, setInput] = useState(() =>
+    isStrengthening ? (word.association ?? "") : "",
+  );
 
   useEffect(() => {
     if (phase === "create") {
@@ -62,7 +65,9 @@ export function AssociationPrompt({ sessionWord, phase, onSubmit }: AssociationP
             <div className="flex items-center gap-1.5 text-rose-500">
               <Palette className="size-3.5" />
               <span className="text-xs font-semibold uppercase tracking-widest">Associate</span>
-              <span className="text-xs text-muted-foreground ml-1">Create a mental image</span>
+              <span className="text-xs text-muted-foreground ml-1">
+                {isStrengthening ? "Strengthen a mental image" : "Create a mental image"}
+              </span>
             </div>
 
             {/* Word + definition */}
@@ -81,7 +86,9 @@ export function AssociationPrompt({ sessionWord, phase, onSubmit }: AssociationP
             <form onSubmit={handleCreate} className="space-y-2.5">
               <div className="space-y-1">
                 <label className="text-xs text-muted-foreground">
-                  Describe a vivid image, scene, or memory that connects to this word:
+                  {isStrengthening
+                    ? "Refine the image, scene, or memory that connects to this word:"
+                    : "Describe a vivid image, scene, or memory that connects to this word:"}
                 </label>
                 <textarea
                   ref={textareaRef}
@@ -98,7 +105,7 @@ export function AssociationPrompt({ sessionWord, phase, onSubmit }: AssociationP
                 disabled={!input.trim()}
               >
                 <Sparkles className="size-4" />
-                Save Association
+                {isStrengthening ? "Update Association" : "Save Association"}
               </Button>
             </form>
           </CardContent>
