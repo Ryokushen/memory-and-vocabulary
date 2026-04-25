@@ -91,6 +91,19 @@ describe("pipeline stage inference", () => {
         }),
       ]),
     ).toBe("productive");
+
+    expect(
+      getPipelineStage(makeWord(), [
+        makeLog(),
+        makeLog({
+          id: 3,
+          rating: 2,
+          correct: true,
+          retrievalKind: "assisted",
+          contextPromptKind: "collocation",
+        }),
+      ]),
+    ).toBe("productive");
   });
 
   it("classifies mature after repeated clean recall and successful production", () => {

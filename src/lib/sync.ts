@@ -298,7 +298,12 @@ export function normalizeRetrievalKind(value: string | null | undefined, correct
 }
 
 export function normalizeContextPromptKind(value: string | null | undefined): ReviewLog["contextPromptKind"] {
-  if (value === "replace" || value === "produce" || value === "rewrite") {
+  if (
+    value === "replace" ||
+    value === "produce" ||
+    value === "rewrite" ||
+    value === "collocation"
+  ) {
     return value;
   }
 

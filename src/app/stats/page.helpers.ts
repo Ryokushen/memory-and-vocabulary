@@ -20,7 +20,10 @@ const STATS_TILE_STAGES: PipelineStage[] = [
 
 export function getRecentRetrievalMetrics(logs: ReviewLog[]): RecentRetrievalMetrics {
   const retrievalLogs = logs.filter(
-    (log) => log.contextPromptKind !== "produce" && log.contextPromptKind !== "rewrite",
+    (log) =>
+      log.contextPromptKind !== "produce" &&
+      log.contextPromptKind !== "rewrite" &&
+      log.contextPromptKind !== "collocation",
   );
 
   if (retrievalLogs.length === 0) {

@@ -1,4 +1,5 @@
 import type { Card } from "ts-fsrs";
+import type { PracticeLaneRoute } from "./practice-lanes";
 
 // ── Word ────────────────────────────────────────────────────────────────
 
@@ -126,6 +127,7 @@ export interface SessionWord {
   word: Word;
   reviewCard: ReviewCard;
   drillProfile?: RetrievalDrillProfile;
+  practiceLaneRoute?: PracticeLaneRoute;
 }
 
 export interface SessionResult {
@@ -175,7 +177,7 @@ export type SessionState =
 
 // ── Context Mode ────────────────────────────────────────────────────────
 
-export type ContextPromptKind = "replace" | "produce" | "rewrite";
+export type ContextPromptKind = "replace" | "produce" | "rewrite" | "collocation";
 
 export interface ContextSentence {
   kind?: "replace";
@@ -201,7 +203,21 @@ export interface ContextRewritePrompt {
   example?: string;
 }
 
-export type ContextPrompt = ContextSentence | ContextProductionPrompt | ContextRewritePrompt;
+export interface ContextCollocationPrompt {
+  kind: "collocation";
+  sentence: string;
+  weakWord: string;
+  answer: string;
+  targetSentence: string;
+  definition: string;
+  example?: string;
+}
+
+export type ContextPrompt =
+  | ContextSentence
+  | ContextProductionPrompt
+  | ContextRewritePrompt
+  | ContextCollocationPrompt;
 
 export interface SessionSummary {
   results: SessionResult[];

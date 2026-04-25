@@ -99,7 +99,7 @@ vi.mock("./supabase", () => ({
   },
 }));
 
-import { pushToCloud, syncOnLogin } from "./sync";
+import { normalizeContextPromptKind, pushToCloud, syncOnLogin } from "./sync";
 
 function makeUserProfile(overrides: Partial<UserProfile> = {}): UserProfile {
   return {
@@ -237,6 +237,10 @@ describe("sync review logs", () => {
       ],
       options: { onConflict: "user_id,normalized_word_key,reviewed_at" },
     });
+  });
+
+  it("normalizes collocation prompt kinds for sync", () => {
+    expect(normalizeContextPromptKind("collocation")).toBe("collocation");
   });
 
   it("preserves rewrite context prompt kinds when pushing review logs", async () => {

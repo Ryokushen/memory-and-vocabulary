@@ -19,6 +19,7 @@ import {
   pickMode,
   buildContextPrompt,
 } from "@/lib/session-engine";
+import { getForcedSessionModeForPracticeLane } from "@/lib/practice-lane-session";
 import {
   playCorrect,
   playStreakCorrect,
@@ -68,15 +69,18 @@ export function useSession() {
   }, [summary]);
 
   const configurePrompt = useCallback((word: SessionWord) => {
+    const forcedMode = getForcedSessionModeForPracticeLane(word) ?? undefined;
     const mode = pickMode(
       word.word,
-      undefined,
+      forcedMode,
       word.drillProfile,
       sessionStatsRef.current,
     );
     if (mode === "context") {
       setCurrentMode("context");
-      setCurrentContextPrompt(buildContextPrompt(word.word, word.drillProfile));
+      setCurrentContextPrompt(
+        buildContextPrompt(word.word, word.drillProfile, word.practiceLaneRoute),
+      );
     } else if (mode === "speed") {
       setCurrentMode("speed");
       setCurrentContextPrompt(null);
@@ -159,7 +163,11 @@ export function useSession() {
           ...answerMetadata,
           contextPromptKind: answerMetadata?.contextPromptKind ?? currentContextPrompt.kind,
           contextSourceSentence: answerMetadata?.contextSourceSentence
-            ?? (currentContextPrompt.kind === "rewrite" ? currentContextPrompt.sentence : undefined),
+            ?? (
+              currentContextPrompt.kind === "rewrite" || currentContextPrompt.kind === "collocation"
+                ? currentContextPrompt.sentence
+                : undefined
+            ),
         }
         : answerMetadata;
       const responseTimeMs = resolvedAnswerMetadata?.retrievalTimeMs ?? (Date.now() - promptStartTime);
