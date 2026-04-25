@@ -61,6 +61,10 @@ import {
   mergeDuplicateWords,
 } from "@/lib/word-merge";
 import { summarizeVocabularyItemCoverage } from "@/lib/vocabulary-item";
+import {
+  routeVocabularyPracticeLanes,
+  summarizePracticeLaneRoutes,
+} from "@/lib/practice-lanes";
 import { IllumCard } from "@/components/rpg/illum-card";
 import { HeronDivider } from "@/components/rpg/heron-divider";
 import { Anvil, ChevronRight, Tome } from "@/components/rpg/sigils";
@@ -523,6 +527,13 @@ export default function WordsPage() {
   );
   const coverageSummary = useMemo(
     () => summarizeVocabularyItemCoverage(libraryItems.map((entry) => entry.item)),
+    [libraryItems],
+  );
+  const laneSummary = useMemo(
+    () =>
+      summarizePracticeLaneRoutes(
+        routeVocabularyPracticeLanes(libraryItems.map((entry) => entry.item)),
+      ),
     [libraryItems],
   );
   const duplicateCount = useMemo(() => getDuplicateCount(words), [words]);
@@ -1192,6 +1203,11 @@ export default function WordsPage() {
           </div>
         ))}
       </div>
+      <p className="text-xs italic" style={{ color: "var(--muted-foreground)" }}>
+        Next practice routing: Recall {laneSummary.retrieval} · Context{" "}
+        {laneSummary.context} · Association {laneSummary.association} · Collocation{" "}
+        {laneSummary.collocation}
+      </p>
 
       {/* Search + tier filter */}
       <div className="flex items-center gap-3 flex-wrap">
