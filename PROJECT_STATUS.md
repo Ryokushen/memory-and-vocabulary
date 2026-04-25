@@ -38,23 +38,27 @@ These capabilities are already in `master` and should be treated as baseline beh
 4. Evolve the vocabulary pipeline beyond the transitional `VocabularyItem` bridge only after a persistence design is concrete.
 5. Keep the canonical 700-word ranking authoritative for future seed updates. Reference material: [docs/700-word-retiering-plan.md](docs/700-word-retiering-plan.md), [docs/word-frequency-audit.md](docs/word-frequency-audit.md), [docs/word-addition-candidates.md](docs/word-addition-candidates.md).
 
-## Active Work In Progress
+## Recent Completion Record
 
-- No active feature worktree is open.
-- Design doc: [docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md](docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md).
-- Implementation plan: [docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md](docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md).
 - Completed Pipeline v2 Tasks 1-6 covering capture triage helpers, seed backfill, training/session gating, Word Library Inbox UI, sync merge preservation, documentation, and full verification.
 - Completed follow-up: dashboard now shows pending capture Inbox count separately from eligible new training words.
 - Completed follow-up: local-only Supabase auth fallback prevents post-session crashes when cloud env vars are absent.
 - Completed follow-up: Word Library Archive browsing and Restore for archived captures, plus AppStatusBanner hydration stabilization.
 - Completed follow-up: Word Library Duplicates browsing and local merge workflow for exact normalized duplicates, preserving review continuity while removing absorbed duplicate rows.
 - Completed follow-up: `VocabularyItem` bridge, generated practice-lane routing, coverage summaries, collocation practice scaffolding, and session integration for missing lane practice.
+- Historical triage design doc: [docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md](docs/superpowers/specs/2026-04-24-pipeline-v2-triage-inbox-design.md).
+- Historical triage implementation plan: [docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md](docs/superpowers/plans/2026-04-24-pipeline-v2-triage-inbox.md).
+
+## Active Work In Progress
+
+- No active feature branch is open after PR #14 merged.
+- Next likely branch: coverage/progress UI for practice lanes, showing users which vocabulary concepts still need retrieval, context, association, or collocation practice.
 
 ## Verification Baseline
 
-- `npm run lint`
-- `npm run test` (full Vitest suite)
-- `npm run build` (Next.js production build + TypeScript checks)
+- `./scripts/verify.sh lint`
+- `./scripts/verify.sh test` (full Vitest suite)
+- `./scripts/verify.sh build` (Next.js production build + TypeScript checks)
 
 ## Scope Guardrail
 

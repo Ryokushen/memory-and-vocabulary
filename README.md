@@ -45,9 +45,19 @@ What it does not currently claim:
 | Mode | Trains | Shipped behavior |
 |------|--------|------------------|
 | **Recall** | Clean definition-to-word retrieval | See a definition and type the word, with hints available only while the word is still in a support phase. |
-| **Context** | Word choice in context | Rescue words still use typed replacement with assisted fallback; more stable words can instead ask you to use the target word in your own sentence before cue help appears. |
+| **Context** | Word choice, transfer, and collocation in context | Rescue words still use typed replacement with assisted fallback; more stable words can ask for target-word production, fluent rewrites, or collocation rewrites that preserve the original scene. |
 | **Rapid Retrieval** | Fast verbal access | Read a definition at your own pace, then start a timed retrieval phase where you type the word under an adaptive timer. A rescue cue appears only when the drill profile still calls for it. |
 | **Association** | Elaborative encoding | Create a vivid text association for a word, then later recall from that association. |
+
+## Practice Lane Coverage
+
+Lexforge now projects existing `Word` rows into transitional `VocabularyItem` concepts, then tracks whether each concept has been practiced through retrieval, context, association, and collocation lanes. Session assembly uses those coverage routes to steer missing lanes into compatible prompts without adding a new Dexie table or changing review-card identity.
+
+- Missing retrieval coverage routes to Recall.
+- Missing context coverage routes to Context.
+- Missing association coverage routes to Association.
+- Missing collocation coverage routes to a context-style rewrite prompt that keeps the same scene while replacing the weaker phrase.
+- Current user-facing coverage is still lightweight; the next product slice should make lane progress and recommendations easier to inspect.
 
 ## Real-World Capture Loop
 
@@ -224,6 +234,7 @@ These foundations are already in `master` and should be treated as existing beha
 
 For the up-to-date "already shipped vs next" checklist, see [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
+- surface practice-lane coverage and recommendations in user-facing progress views
 - deepen Context transfer beyond the new fluent rewrite and collocation slices into richer scenario variation only if deterministic grading can stay sane
 - broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces
 - targeted regression tests around newly introduced sync changes (without reworking shipped sync hardening)

@@ -6,9 +6,10 @@ All notable changes to this project should be documented in this file.
 
 ### Added
 
-- Word corpus expanded from 321 to 531 words across all tiers with matching context sentences
+- Word corpus expanded from 321 to 700 words across four seeded phases with matching context sentences
   - 429 to 492: diplomatic, processes/systems, financial, risk/probability, sophisticated adverbs
   - 492 to 531: 39 manufacturing/trades words (equipment failures, process/quality, supervision, continuous improvement)
+  - 532 to 700: canonical curriculum completion across the retiered four-phase vocabulary set
 - Stats page redesign: tighter density, color-coded accuracy, RPG stat tiles with watermark icons, new Training History section showing difficulty/tier progress
 - Battle scene polish: floating damage numbers, HP-scaled monster shake, VICTORY death celebration, player idle float, improved attack/miss animations
 - Keyboard shortcuts: 1-4 for MCQ choices, Enter/Space for next
@@ -24,7 +25,7 @@ All notable changes to this project should be documented in this file.
 - Collocation practice now has a live context-style prompt path that asks the player to preserve the original scene while replacing the weaker phrase with the stronger target word
 - Adaptive retrieval drilling now keeps recent TOT words in rescue/stabilize phases until they regain repeated clean exact recalls, with hint access and rapid timers changing by recent performance
 - Cross-device sync now carries custom words and TOT capture summaries, with merge logic that restores custom entries locally before replaying cards, logs, associations, and TOT state
-- Automated coverage now spans 127 tests across scheduler, session, sync, stats helpers, and hook logic
+- Automated coverage now spans 219 tests across scheduler, session, sync, stats helpers, hooks, word-library workflows, and vocabulary pipeline helpers
 
 ### Changed
 
@@ -79,9 +80,10 @@ All notable changes to this project should be documented in this file.
 - Seed database now reconciles tier on existing non-custom words so rebalanced seed tiers propagate to users whose local DB was already populated (custom words untouched)
 - Nav bar collapses to icon-only items below the `sm` breakpoint (Compass/Sword/Tome/Scroll) with a smaller HeronWheel and logo, so the four nav items no longer wrap and overflow into the page body on narrow phones
 - App status banner now prioritizes the starter-library seeding state during initial render to avoid a seeding/offline hydration mismatch
+- Project status docs now distinguish completed Pipeline v2 design records from active work and point the next slice toward user-facing practice-lane coverage
 
 ### Verified
 
-- `npm run lint`
-- `npm run build`
-- `npm run test`
+- `./scripts/verify.sh lint`
+- `./scripts/verify.sh test`
+- `./scripts/verify.sh build`
