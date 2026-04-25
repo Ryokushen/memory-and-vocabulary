@@ -44,13 +44,14 @@ import {
   type LibraryTierFilter,
 } from "@/lib/word-library";
 import {
+  buildWordLibraryItems,
   buildTierFilterLayout,
   buildWordGroups,
-  filterWordsForLibraryView,
-  getArchiveCount,
+  filterWordLibraryItemsForView,
+  getArchiveItemCount,
   getDuplicateCount,
   getDuplicateGroupsForLibraryView,
-  getInboxCount,
+  getInboxItemCount,
   getWordLibraryPipelineStage,
   type WordLibraryViewFilter,
 } from "./page.helpers";
@@ -510,8 +511,15 @@ export default function WordsPage() {
   const [newExample, setNewExample] = useState("");
   const [totForm, setTotForm] = useState(INITIAL_TOT_FORM);
   const duplicateWord = isDuplicateWord(newWord, words);
-  const inboxCount = useMemo(() => getInboxCount(words), [words]);
-  const archiveCount = useMemo(() => getArchiveCount(words), [words]);
+  const libraryItems = useMemo(
+    () => buildWordLibraryItems(words, reviewLogs),
+    [reviewLogs, words],
+  );
+  const inboxCount = useMemo(() => getInboxItemCount(libraryItems), [libraryItems]);
+  const archiveCount = useMemo(
+    () => getArchiveItemCount(libraryItems),
+    [libraryItems],
+  );
   const duplicateCount = useMemo(() => getDuplicateCount(words), [words]);
   const selectedTierLocked =
     activeTier !== "inbox" &&
@@ -557,9 +565,13 @@ export default function WordsPage() {
     };
   }, [seedStatus]);
 
+  const filteredItems = useMemo(
+    () => filterWordLibraryItemsForView(libraryItems, activeTier, search),
+    [libraryItems, activeTier, search],
+  );
   const filtered = useMemo(
-    () => filterWordsForLibraryView(words, activeTier, search),
-    [words, activeTier, search],
+    () => filteredItems.map((entry) => entry.word),
+    [filteredItems],
   );
 
   const grouped = useMemo(() => {
