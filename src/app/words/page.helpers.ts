@@ -7,7 +7,9 @@ import { TIER_UNLOCK_LEVELS } from "@/lib/types";
 import {
   wordToVocabularyItem,
   type VocabularyItem,
+  type VocabularyItemCoverage,
 } from "@/lib/vocabulary-item";
+import { getPracticeLaneRoute } from "@/lib/practice-lanes";
 
 const GROUP_ORDER = ["1", "2", "3", "4", "custom"] as const;
 
@@ -22,6 +24,33 @@ export type WordLibraryItem = {
   word: Word;
   item: VocabularyItem;
 };
+
+export type CoverageLaneDisplay = {
+  key: keyof VocabularyItemCoverage;
+  label: string;
+  practiced: boolean;
+  statusLabel: "Practiced" | "Needed";
+};
+
+export type NextPracticeLaneDisplay = {
+  label: string;
+  description: string;
+  blocked: boolean;
+};
+
+const COVERAGE_LANE_LABELS: Record<keyof VocabularyItemCoverage, string> = {
+  retrieval: "Recall",
+  context: "Context",
+  association: "Association",
+  collocation: "Collocation",
+};
+
+const COVERAGE_LANE_ORDER: Array<keyof VocabularyItemCoverage> = [
+  "retrieval",
+  "context",
+  "association",
+  "collocation",
+];
 
 export function buildTierFilterLayout() {
   return {
@@ -44,6 +73,72 @@ export function buildWordLibraryItems(
       word,
       item: wordToVocabularyItem(word, { reviewLogs }),
     }));
+}
+
+export function getCoverageLaneDisplays(
+  item: VocabularyItem,
+): CoverageLaneDisplay[] {
+  return COVERAGE_LANE_ORDER.map((key) => {
+    const practiced = item.coverage[key] === "practiced";
+    return {
+      key,
+      label: COVERAGE_LANE_LABELS[key],
+      practiced,
+      statusLabel: practiced ? "Practiced" : "Needed",
+    };
+  });
+}
+
+export function getNextPracticeLaneDisplay(
+  item: VocabularyItem,
+): NextPracticeLaneDisplay {
+  const route = getPracticeLaneRoute(item);
+
+  if (route.reason === "not-training-eligible") {
+    return {
+      label: "Not in training",
+      description: "Pending or archived captures stay out of sessions until kept.",
+      blocked: true,
+    };
+  }
+
+  if (route.reason === "maintenance") {
+    return {
+      label: "Maintenance: Recall",
+      description: "All lanes have coverage; keep recall fresh.",
+      blocked: false,
+    };
+  }
+
+  if (route.lane === "retrieval") {
+    return {
+      label: "Next: Recall",
+      description: "Start with clean definition-to-word retrieval.",
+      blocked: false,
+    };
+  }
+
+  if (route.lane === "context") {
+    return {
+      label: "Next: Context",
+      description: "Use the word in sentence-level practice.",
+      blocked: false,
+    };
+  }
+
+  if (route.lane === "association") {
+    return {
+      label: "Next: Association",
+      description: "Build or recall a mnemonic link.",
+      blocked: false,
+    };
+  }
+
+  return {
+    label: "Next: Collocation",
+    description: "Practice replacing a weaker phrase in the same scene.",
+    blocked: false,
+  };
 }
 
 function matchesLibrarySearch(

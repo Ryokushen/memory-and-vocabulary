@@ -28,11 +28,11 @@ These capabilities are already in `master` and should be treated as baseline beh
 
 ## Current Product Gap
 
-- RPG stats now drive both session mode weighting and retrieval-drill timing, Context mode spans replacement, target-word production, fluent rewrite-transfer, and collocation rewrite prompts, and the vocabulary pipeline now tracks acquisition stage from capture through mature production with Inbox, Archive, Duplicates, `VocabularyItem`, coverage, and generated practice-lane foundations. The dashboard distinguishes eligible new training words from pending capture Inbox items. The remaining gaps are making coverage and lane recommendations more visible to users, broadening stat-aware personalization in other training surfaces, and deeper Context transfer if deterministic grading can stay sane.
+- RPG stats now drive both session mode weighting and retrieval-drill timing, Context mode spans replacement, target-word production, fluent rewrite-transfer, and collocation rewrite prompts, and the vocabulary pipeline now tracks acquisition stage from capture through mature production with Inbox, Archive, Duplicates, `VocabularyItem`, coverage, and generated practice-lane foundations. The dashboard distinguishes eligible new training words from pending capture Inbox items, and the Word Library exposes per-word lane coverage in expanded rows. The remaining gaps are richer aggregate coverage views, broader stat-aware personalization in other training surfaces, and deeper Context transfer if deterministic grading can stay sane.
 
 ## Active Next Priorities
 
-1. Surface vocabulary coverage and practice-lane recommendations in user-facing progress views without adding busywork UI.
+1. Surface richer aggregate coverage and practice-lane recommendations in Stats or dashboard views without adding busywork UI.
 2. Broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces.
 3. Deepen Context transfer beyond the current rewrite/collocation slices without introducing LLM grading or bloated UX.
 4. Evolve the vocabulary pipeline beyond the transitional `VocabularyItem` bridge only after a persistence design is concrete.
@@ -52,7 +52,7 @@ These capabilities are already in `master` and should be treated as baseline beh
 ## Active Work In Progress
 
 - No active feature branch is open after PR #14 merged.
-- Next likely branch: coverage/progress UI for practice lanes, showing users which vocabulary concepts still need retrieval, context, association, or collocation practice.
+- Current branch: coverage/progress UI for practice lanes, starting with per-word Word Library row details.
 
 ## Verification Baseline
 
