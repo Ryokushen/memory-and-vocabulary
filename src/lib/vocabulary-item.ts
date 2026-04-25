@@ -94,13 +94,16 @@ function projectCoverage(
   const wordLogs = (options.reviewLogs ?? []).filter((log) => log.wordId === wordId);
   const hasRetrievalPractice = wordLogs.length > 0;
   const hasContextPractice = wordLogs.some((log) => Boolean(log.contextPromptKind));
+  const hasCollocationPractice = wordLogs.some(
+    (log) => log.contextPromptKind === "collocation",
+  );
   const hasAssociationPractice = Boolean(word.association?.trim());
 
   return {
     retrieval: hasRetrievalPractice ? "practiced" : "unknown",
     context: hasContextPractice ? "practiced" : "unknown",
     association: hasAssociationPractice ? "practiced" : "unknown",
-    collocation: "unknown",
+    collocation: hasCollocationPractice ? "practiced" : "unknown",
   };
 }
 

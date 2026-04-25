@@ -47,7 +47,8 @@ function isCleanExactRecall(log: ReviewLog): boolean {
     log.retrievalKind === "exact" &&
     (log.cueLevel ?? 0) === 0 &&
     log.contextPromptKind !== "produce" &&
-    log.contextPromptKind !== "rewrite"
+    log.contextPromptKind !== "rewrite" &&
+    log.contextPromptKind !== "collocation"
   );
 }
 
@@ -55,7 +56,8 @@ function isSuccessfulProduction(log: ReviewLog): boolean {
   return (
     log.correct &&
     (log.contextPromptKind === "produce" ||
-      log.contextPromptKind === "rewrite")
+      log.contextPromptKind === "rewrite" ||
+      log.contextPromptKind === "collocation")
   );
 }
 

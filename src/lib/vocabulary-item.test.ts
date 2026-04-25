@@ -207,6 +207,17 @@ describe("vocabulary item bridge", () => {
     expect(item.coverage.collocation).toBe("unknown");
   });
 
+  it("marks collocation coverage practiced from collocation context logs", () => {
+    const item = wordToVocabularyItem(makeWord({ id: 1 }), {
+      reviewLogs: [
+        makeLog({ wordId: 1, contextPromptKind: "collocation" }),
+      ],
+    });
+
+    expect(item.coverage.context).toBe("practiced");
+    expect(item.coverage.collocation).toBe("practiced");
+  });
+
   it("summarizes practiced coverage lanes across projected items", () => {
     const items = wordsToVocabularyItems(
       [
