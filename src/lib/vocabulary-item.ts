@@ -31,6 +31,7 @@ export type VocabularyItemCoverage = {
   context: VocabularyItemCoverageState;
   association: VocabularyItemCoverageState;
   collocation: VocabularyItemCoverageState;
+  transfer: VocabularyItemCoverageState;
 };
 
 export type VocabularyItemCoverageSummary = {
@@ -39,6 +40,7 @@ export type VocabularyItemCoverageSummary = {
   contextPracticed: number;
   associationPracticed: number;
   collocationPracticed: number;
+  transferPracticed: number;
   fullyCovered: number;
 };
 
@@ -97,6 +99,9 @@ function projectCoverage(
   const hasCollocationPractice = wordLogs.some(
     (log) => log.contextPromptKind === "collocation",
   );
+  const hasTransferPractice = wordLogs.some(
+    (log) => log.contextPromptKind === "scenario",
+  );
   const hasAssociationPractice = Boolean(word.association?.trim());
 
   return {
@@ -104,6 +109,7 @@ function projectCoverage(
     context: hasContextPractice ? "practiced" : "unknown",
     association: hasAssociationPractice ? "practiced" : "unknown",
     collocation: hasCollocationPractice ? "practiced" : "unknown",
+    transfer: hasTransferPractice ? "practiced" : "unknown",
   };
 }
 
@@ -149,6 +155,7 @@ export function summarizeVocabularyItemCoverage(
     contextPracticed: 0,
     associationPracticed: 0,
     collocationPracticed: 0,
+    transferPracticed: 0,
     fullyCovered: 0,
   };
 
@@ -158,11 +165,13 @@ export function summarizeVocabularyItemCoverage(
     if (coverage.context === "practiced") summary.contextPracticed += 1;
     if (coverage.association === "practiced") summary.associationPracticed += 1;
     if (coverage.collocation === "practiced") summary.collocationPracticed += 1;
+    if (coverage.transfer === "practiced") summary.transferPracticed += 1;
     if (
       coverage.retrieval === "practiced" &&
       coverage.context === "practiced" &&
       coverage.association === "practiced" &&
-      coverage.collocation === "practiced"
+      coverage.collocation === "practiced" &&
+      coverage.transfer === "practiced"
     ) {
       summary.fullyCovered += 1;
     }

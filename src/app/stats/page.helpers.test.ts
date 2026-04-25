@@ -64,6 +64,7 @@ function makeVocabularyItem(
       context: "unknown",
       association: "unknown",
       collocation: "unknown",
+      transfer: "unknown",
     },
     ...overrides,
   };
@@ -86,6 +87,11 @@ describe("getRecentRetrievalMetrics", () => {
         rating: 2,
         retrievalKind: "assisted",
         contextPromptKind: "collocation",
+      }),
+      makeReviewLog("2026-04-07T11:45:00.000Z", {
+        rating: 2,
+        retrievalKind: "assisted",
+        contextPromptKind: "scenario",
       }),
     ]);
 
@@ -115,6 +121,11 @@ describe("getRecentRetrievalMetrics", () => {
       }),
       makeReviewLog("2026-04-06T11:45:00.000Z", {
         contextPromptKind: "collocation",
+        rating: 2,
+        retrievalKind: "assisted",
+      }),
+      makeReviewLog("2026-04-05T11:45:00.000Z", {
+        contextPromptKind: "scenario",
         rating: 2,
         retrievalKind: "assisted",
       }),
@@ -172,6 +183,7 @@ describe("getTrainingCoverageTransparency", () => {
           context: "unknown",
           association: "unknown",
           collocation: "unknown",
+          transfer: "unknown",
         },
       }),
       makeVocabularyItem({
@@ -187,6 +199,7 @@ describe("getTrainingCoverageTransparency", () => {
           context: "practiced",
           association: "practiced",
           collocation: "practiced",
+          transfer: "practiced",
         },
       }),
     ]);
@@ -230,6 +243,15 @@ describe("getTrainingCoverageTransparency", () => {
       {
         lane: "collocation",
         label: "Collocation",
+        practicedCount: 1,
+        missingCount: 2,
+        eligibleCount: 3,
+        coveragePercent: 33,
+        automaticFillCount: 0,
+      },
+      {
+        lane: "transfer",
+        label: "Transfer",
         practicedCount: 1,
         missingCount: 2,
         eligibleCount: 3,

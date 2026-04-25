@@ -292,8 +292,18 @@ const CONTEXT_ANCHOR_STOPWORDS = new Set([
   "with",
 ]);
 
+const SCENARIO_ANCHOR_STOPWORDS = new Set([
+  ...CONTEXT_ANCHOR_STOPWORDS,
+  "after",
+  "before",
+  "wrote",
+  "write",
+  "writes",
+  "written",
+]);
+
 function isTransferContextPromptKind(kind?: ContextPrompt["kind"]): boolean {
-  return kind === "produce" || kind === "rewrite" || kind === "collocation";
+  return kind === "produce" || kind === "rewrite" || kind === "collocation" || kind === "scenario";
 }
 
 function getContextAnchorTokens(sourceSentence?: string): string[] {
@@ -317,6 +327,17 @@ function hasContextAnchorOverlap(answerTokens: string[], sourceSentence?: string
 
   const overlapCount = anchorTokens.filter((token) => answerTokens.includes(token)).length;
   return overlapCount >= Math.min(2, anchorTokens.length);
+}
+
+function hasScenarioAnchorOverlap(answerTokens: string[], anchors?: string[]): boolean {
+  if (!anchors || anchors.length === 0) {
+    return true;
+  }
+
+  const answerTokenSet = new Set(answerTokens);
+  return anchors.some((anchor) =>
+    tokenizeProductionText(anchor).some((token) => answerTokenSet.has(token)),
+  );
 }
 
 function isLikelyDerivedVerbToken(token: string): boolean {
@@ -471,6 +492,7 @@ function gradeSentenceLikeContextAnswer(
   expected: string,
   cueLevel: CueLevel,
   sourceSentence?: string,
+  scenarioAnchors?: string[],
 ): GradeResult {
   const normalizedCueLevel = normalizeCueLevel(cueLevel);
   const expectedTokens = tokenizeProductionText(expected);
@@ -494,8 +516,9 @@ function gradeSentenceLikeContextAnswer(
   const preservesContextAnchor = sourceSentence
     ? hasContextAnchorOverlap(answerTokens, sourceSentence)
     : true;
+  const preservesScenarioAnchor = hasScenarioAnchorOverlap(answerTokens, scenarioAnchors);
 
-  if (!sentenceLike || !phraseMatch || !preservesContextAnchor) {
+  if (!sentenceLike || !phraseMatch || !preservesContextAnchor || !preservesScenarioAnchor) {
     return { rating: 1, correct: false, cueLevel: normalizedCueLevel, retrievalKind: "failed" };
   }
 
@@ -518,6 +541,7 @@ export function gradeContextAnswer(
   cueLevel: CueLevel = 0,
   promptKind: ContextPrompt["kind"] = "replace",
   sourceSentence?: string,
+  scenarioAnchors?: string[],
 ): GradeResult {
   if (promptKind === "replace") {
     return autoGrade(answer, expected, cueLevel);
@@ -530,6 +554,7 @@ export function gradeContextAnswer(
     promptKind === "rewrite" || promptKind === "collocation"
       ? sourceSentence
       : undefined,
+    promptKind === "scenario" ? scenarioAnchors : undefined,
   );
 }
 
@@ -581,10 +606,39 @@ export function getContextSentence(word: Word): ContextSentence | null {
   return null;
 }
 
+function formatScenarioAnchors(anchors: string[]): string {
+  if (anchors.length === 0) {
+    return "a new related situation";
+  }
+
+  if (anchors.length === 1) {
+    return anchors[0];
+  }
+
+  if (anchors.length === 2) {
+    return `${anchors[0]} or ${anchors[1]}`;
+  }
+
+  return `${anchors.slice(0, -1).join(", ")}, or ${anchors[anchors.length - 1]}`;
+}
+
+function buildScenarioAnchors(sentence: ContextSentence): string[] {
+  const answerTokens = new Set(tokenizeProductionText(sentence.answer));
+
+  return getContextAnchorTokens(sentence.sentence)
+    .filter((token) =>
+      !SCENARIO_ANCHOR_STOPWORDS.has(token) &&
+      !LIKELY_VERB_TOKENS.has(token) &&
+      !answerTokens.has(token),
+    )
+    .slice(0, 3);
+}
+
 export function buildContextPrompt(
   word: Word,
   drillProfile?: RetrievalDrillProfile,
   practiceLaneRoute?: PracticeLaneRoute,
+  stats?: Partial<RPGStats>,
 ): ContextPrompt | null {
   const sentence = getContextSentence(word);
   if (!sentence) {
@@ -607,11 +661,37 @@ export function buildContextPrompt(
 
   const stage = drillProfile?.stage ?? "stabilize";
   const exactStreak = drillProfile?.exactStreak ?? 0;
+  const keepScaffolded = shouldKeepContextPromptScaffolded(stats);
   if (stage === "rescue" || exactStreak < 1) {
     return { ...sentence, kind: "replace" };
   }
 
+  if (stage === "stabilize" && keepScaffolded && exactStreak < 2) {
+    return { ...sentence, kind: "replace" };
+  }
+
   if (stage === "fluent") {
+    if (keepScaffolded) {
+      return {
+        kind: "produce",
+        answer: word.word,
+        definition: word.definition,
+        example: word.examples[0],
+      };
+    }
+
+    const scenarioAnchors = buildScenarioAnchors(sentence);
+    if (exactStreak >= 4 && scenarioAnchors.length > 0 && !shouldHoldScenarioVariation(stats)) {
+      return {
+        kind: "scenario",
+        answer: sentence.answer,
+        definition: word.definition,
+        scenario: formatScenarioAnchors(scenarioAnchors),
+        anchors: scenarioAnchors,
+        example: word.examples[0],
+      };
+    }
+
     return {
       kind: "rewrite",
       sentence: sentence.sentence,
@@ -628,6 +708,62 @@ export function buildContextPrompt(
     definition: word.definition,
     example: word.examples[0],
   };
+}
+
+function isStatMeaningfullyBehind(value: number, others: number[]): boolean {
+  const strongestOther = Math.max(0, ...others);
+  if (strongestOther < 12) {
+    return false;
+  }
+
+  return Math.max(0, value) <= strongestOther * 0.5;
+}
+
+function shouldKeepContextPromptScaffolded(stats?: Partial<RPGStats>): boolean {
+  if (!stats) {
+    return false;
+  }
+
+  return isStatMeaningfullyBehind(stats.recall ?? 0, [
+    stats.retention ?? 0,
+    stats.perception ?? 0,
+    stats.creativity ?? 0,
+  ]);
+}
+
+function shouldHoldScenarioVariation(stats?: Partial<RPGStats>): boolean {
+  if (!stats) {
+    return false;
+  }
+
+  return isStatMeaningfullyBehind(stats.creativity ?? 0, [
+    stats.recall ?? 0,
+    stats.retention ?? 0,
+    stats.perception ?? 0,
+  ]);
+}
+
+function shouldStrengthenAssociation(stats?: Partial<RPGStats>): boolean {
+  if (!stats) {
+    return false;
+  }
+
+  return isStatMeaningfullyBehind(stats.creativity ?? 0, [
+    stats.recall ?? 0,
+    stats.retention ?? 0,
+    stats.perception ?? 0,
+  ]);
+}
+
+export function getAssociationPromptPhase(
+  sessionWord: SessionWord,
+  stats?: Partial<RPGStats>,
+): "create" | "recall" {
+  if (!sessionWord.word.association?.trim()) {
+    return "create";
+  }
+
+  return shouldStrengthenAssociation(stats) ? "create" : "recall";
 }
 
 function isCleanExactLog(log: ReviewLog): boolean {
@@ -1148,6 +1284,7 @@ export async function processAnswer(
       cueLevel,
       answerMetadata?.contextPromptKind,
       answerMetadata?.contextSourceSentence,
+      answerMetadata?.contextScenarioAnchors,
     );
   } else {
     gradeResult = autoGrade(answer, sessionWord.word.word, cueLevel);

@@ -40,7 +40,10 @@ export function ReviewResult({ sessionWord, result, onNext }: ReviewResultProps)
   const retrievalKind = result.retrievalKind ?? (result.correct ? "exact" : "failed");
   const isTransferContext =
     result.mode === "context" &&
-    (result.contextPromptKind === "produce" || result.contextPromptKind === "rewrite");
+    (result.contextPromptKind === "produce" ||
+      result.contextPromptKind === "rewrite" ||
+      result.contextPromptKind === "collocation" ||
+      result.contextPromptKind === "scenario");
   const retrievalLabel = isTransferContext
     ? retrievalKind === "approximate"
       ? "Close"

@@ -31,6 +31,7 @@ const COVERAGE_LANE_ORDER: PracticeLane[] = [
   "context",
   "association",
   "collocation",
+  "transfer",
 ];
 
 const COVERAGE_LANE_LABELS: Record<PracticeLane, string> = {
@@ -38,6 +39,7 @@ const COVERAGE_LANE_LABELS: Record<PracticeLane, string> = {
   context: "Context",
   association: "Association",
   collocation: "Collocation",
+  transfer: "Transfer",
 };
 
 export type TrainingCoverageLaneTransparency = {
@@ -66,7 +68,8 @@ export function getRecentRetrievalMetrics(logs: ReviewLog[]): RecentRetrievalMet
     (log) =>
       log.contextPromptKind !== "produce" &&
       log.contextPromptKind !== "rewrite" &&
-      log.contextPromptKind !== "collocation",
+      log.contextPromptKind !== "collocation" &&
+      log.contextPromptKind !== "scenario",
   );
 
   if (retrievalLogs.length === 0) {
@@ -123,6 +126,7 @@ export function getTrainingCoverageTransparency(
     context: 0,
     association: 0,
     collocation: 0,
+    transfer: 0,
   };
 
   for (const item of eligibleItems) {

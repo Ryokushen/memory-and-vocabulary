@@ -48,6 +48,7 @@ vi.mock("./gamification", () => ({
 import {
   autoGrade,
   buildContextPrompt,
+  getAssociationPromptPhase,
   buildRetrievalDrillProfile,
   createSessionId,
   finalizeSession,
@@ -884,6 +885,116 @@ describe("session engine", () => {
     });
   });
 
+  it("builds scenario variation prompts for deeply fluent context practice", () => {
+    const word: Word = {
+      ...makeWord(99),
+      word: "meticulous",
+      definition: "showing great attention to detail",
+      examples: ["The inspector was meticulous."],
+      contextSentences: [
+        {
+          sentence: "The inspector wrote a **weak** report after the audit.",
+          weakWord: "weak",
+          answer: "meticulous",
+          distractors: ["careful", "formal", "strict"],
+        },
+      ],
+    };
+
+    const prompt = buildContextPrompt(word, makeDrillProfile({
+      stage: "fluent",
+      exactStreak: 4,
+      recallHintEnabled: false,
+      rapidCueRevealMs: null,
+    }));
+
+    expect(prompt).toMatchObject({
+      kind: "scenario",
+      answer: "meticulous",
+      definition: "showing great attention to detail",
+      scenario: "inspector, report, or audit",
+      anchors: ["inspector", "report", "audit"],
+    });
+  });
+
+  it("holds scenario variation behind rewrite practice when creativity is weak", () => {
+    const word: Word = {
+      ...makeWord(99),
+      word: "meticulous",
+      definition: "showing great attention to detail",
+      examples: ["The inspector was meticulous."],
+      contextSentences: [
+        {
+          sentence: "The inspector wrote a **weak** report after the audit.",
+          weakWord: "weak",
+          answer: "meticulous",
+          distractors: ["careful", "formal", "strict"],
+        },
+      ],
+    };
+    const fluentProfile = makeDrillProfile({
+      stage: "fluent",
+      exactStreak: 4,
+      recallHintEnabled: false,
+      rapidCueRevealMs: null,
+    });
+
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 28,
+        retention: 22,
+        perception: 24,
+        creativity: 5,
+      }),
+    ).toMatchObject({
+      kind: "rewrite",
+      answer: "meticulous",
+      sentence: "The inspector wrote a **weak** report after the audit.",
+    });
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 18,
+        retention: 16,
+        perception: 14,
+        creativity: 34,
+      }),
+    ).toMatchObject({
+      kind: "scenario",
+      answer: "meticulous",
+    });
+  });
+
+  it("grades scenario variation answers by target-word use and required scene anchors", () => {
+    const anchors = ["inspector", "report", "audit"];
+
+    expect(
+      gradeContextAnswer(
+        "The meticulous inspector revised the report after the audit.",
+        "meticulous",
+        0,
+        "scenario",
+        undefined,
+        anchors,
+      ),
+    ).toMatchObject({
+      correct: true,
+      retrievalKind: "assisted",
+    });
+    expect(
+      gradeContextAnswer(
+        "The meticulous artist painted a careful portrait.",
+        "meticulous",
+        0,
+        "scenario",
+        undefined,
+        anchors,
+      ),
+    ).toMatchObject({
+      correct: false,
+      retrievalKind: "failed",
+    });
+  });
+
   it("builds replacement prompts until a word has clean retrieval history, then upgrades from produce to rewrite", () => {
     const word = makeWord(1);
 
@@ -948,6 +1059,109 @@ describe("session engine", () => {
       definition: "definition-1",
       example: "example-1",
     });
+  });
+
+  it("keeps context prompts more scaffolded when recall is weak", () => {
+    const word = makeWord(1);
+    const stabilizeProfile = makeDrillProfile({
+      stage: "stabilize",
+      exactStreak: 1,
+    });
+    const fluentProfile = makeDrillProfile({
+      stage: "fluent",
+      exactStreak: 3,
+      recallHintEnabled: false,
+      rapidCueRevealMs: null,
+    });
+
+    expect(
+      buildContextPrompt(word, stabilizeProfile, undefined, {
+        recall: 4,
+        retention: 20,
+        perception: 30,
+        creativity: 25,
+      }),
+    ).toMatchObject({
+      kind: "replace",
+      answer: "word-1",
+    });
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 4,
+        retention: 20,
+        perception: 30,
+        creativity: 25,
+      }),
+    ).toMatchObject({
+      kind: "produce",
+      answer: "word-1",
+    });
+  });
+
+  it("lets context prompts advance when recall is strong", () => {
+    const word = makeWord(1);
+    const stabilizeProfile = makeDrillProfile({
+      stage: "stabilize",
+      exactStreak: 1,
+    });
+    const fluentProfile = makeDrillProfile({
+      stage: "fluent",
+      exactStreak: 3,
+      recallHintEnabled: false,
+      rapidCueRevealMs: null,
+    });
+
+    expect(
+      buildContextPrompt(word, stabilizeProfile, undefined, {
+        recall: 40,
+        retention: 20,
+        perception: 8,
+        creativity: 12,
+      }),
+    ).toMatchObject({
+      kind: "produce",
+      answer: "word-1",
+    });
+    expect(
+      buildContextPrompt(word, fluentProfile, undefined, {
+        recall: 40,
+        retention: 20,
+        perception: 8,
+        creativity: 12,
+      }),
+    ).toMatchObject({
+      kind: "rewrite",
+      answer: "word-1",
+    });
+  });
+
+  it("uses creativity to choose whether association mode strengthens or recalls an association", () => {
+    const associated = {
+      ...makeSessionWord(1),
+      word: {
+        ...makeWord(1),
+        association: "A bright lantern cutting through fog.",
+      },
+    };
+
+    expect(getAssociationPromptPhase(makeSessionWord(2))).toBe("create");
+    expect(getAssociationPromptPhase(associated)).toBe("recall");
+    expect(
+      getAssociationPromptPhase(associated, {
+        recall: 35,
+        retention: 15,
+        perception: 28,
+        creativity: 6,
+      }),
+    ).toBe("create");
+    expect(
+      getAssociationPromptPhase(associated, {
+        recall: 12,
+        retention: 15,
+        perception: 14,
+        creativity: 40,
+      }),
+    ).toBe("recall");
   });
 
   it("keeps fluent retrieval profiles stable after successful production-context reviews", () => {

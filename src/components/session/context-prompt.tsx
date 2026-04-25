@@ -65,9 +65,13 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
 
   const productionPrompt = prompt.kind === "produce" ? prompt : null;
   const rewritePrompt = prompt.kind === "rewrite" || prompt.kind === "collocation" ? prompt : null;
-  const sentencePrompt = productionPrompt ?? rewritePrompt;
+  const scenarioPrompt = prompt.kind === "scenario" ? prompt : null;
+  const sentencePrompt = productionPrompt ?? rewritePrompt ?? scenarioPrompt;
   const replacementPrompt =
-    prompt.kind === "produce" || prompt.kind === "rewrite" || prompt.kind === "collocation"
+    prompt.kind === "produce"
+      || prompt.kind === "rewrite"
+      || prompt.kind === "collocation"
+      || prompt.kind === "scenario"
     ? null
     : prompt;
   const isSentencePrompt = sentencePrompt !== null;
@@ -138,6 +142,7 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
       cueLevel: showCue ? 1 : 0,
       contextPromptKind: sentencePrompt.kind,
       contextSourceSentence: rewritePrompt?.sentence,
+      contextScenarioAnchors: scenarioPrompt?.anchors,
     });
   };
 
@@ -168,6 +173,7 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
     const isRewritePrompt =
       sentencePrompt.kind === "rewrite" || sentencePrompt.kind === "collocation";
     const isCollocationPrompt = sentencePrompt.kind === "collocation";
+    const isScenarioPrompt = sentencePrompt.kind === "scenario";
 
     return (
       <motion.div
@@ -185,6 +191,8 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
               <span className="text-xs text-muted-foreground ml-1">
                 {isCollocationPrompt
                   ? "Keep the scene and stronger phrase"
+                  : isScenarioPrompt
+                    ? "Use it in a constrained scene"
                   : isRewritePrompt
                     ? "Rewrite the scene with the target word"
                     : "Use it naturally"}
@@ -204,6 +212,8 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
                 <span className="text-sm text-muted-foreground">
                   {isCollocationPrompt
                     ? "Rewrite the sentence with the stronger phrase while preserving the original scene."
+                    : isScenarioPrompt && scenarioPrompt
+                      ? `Write one sentence using this word about ${scenarioPrompt.scenario}.`
                     : isRewritePrompt
                     ? "Rewrite the sentence below using this word while keeping the same scene."
                     : "Write one sentence using this word naturally."}
@@ -232,6 +242,29 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
               </motion.div>
             )}
 
+            {isScenarioPrompt && scenarioPrompt && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+                className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-3"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                  Required scene anchor
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {scenarioPrompt.anchors.map((anchor) => (
+                    <span
+                      key={anchor}
+                      className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-500 dark:text-amber-300"
+                    >
+                      {anchor}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
             <motion.form
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -245,6 +278,8 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
                 onChange={(event) => setTypedAnswer(event.target.value)}
                 placeholder={isRewritePrompt
                   ? `Rewrite the sentence using "${sentencePrompt.answer}"...`
+                  : isScenarioPrompt
+                    ? `Use "${sentencePrompt.answer}" with one of the scene anchors...`
                   : `Write one sentence using "${sentencePrompt.answer}"...`}
                 className="min-h-[112px] w-full rounded-md border border-border/50 bg-muted/30 px-3 py-2 text-sm leading-relaxed outline-none transition focus:border-emerald-500/40 focus:ring-2 focus:ring-emerald-500/15"
                 autoComplete="off"
@@ -258,7 +293,11 @@ export function ContextPrompt({ prompt, onSubmit }: ContextPromptProps) {
                   disabled={!typedAnswer.trim()}
                 >
                   <Send className="size-4" />
-                  {isRewritePrompt ? "Submit Rewrite" : "Submit Sentence"}
+                  {isRewritePrompt
+                    ? "Submit Rewrite"
+                    : isScenarioPrompt
+                      ? "Submit Scene"
+                      : "Submit Sentence"}
                 </Button>
                 <Button
                   type="button"

@@ -94,6 +94,7 @@ describe("normalizeContextPromptKind", () => {
     expect(normalizeContextPromptKind("replace")).toBe("replace");
     expect(normalizeContextPromptKind("produce")).toBe("produce");
     expect(normalizeContextPromptKind("rewrite")).toBe("rewrite");
+    expect(normalizeContextPromptKind("scenario")).toBe("scenario");
   });
 
   it("returns undefined for unknown kinds", () => {

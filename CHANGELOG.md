@@ -20,15 +20,18 @@ All notable changes to this project should be documented in this file.
 - TOT capture flow in the word library now records real-world blanking moments with source, weak substitute, and context, and can create a new custom word if needed
 - Word Library Archive now lets archived blanking captures be browsed and restored to pending triage without immediately re-entering training
 - Word Library Duplicates now groups exact normalized duplicate entries and merges them locally while preserving review logs, keeping the strongest review card, and conservatively combining metadata
-- First-class `VocabularyItem` bridge now projects trainable concepts from existing `Word` rows with coverage scaffolding for retrieval, context, association, and collocation lanes
-- Practice-lane routing now feeds session assembly so missing retrieval/context/association/collocation coverage can steer the next prompt mode without adding new persistence tables
+- First-class `VocabularyItem` bridge now projects trainable concepts from existing `Word` rows with coverage scaffolding for retrieval, context, association, collocation, and transfer lanes
+- Practice-lane routing now feeds session assembly so missing retrieval/context/association/collocation/transfer coverage can steer the next prompt mode without adding new persistence tables
 - Collocation practice now has a live context-style prompt path that asks the player to preserve the original scene while replacing the weaker phrase with the stronger target word
+- Scenario variation context prompts now appear for deeply fluent words, requiring the target word plus a source-scene anchor in a new sentence with deterministic grading
+- Scenario variation now records distinct transfer coverage while still staying inside automatic Context routing
 - Word Library expanded-row details now show per-word lane coverage as automatic training-engine signals
 - Stats now surfaces aggregate practice-lane coverage and automatic fill inputs while keeping FSRS/session assembly in charge of what gets trained
 - Dashboard quest cards now explain the automatic session plan: FSRS reviews first, eligible new-word backfill second, and coverage signals shaping prompt type without manual drill selection
+- Stat-aware prompt support now keeps Context prompts more scaffolded when Recall lags and uses low Creativity to strengthen existing association mnemonics or hold deeply fluent Context work at rewrite before scenario variation
 - Adaptive retrieval drilling now keeps recent TOT words in rescue/stabilize phases until they regain repeated clean exact recalls, with hint access and rapid timers changing by recent performance
 - Cross-device sync now carries custom words and TOT capture summaries, with merge logic that restores custom entries locally before replaying cards, logs, associations, and TOT state
-- Automated coverage now spans 219 tests across scheduler, session, sync, stats helpers, hooks, word-library workflows, and vocabulary pipeline helpers
+- Automated coverage now spans 236 tests across scheduler, session, sync, stats helpers, hooks, word-library workflows, and vocabulary pipeline helpers
 
 ### Changed
 

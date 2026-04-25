@@ -261,7 +261,11 @@ export default function SessionPage() {
         currentMode === "context" &&
         currentContextPrompt && (
           <ContextPrompt
-            key={currentContextPrompt.kind === "produce" ? `${currentWord.word.id}-produce` : currentContextPrompt.sentence}
+            key={
+              currentContextPrompt.kind === "produce" || currentContextPrompt.kind === "scenario"
+                ? `${currentWord.word.id}-${currentContextPrompt.kind}`
+                : currentContextPrompt.sentence
+            }
             prompt={currentContextPrompt}
             onSubmit={submitAnswer}
           />

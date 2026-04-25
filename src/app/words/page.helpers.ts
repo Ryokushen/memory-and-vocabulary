@@ -43,6 +43,7 @@ const COVERAGE_LANE_LABELS: Record<keyof VocabularyItemCoverage, string> = {
   context: "Context",
   association: "Association",
   collocation: "Collocation",
+  transfer: "Transfer",
 };
 
 const COVERAGE_LANE_ORDER: Array<keyof VocabularyItemCoverage> = [
@@ -50,6 +51,7 @@ const COVERAGE_LANE_ORDER: Array<keyof VocabularyItemCoverage> = [
   "context",
   "association",
   "collocation",
+  "transfer",
 ];
 
 export function buildTierFilterLayout() {
@@ -134,9 +136,17 @@ export function getNextPracticeLaneDisplay(
     };
   }
 
+  if (route.lane === "collocation") {
+    return {
+      label: "Automatic: Collocation",
+      description: "Lexforge can use same-scene phrase replacement when session mix allows.",
+      blocked: false,
+    };
+  }
+
   return {
-    label: "Automatic: Collocation",
-    description: "Lexforge can use same-scene phrase replacement when session mix allows.",
+    label: "Automatic: Transfer",
+    description: "Lexforge can use scenario variation when session mix and word readiness allow.",
     blocked: false,
   };
 }

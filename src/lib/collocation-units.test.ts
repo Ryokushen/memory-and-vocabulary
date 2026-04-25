@@ -33,6 +33,7 @@ function makeItem(
       context: "practiced",
       association: "unknown",
       collocation: "unknown",
+      transfer: "unknown",
     },
     ...overrides,
   };
