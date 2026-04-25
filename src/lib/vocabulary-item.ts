@@ -32,6 +32,15 @@ export type VocabularyItemCoverage = {
   collocation: VocabularyItemCoverageState;
 };
 
+export type VocabularyItemCoverageSummary = {
+  total: number;
+  retrievalPracticed: number;
+  contextPracticed: number;
+  associationPracticed: number;
+  collocationPracticed: number;
+  fullyCovered: number;
+};
+
 export type VocabularyItem = {
   id: VocabularyItemId;
   backingWordId: number;
@@ -81,11 +90,12 @@ function projectCoverage(
   options: VocabularyItemProjectionOptions,
 ): VocabularyItemCoverage {
   const wordLogs = (options.reviewLogs ?? []).filter((log) => log.wordId === wordId);
+  const hasRetrievalPractice = wordLogs.length > 0;
   const hasContextPractice = wordLogs.some((log) => Boolean(log.contextPromptKind));
   const hasAssociationPractice = Boolean(word.association?.trim());
 
   return {
-    retrieval: "unknown",
+    retrieval: hasRetrievalPractice ? "practiced" : "unknown",
     context: hasContextPractice ? "practiced" : "unknown",
     association: hasAssociationPractice ? "practiced" : "unknown",
     collocation: "unknown",
@@ -122,4 +132,35 @@ export function wordsToVocabularyItems(
   return words
     .filter((word) => typeof word.id === "number")
     .map((word) => wordToVocabularyItem(word, options));
+}
+
+export function summarizeVocabularyItemCoverage(
+  items: VocabularyItem[],
+): VocabularyItemCoverageSummary {
+  const summary: VocabularyItemCoverageSummary = {
+    total: items.length,
+    retrievalPracticed: 0,
+    contextPracticed: 0,
+    associationPracticed: 0,
+    collocationPracticed: 0,
+    fullyCovered: 0,
+  };
+
+  for (const item of items) {
+    const coverage = item.coverage;
+    if (coverage.retrieval === "practiced") summary.retrievalPracticed += 1;
+    if (coverage.context === "practiced") summary.contextPracticed += 1;
+    if (coverage.association === "practiced") summary.associationPracticed += 1;
+    if (coverage.collocation === "practiced") summary.collocationPracticed += 1;
+    if (
+      coverage.retrieval === "practiced" &&
+      coverage.context === "practiced" &&
+      coverage.association === "practiced" &&
+      coverage.collocation === "practiced"
+    ) {
+      summary.fullyCovered += 1;
+    }
+  }
+
+  return summary;
 }

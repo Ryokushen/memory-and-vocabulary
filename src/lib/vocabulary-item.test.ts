@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ReviewLog, TOTCapture, Word } from "./types";
 import {
+  summarizeVocabularyItemCoverage,
   wordToVocabularyItem,
   wordsToVocabularyItems,
 } from "./vocabulary-item";
@@ -175,7 +176,7 @@ describe("vocabulary item bridge", () => {
     });
 
     expect(item.coverage.context).toBe("practiced");
-    expect(item.coverage.retrieval).toBe("unknown");
+    expect(item.coverage.retrieval).toBe("practiced");
   });
 
   it("marks association coverage practiced from an existing association", () => {
@@ -188,5 +189,29 @@ describe("vocabulary item bridge", () => {
 
     expect(item.coverage.association).toBe("practiced");
     expect(item.coverage.collocation).toBe("unknown");
+  });
+
+  it("summarizes practiced coverage lanes across projected items", () => {
+    const items = wordsToVocabularyItems(
+      [
+        makeWord({ id: 1, association: "A clear window makes a lucid view." }),
+        makeWord({ id: 2, word: "tenuous" }),
+      ],
+      {
+        reviewLogs: [
+          makeLog({ wordId: 1, contextPromptKind: "produce" }),
+          makeLog({ wordId: 2, contextPromptKind: undefined }),
+        ],
+      },
+    );
+
+    expect(summarizeVocabularyItemCoverage(items)).toEqual({
+      total: 2,
+      retrievalPracticed: 2,
+      contextPracticed: 1,
+      associationPracticed: 1,
+      collocationPracticed: 0,
+      fullyCovered: 0,
+    });
   });
 });

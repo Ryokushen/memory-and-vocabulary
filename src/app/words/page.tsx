@@ -60,6 +60,7 @@ import {
   chooseStrongestReviewCard,
   mergeDuplicateWords,
 } from "@/lib/word-merge";
+import { summarizeVocabularyItemCoverage } from "@/lib/vocabulary-item";
 import { IllumCard } from "@/components/rpg/illum-card";
 import { HeronDivider } from "@/components/rpg/heron-divider";
 import { Anvil, ChevronRight, Tome } from "@/components/rpg/sigils";
@@ -518,6 +519,10 @@ export default function WordsPage() {
   const inboxCount = useMemo(() => getInboxItemCount(libraryItems), [libraryItems]);
   const archiveCount = useMemo(
     () => getArchiveItemCount(libraryItems),
+    [libraryItems],
+  );
+  const coverageSummary = useMemo(
+    () => summarizeVocabularyItemCoverage(libraryItems.map((entry) => entry.item)),
     [libraryItems],
   );
   const duplicateCount = useMemo(() => getDuplicateCount(words), [words]);
@@ -1157,6 +1162,36 @@ export default function WordsPage() {
       </Dialog>
 
       <HeronDivider />
+
+      <div className="grid gap-2 sm:grid-cols-4">
+        {[
+          ["Recall", coverageSummary.retrievalPracticed],
+          ["Context", coverageSummary.contextPracticed],
+          ["Association", coverageSummary.associationPracticed],
+          ["Collocation", coverageSummary.collocationPracticed],
+        ].map(([label, value]) => (
+          <div
+            key={label}
+            className="rounded-[var(--radius)] border border-[var(--line-soft)] px-3 py-2"
+          >
+            <p
+              className="uppercase-tracked text-[10px]"
+              style={{ color: "var(--muted-foreground)" }}
+            >
+              {label}
+            </p>
+            <p className="font-display text-lg font-bold" style={{ color: "var(--ink)" }}>
+              {value}
+              <span
+                className="ml-1 text-xs font-normal"
+                style={{ color: "var(--muted-foreground)" }}
+              >
+                / {coverageSummary.total}
+              </span>
+            </p>
+          </div>
+        ))}
+      </div>
 
       {/* Search + tier filter */}
       <div className="flex items-center gap-3 flex-wrap">
