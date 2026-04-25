@@ -23,6 +23,7 @@ All notable changes to this project should be documented in this file.
 - First-class `VocabularyItem` bridge now projects trainable concepts from existing `Word` rows with coverage scaffolding for retrieval, context, association, and collocation lanes
 - Practice-lane routing now feeds session assembly so missing retrieval/context/association/collocation coverage can steer the next prompt mode without adding new persistence tables
 - Collocation practice now has a live context-style prompt path that asks the player to preserve the original scene while replacing the weaker phrase with the stronger target word
+- Word Library expanded-row details now show per-word lane coverage and the next recommended practice lane
 - Adaptive retrieval drilling now keeps recent TOT words in rescue/stabilize phases until they regain repeated clean exact recalls, with hint access and rapid timers changing by recent performance
 - Cross-device sync now carries custom words and TOT capture summaries, with merge logic that restores custom entries locally before replaying cards, logs, associations, and TOT state
 - Automated coverage now spans 219 tests across scheduler, session, sync, stats helpers, hooks, word-library workflows, and vocabulary pipeline helpers

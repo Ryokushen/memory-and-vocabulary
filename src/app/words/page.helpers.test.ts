@@ -1,17 +1,20 @@
 import { describe, expect, it } from "vitest";
 import type { TOTCapture, Word } from "@/lib/types";
+import type { VocabularyItem } from "@/lib/vocabulary-item";
 import {
   buildWordLibraryItems,
   buildTierFilterLayout,
   buildWordGroups,
   filterWordLibraryItemsForView,
   filterWordsForLibraryView,
+  getCoverageLaneDisplays,
   getArchiveCount,
   getArchiveItemCount,
   getDuplicateCount,
   getDuplicateGroupsForLibraryView,
   getInboxCount,
   getInboxItemCount,
+  getNextPracticeLaneDisplay,
   getWordLibraryPipelineStage,
 } from "./page.helpers";
 
@@ -40,6 +43,39 @@ function makeWord(
     synonyms: [],
     tier,
     createdAt: new Date("2026-04-01T00:00:00.000Z"),
+    ...overrides,
+  };
+}
+
+function makeItem(
+  overrides: Partial<VocabularyItem> = {},
+): VocabularyItem {
+  return {
+    id: 1,
+    backingWordId: 1,
+    word: "lucid",
+    definition: "clear",
+    examples: [],
+    synonyms: [],
+    contextSentences: [],
+    tier: 1,
+    createdAt: new Date("2026-04-01T00:00:00.000Z"),
+    trainingEligible: true,
+    source: {
+      kind: "seeded",
+      isSeeded: true,
+      isCustom: false,
+      isCaptured: false,
+      captureCount: 0,
+      captureTriageStatus: null,
+      captureEventIds: [],
+    },
+    coverage: {
+      retrieval: "unknown",
+      context: "unknown",
+      association: "unknown",
+      collocation: "unknown",
+    },
     ...overrides,
   };
 }
@@ -211,6 +247,74 @@ describe("archive helpers", () => {
         (entry) => entry.word,
       ),
     ).toEqual([archived]);
+  });
+});
+
+describe("practice lane display helpers", () => {
+  it("formats all coverage lanes in a stable order with practiced and missing states", () => {
+    const displays = getCoverageLaneDisplays(
+      makeItem({
+        coverage: {
+          retrieval: "practiced",
+          context: "unknown",
+          association: "practiced",
+          collocation: "unknown",
+        },
+      }),
+    );
+
+    expect(displays).toEqual([
+      { key: "retrieval", label: "Recall", practiced: true, statusLabel: "Practiced" },
+      { key: "context", label: "Context", practiced: false, statusLabel: "Needed" },
+      { key: "association", label: "Association", practiced: true, statusLabel: "Practiced" },
+      { key: "collocation", label: "Collocation", practiced: false, statusLabel: "Needed" },
+    ]);
+  });
+
+  it("describes the next practice lane from item coverage", () => {
+    expect(
+      getNextPracticeLaneDisplay(
+        makeItem({
+          coverage: {
+            retrieval: "practiced",
+            context: "unknown",
+            association: "unknown",
+            collocation: "unknown",
+          },
+        }),
+      ),
+    ).toEqual({
+      label: "Next: Context",
+      description: "Use the word in sentence-level practice.",
+      blocked: false,
+    });
+  });
+
+  it("marks fully covered and training-ineligible items distinctly", () => {
+    expect(
+      getNextPracticeLaneDisplay(
+        makeItem({
+          coverage: {
+            retrieval: "practiced",
+            context: "practiced",
+            association: "practiced",
+            collocation: "practiced",
+          },
+        }),
+      ),
+    ).toEqual({
+      label: "Maintenance: Recall",
+      description: "All lanes have coverage; keep recall fresh.",
+      blocked: false,
+    });
+
+    expect(
+      getNextPracticeLaneDisplay(makeItem({ trainingEligible: false })),
+    ).toEqual({
+      label: "Not in training",
+      description: "Pending or archived captures stay out of sessions until kept.",
+      blocked: true,
+    });
   });
 });
 

@@ -49,10 +49,13 @@ import {
   buildWordGroups,
   filterWordLibraryItemsForView,
   getArchiveItemCount,
+  getCoverageLaneDisplays,
   getDuplicateCount,
   getDuplicateGroupsForLibraryView,
   getInboxItemCount,
+  getNextPracticeLaneDisplay,
   getWordLibraryPipelineStage,
+  type WordLibraryItem,
   type WordLibraryViewFilter,
 } from "./page.helpers";
 import {
@@ -125,7 +128,7 @@ function tierBadgeStyle(color: string) {
 // ── Word row ───────────────────────────────────────────────────────────
 
 function WordRow({
-  word,
+  entry,
   isExpanded,
   onToggle,
   onKeepCapture,
@@ -134,7 +137,7 @@ function WordRow({
   isTriaging,
   isLast,
 }: {
-  word: Word;
+  entry: WordLibraryItem;
   isExpanded: boolean;
   onToggle: () => void;
   onKeepCapture: (word: Word) => void;
@@ -143,10 +146,13 @@ function WordRow({
   isTriaging: boolean;
   isLast: boolean;
 }) {
+  const { word, item } = entry;
   const tierKey = String(word.tier);
   const tier = TIER_INFO[tierKey] ?? TIER_INFO.custom;
   const pipelineStage = getWordLibraryPipelineStage(word);
   const captureStatus = getCaptureTriageStatus(word.totCapture);
+  const coverageLanes = getCoverageLaneDisplays(item);
+  const nextPracticeLane = getNextPracticeLaneDisplay(item);
 
   return (
     <div
@@ -275,6 +281,66 @@ function WordRow({
                   </span>{" "}
                   {getPipelineStageDescription(pipelineStage)}
                 </p>
+              </div>
+
+              <div
+                className="space-y-3 rounded-[var(--radius)] p-3"
+                style={{
+                  background: "color-mix(in oklab, var(--sage), transparent 94%)",
+                  border: "1px solid color-mix(in oklab, var(--sage), transparent 76%)",
+                }}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p
+                      className="uppercase-tracked text-[10px]"
+                      style={{ color: "var(--sage)" }}
+                    >
+                      Practice Coverage
+                    </p>
+                    <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+                      {nextPracticeLane.description}
+                    </p>
+                  </div>
+                  <span
+                    className="lex-badge shrink-0"
+                    style={tierBadgeStyle(
+                      nextPracticeLane.blocked ? "var(--muted-foreground)" : "var(--sage)",
+                    )}
+                  >
+                    {nextPracticeLane.label}
+                  </span>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-4">
+                  {coverageLanes.map((lane) => (
+                    <div
+                      key={lane.key}
+                      className="rounded-[var(--radius)] border px-2 py-2"
+                      style={{
+                        borderColor: lane.practiced
+                          ? "color-mix(in oklab, var(--sage), transparent 58%)"
+                          : "var(--line-soft)",
+                        background: lane.practiced
+                          ? "color-mix(in oklab, var(--sage), transparent 91%)"
+                          : "transparent",
+                      }}
+                    >
+                      <p
+                        className="uppercase-tracked text-[10px]"
+                        style={{
+                          color: lane.practiced
+                            ? "var(--sage)"
+                            : "var(--muted-foreground)",
+                        }}
+                      >
+                        {lane.label}
+                      </p>
+                      <p className="text-sm font-medium" style={{ color: "var(--ink)" }}>
+                        {lane.statusLabel}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {word.totCapture && (
@@ -854,22 +920,37 @@ export default function WordsPage() {
     : [];
   const previewKeptCard = chooseStrongestReviewCard(previewGroupCards);
 
+  const itemByWordId = useMemo(
+    () =>
+      new Map(
+        libraryItems
+          .filter((entry) => typeof entry.word.id === "number")
+          .map((entry) => [entry.word.id, entry]),
+      ),
+    [libraryItems],
+  );
+
   const renderWordList = (wordList: Word[]) => (
     <IllumCard className="p-0 overflow-hidden" corners={false} innerBorder={false}>
       <div>
-        {wordList.map((w, i) => (
-          <WordRow
-            key={w.id}
-            word={w}
-            isExpanded={expandedId === w.id}
-            onToggle={() => setExpandedId(expandedId === w.id ? null : (w.id ?? null))}
-            onKeepCapture={handleKeepCapture}
-            onArchiveCapture={handleArchiveCapture}
-            onRestoreCapture={handleRestoreCapture}
-            isTriaging={triagingWordId !== null}
-            isLast={i === wordList.length - 1}
-          />
-        ))}
+        {wordList.map((w, i) => {
+          const entry = typeof w.id === "number" ? itemByWordId.get(w.id) : undefined;
+          if (!entry) return null;
+
+          return (
+            <WordRow
+              key={w.id}
+              entry={entry}
+              isExpanded={expandedId === w.id}
+              onToggle={() => setExpandedId(expandedId === w.id ? null : (w.id ?? null))}
+              onKeepCapture={handleKeepCapture}
+              onArchiveCapture={handleArchiveCapture}
+              onRestoreCapture={handleRestoreCapture}
+              isTriaging={triagingWordId !== null}
+              isLast={i === wordList.length - 1}
+            />
+          );
+        })}
       </div>
     </IllumCard>
   );

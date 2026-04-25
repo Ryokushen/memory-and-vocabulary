@@ -57,7 +57,8 @@ Lexforge now projects existing `Word` rows into transitional `VocabularyItem` co
 - Missing context coverage routes to Context.
 - Missing association coverage routes to Association.
 - Missing collocation coverage routes to a context-style rewrite prompt that keeps the same scene while replacing the weaker phrase.
-- Current user-facing coverage is still lightweight; the next product slice should make lane progress and recommendations easier to inspect.
+- Expanded Word Library rows show which lanes are practiced or still needed, plus the next recommended practice lane for that word.
+- Current aggregate coverage is still lightweight; a later product slice should make lane progress easier to inspect across Stats or the dashboard.
 
 ## Real-World Capture Loop
 
@@ -234,7 +235,7 @@ These foundations are already in `master` and should be treated as existing beha
 
 For the up-to-date "already shipped vs next" checklist, see [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
-- surface practice-lane coverage and recommendations in user-facing progress views
+- surface richer aggregate practice-lane coverage and recommendations in Stats or dashboard views
 - deepen Context transfer beyond the new fluent rewrite and collocation slices into richer scenario variation only if deterministic grading can stay sane
 - broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces
 - targeted regression tests around newly introduced sync changes (without reworking shipped sync hardening)
