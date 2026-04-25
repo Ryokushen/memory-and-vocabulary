@@ -46,6 +46,14 @@ describe("vocabulary item bridge", () => {
       makeWord({
         id: 42,
         tier: 2,
+        contextSentences: [
+          {
+            sentence: "The explanation was clear.",
+            weakWord: "clear",
+            answer: "lucid",
+            distractors: [],
+          },
+        ],
         pipelineStage: "reviewing",
         pipelineUpdatedAt: "2026-04-12T09:00:00.000Z",
       }),
@@ -58,6 +66,14 @@ describe("vocabulary item bridge", () => {
       definition: "clear and easy to understand",
       examples: ["A lucid explanation."],
       synonyms: ["clear"],
+      contextSentences: [
+        {
+          sentence: "The explanation was clear.",
+          weakWord: "clear",
+          answer: "lucid",
+          distractors: [],
+        },
+      ],
       tier: 2,
       pipelineStage: "reviewing",
       pipelineUpdatedAt: "2026-04-12T09:00:00.000Z",

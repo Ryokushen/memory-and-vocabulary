@@ -65,6 +65,10 @@ import {
   routeVocabularyPracticeLanes,
   summarizePracticeLaneRoutes,
 } from "@/lib/practice-lanes";
+import {
+  buildCollocationPracticeUnits,
+  summarizeCollocationPracticeUnits,
+} from "@/lib/collocation-units";
 import { IllumCard } from "@/components/rpg/illum-card";
 import { HeronDivider } from "@/components/rpg/heron-divider";
 import { Anvil, ChevronRight, Tome } from "@/components/rpg/sigils";
@@ -533,6 +537,13 @@ export default function WordsPage() {
     () =>
       summarizePracticeLaneRoutes(
         routeVocabularyPracticeLanes(libraryItems.map((entry) => entry.item)),
+      ),
+    [libraryItems],
+  );
+  const collocationSummary = useMemo(
+    () =>
+      summarizeCollocationPracticeUnits(
+        buildCollocationPracticeUnits(libraryItems.map((entry) => entry.item)),
       ),
     [libraryItems],
   );
@@ -1206,7 +1217,7 @@ export default function WordsPage() {
       <p className="text-xs italic" style={{ color: "var(--muted-foreground)" }}>
         Next practice routing: Recall {laneSummary.retrieval} · Context{" "}
         {laneSummary.context} · Association {laneSummary.association} · Collocation{" "}
-        {laneSummary.collocation}
+        {laneSummary.collocation} · {collocationSummary.total} phrase units
       </p>
 
       {/* Search + tier filter */}

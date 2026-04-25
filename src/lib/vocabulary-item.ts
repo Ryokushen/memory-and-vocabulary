@@ -1,5 +1,6 @@
 import type {
   CaptureTriageStatus,
+  ContextSentence,
   PipelineStage,
   ReviewLog,
   Word,
@@ -48,6 +49,7 @@ export type VocabularyItem = {
   definition: string;
   examples: string[];
   synonyms: string[];
+  contextSentences: ContextSentence[];
   tier: WordTier;
   createdAt: Date;
   pipelineStage?: PipelineStage;
@@ -115,6 +117,7 @@ export function wordToVocabularyItem(
     definition: word.definition,
     examples: word.examples,
     synonyms: word.synonyms,
+    contextSentences: word.contextSentences ?? [],
     tier: word.tier,
     createdAt: word.createdAt,
     pipelineStage: word.pipelineStage,
