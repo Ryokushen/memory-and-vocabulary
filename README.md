@@ -23,6 +23,7 @@ What it does not currently claim:
 - Four live training modes: Recall, Context, Rapid Retrieval, and Association
 - TOT capture flow for real-world blanking moments, including source, weak substitute, and context
 - Word Library Inbox and Archive triage for captured words, with Keep, Archive, and Restore decisions before captures enter normal queued training
+- Word Library Duplicates workflow for exact normalized duplicate entries, with merge preview, review-history preservation, and conservative metadata cleanup
 - Vocabulary pipeline stage tracking across seeded, custom, and TOT-captured words
 - Difficulty settings that control daily new-word intake
 - Phase gating that unlocks harder vocabulary as the player levels up
@@ -221,4 +222,4 @@ For the up-to-date "already shipped vs next" checklist, see [PROJECT_STATUS.md](
 - deepen Context transfer beyond the new fluent rewrite slice into richer scenario variation only if deterministic grading can stay sane
 - broaden stat-aware personalization beyond current retrieval-drill timing into other training surfaces
 - targeted regression tests around newly introduced sync changes (without reworking shipped sync hardening)
-- evolve the vocabulary pipeline beyond v2 with duplicate merge workflows, first-class vocabulary item entities, generated practice lanes, coverage metrics, and collocation/chunk modeling
+- evolve the vocabulary pipeline beyond v2 with first-class vocabulary item entities, generated practice lanes, coverage metrics, and collocation/chunk modeling
