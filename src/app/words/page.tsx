@@ -1266,12 +1266,13 @@ export default function WordsPage() {
 
       <HeronDivider />
 
-      <div className="grid gap-2 sm:grid-cols-4">
+      <div className="grid gap-2 sm:grid-cols-5">
         {[
           ["Recall", coverageSummary.retrievalPracticed],
           ["Context", coverageSummary.contextPracticed],
           ["Association", coverageSummary.associationPracticed],
           ["Collocation", coverageSummary.collocationPracticed],
+          ["Transfer", coverageSummary.transferPracticed],
         ].map(([label, value]) => (
           <div
             key={label}

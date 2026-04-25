@@ -64,6 +64,7 @@ function makeVocabularyItem(
       context: "unknown",
       association: "unknown",
       collocation: "unknown",
+      transfer: "unknown",
     },
     ...overrides,
   };
@@ -182,6 +183,7 @@ describe("getTrainingCoverageTransparency", () => {
           context: "unknown",
           association: "unknown",
           collocation: "unknown",
+          transfer: "unknown",
         },
       }),
       makeVocabularyItem({
@@ -197,6 +199,7 @@ describe("getTrainingCoverageTransparency", () => {
           context: "practiced",
           association: "practiced",
           collocation: "practiced",
+          transfer: "practiced",
         },
       }),
     ]);
@@ -240,6 +243,15 @@ describe("getTrainingCoverageTransparency", () => {
       {
         lane: "collocation",
         label: "Collocation",
+        practicedCount: 1,
+        missingCount: 2,
+        eligibleCount: 3,
+        coveragePercent: 33,
+        automaticFillCount: 0,
+      },
+      {
+        lane: "transfer",
+        label: "Transfer",
         practicedCount: 1,
         missingCount: 2,
         eligibleCount: 3,

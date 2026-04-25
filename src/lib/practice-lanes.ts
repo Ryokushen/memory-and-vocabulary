@@ -1,11 +1,17 @@
 import type { VocabularyItem } from "./vocabulary-item";
 
-export type PracticeLane = "retrieval" | "context" | "association" | "collocation";
+export type PracticeLane =
+  | "retrieval"
+  | "context"
+  | "association"
+  | "collocation"
+  | "transfer";
 export type PracticeLaneRouteReason =
   | "missing-retrieval"
   | "missing-context"
   | "missing-association"
   | "missing-collocation"
+  | "missing-transfer"
   | "maintenance"
   | "not-training-eligible";
 
@@ -44,6 +50,9 @@ export function getPracticeLaneRoute(item: VocabularyItem): PracticeLaneRoute {
   if (item.coverage.collocation === "unknown") {
     return { itemId: item.id, lane: "collocation", reason: "missing-collocation" };
   }
+  if (item.coverage.transfer === "unknown") {
+    return { itemId: item.id, lane: "transfer", reason: "missing-transfer" };
+  }
 
   return { itemId: item.id, lane: "retrieval", reason: "maintenance" };
 }
@@ -62,6 +71,7 @@ export function summarizePracticeLaneRoutes(
     context: 0,
     association: 0,
     collocation: 0,
+    transfer: 0,
     blocked: 0,
   };
 

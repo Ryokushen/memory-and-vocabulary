@@ -36,7 +36,11 @@ export function getForcedSessionModeForPracticeLane(
     return "association";
   }
 
-  if (route.lane === "context" || route.lane === "collocation") {
+  if (
+    route.lane === "context" ||
+    route.lane === "collocation" ||
+    route.lane === "transfer"
+  ) {
     return hasContextPromptSource(sessionWord) ? "context" : null;
   }
 

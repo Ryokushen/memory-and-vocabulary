@@ -33,6 +33,7 @@ function makeItem(
       context: "unknown",
       association: "unknown",
       collocation: "unknown",
+      transfer: "unknown",
     },
     ...overrides,
   };
@@ -49,6 +50,7 @@ describe("practice lane routing", () => {
             context: "unknown",
             association: "unknown",
             collocation: "unknown",
+            transfer: "unknown",
           },
         }),
       ),
@@ -61,10 +63,24 @@ describe("practice lane routing", () => {
             context: "practiced",
             association: "unknown",
             collocation: "unknown",
+            transfer: "unknown",
           },
         }),
       ),
     ).toBe("association");
+    expect(
+      getRecommendedPracticeLane(
+        makeItem({
+          coverage: {
+            retrieval: "practiced",
+            context: "practiced",
+            association: "practiced",
+            collocation: "practiced",
+            transfer: "unknown",
+          },
+        }),
+      ),
+    ).toBe("transfer");
   });
 
   it("does not route items that are not eligible for training", () => {
@@ -82,6 +98,7 @@ describe("practice lane routing", () => {
             context: "practiced",
             association: "practiced",
             collocation: "practiced",
+            transfer: "practiced",
           },
         }),
       ),
@@ -98,6 +115,7 @@ describe("practice lane routing", () => {
           context: "unknown",
           association: "unknown",
           collocation: "unknown",
+          transfer: "unknown",
         },
       }),
       makeItem({ id: 3, trainingEligible: false }),
@@ -113,6 +131,7 @@ describe("practice lane routing", () => {
       context: 1,
       association: 0,
       collocation: 0,
+      transfer: 0,
       blocked: 1,
     });
   });

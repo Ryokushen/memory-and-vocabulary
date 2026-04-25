@@ -75,6 +75,7 @@ function makeItem(
       context: "unknown",
       association: "unknown",
       collocation: "unknown",
+      transfer: "unknown",
     },
     ...overrides,
   };
@@ -259,6 +260,7 @@ describe("practice lane display helpers", () => {
           context: "unknown",
           association: "practiced",
           collocation: "unknown",
+          transfer: "unknown",
         },
       }),
     );
@@ -268,6 +270,7 @@ describe("practice lane display helpers", () => {
       { key: "context", label: "Context", practiced: false, statusLabel: "Needed" },
       { key: "association", label: "Association", practiced: true, statusLabel: "Practiced" },
       { key: "collocation", label: "Collocation", practiced: false, statusLabel: "Needed" },
+      { key: "transfer", label: "Transfer", practiced: false, statusLabel: "Needed" },
     ]);
   });
 
@@ -280,12 +283,31 @@ describe("practice lane display helpers", () => {
             context: "unknown",
             association: "unknown",
             collocation: "unknown",
+            transfer: "unknown",
           },
         }),
       ),
     ).toEqual({
       label: "Automatic: Context",
       description: "Lexforge can use sentence-level prompts when session mix allows.",
+      blocked: false,
+    });
+
+    expect(
+      getNextPracticeLaneDisplay(
+        makeItem({
+          coverage: {
+            retrieval: "practiced",
+            context: "practiced",
+            association: "practiced",
+            collocation: "practiced",
+            transfer: "unknown",
+          },
+        }),
+      ),
+    ).toEqual({
+      label: "Automatic: Transfer",
+      description: "Lexforge can use scenario variation when session mix and word readiness allow.",
       blocked: false,
     });
   });
@@ -299,6 +321,7 @@ describe("practice lane display helpers", () => {
             context: "practiced",
             association: "practiced",
             collocation: "practiced",
+            transfer: "practiced",
           },
         }),
       ),

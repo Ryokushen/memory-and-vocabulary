@@ -180,6 +180,7 @@ describe("vocabulary item bridge", () => {
       context: "unknown",
       association: "unknown",
       collocation: "unknown",
+      transfer: "unknown",
     });
   });
 
@@ -205,6 +206,7 @@ describe("vocabulary item bridge", () => {
 
     expect(item.coverage.association).toBe("practiced");
     expect(item.coverage.collocation).toBe("unknown");
+    expect(item.coverage.transfer).toBe("unknown");
   });
 
   it("marks collocation coverage practiced from collocation context logs", () => {
@@ -216,6 +218,17 @@ describe("vocabulary item bridge", () => {
 
     expect(item.coverage.context).toBe("practiced");
     expect(item.coverage.collocation).toBe("practiced");
+  });
+
+  it("marks transfer coverage practiced from scenario context logs", () => {
+    const item = wordToVocabularyItem(makeWord({ id: 1 }), {
+      reviewLogs: [
+        makeLog({ wordId: 1, contextPromptKind: "scenario" }),
+      ],
+    });
+
+    expect(item.coverage.context).toBe("practiced");
+    expect(item.coverage.transfer).toBe("practiced");
   });
 
   it("summarizes practiced coverage lanes across projected items", () => {
@@ -238,6 +251,7 @@ describe("vocabulary item bridge", () => {
       contextPracticed: 1,
       associationPracticed: 1,
       collocationPracticed: 0,
+      transferPracticed: 0,
       fullyCovered: 0,
     });
   });

@@ -25,7 +25,7 @@ What it does not currently claim:
 - Word Library Inbox and Archive triage for captured words, with Keep, Archive, and Restore decisions before captures enter normal queued training
 - Word Library Duplicates workflow for exact normalized duplicate entries, with merge preview, review-history preservation, and conservative metadata cleanup
 - Vocabulary pipeline stage tracking across seeded, custom, and TOT-captured words
-- `VocabularyItem` coverage routing for retrieval, context, association, and collocation practice lanes
+- `VocabularyItem` coverage routing for retrieval, context, association, collocation, and transfer practice lanes
 - Difficulty settings that control daily new-word intake
 - Phase gating that unlocks harder vocabulary as the player levels up
 - Local-first storage with Dexie/IndexedDB
@@ -51,12 +51,13 @@ What it does not currently claim:
 
 ## Practice Lane Coverage
 
-Lexforge now projects existing `Word` rows into transitional `VocabularyItem` concepts, then tracks whether each concept has been practiced through retrieval, context, association, and collocation lanes. Session assembly uses those coverage routes to steer missing lanes into compatible prompts without adding a new Dexie table or changing review-card identity.
+Lexforge now projects existing `Word` rows into transitional `VocabularyItem` concepts, then tracks whether each concept has been practiced through retrieval, context, association, collocation, and transfer lanes. Session assembly uses those coverage routes to steer missing lanes into compatible prompts without adding a new Dexie table or changing review-card identity.
 
 - Missing retrieval coverage routes to Recall.
 - Missing context coverage routes to Context.
 - Missing association coverage routes to Association.
 - Missing collocation coverage routes to a context-style rewrite prompt that keeps the same scene while replacing the weaker phrase.
+- Missing transfer coverage routes to Context so deeply fluent words can earn scenario-variation coverage automatically when their drill profile and stats are ready.
 - Expanded Word Library rows show which lanes are practiced or still needed, plus the automatic coverage signal Lexforge can use when session mix allows.
 - Stats shows aggregate lane coverage and automatic fill inputs so the training engine is transparent without asking the player to choose drills manually.
 - Dashboard quest cards show the same automatic order in plain language: FSRS reviews fill sessions first, eligible new words backfill open slots, and coverage signals shape prompt type inside selected words.
@@ -213,7 +214,7 @@ The stats page also tracks acquisition lifecycle distribution:
 - **Learning** -- words with training started but no stable clean recall
 - **Reviewing** -- words with clean recall under FSRS review
 - **Productive** -- words successfully used in production or rewrite prompts
-- **Coverage lanes** -- `VocabularyItem` projections track retrieval, context, association, and collocation coverage so sessions can steer missing lanes into the next compatible prompt
+- **Coverage lanes** -- `VocabularyItem` projections track retrieval, context, association, collocation, and transfer coverage so sessions can steer missing lanes into the next compatible prompt
 - **Mature** -- words with stable recall plus successful production history
 - **Recognition to production** -- productive or mature words divided by reviewing-or-later words
 

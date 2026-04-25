@@ -67,9 +67,14 @@ describe("practice lane session bridge", () => {
         makeSessionWord(makeWord(), { itemId: 1, lane: "collocation", reason: "missing-collocation" }),
       ),
     ).toBe("context");
+    expect(
+      getForcedSessionModeForPracticeLane(
+        makeSessionWord(makeWord(), { itemId: 1, lane: "transfer", reason: "missing-transfer" }),
+      ),
+    ).toBe("context");
   });
 
-  it("does not force context or collocation lanes when no context prompt can be built", () => {
+  it("does not force context-backed lanes when no context prompt can be built", () => {
     const wordWithoutContext = makeWord({ word: "unbanked-example", contextSentences: [] });
 
     expect(
@@ -80,6 +85,11 @@ describe("practice lane session bridge", () => {
     expect(
       getForcedSessionModeForPracticeLane(
         makeSessionWord(wordWithoutContext, { itemId: 1, lane: "collocation", reason: "missing-collocation" }),
+      ),
+    ).toBeNull();
+    expect(
+      getForcedSessionModeForPracticeLane(
+        makeSessionWord(wordWithoutContext, { itemId: 1, lane: "transfer", reason: "missing-transfer" }),
       ),
     ).toBeNull();
   });
