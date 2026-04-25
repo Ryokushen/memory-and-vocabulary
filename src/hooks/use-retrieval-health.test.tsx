@@ -75,7 +75,7 @@ describe("useRetrievalHealth", () => {
       makeReviewLog(1, "2026-04-08T12:00:00.000Z", {
         rating: 2,
         retrievalKind: "assisted",
-        contextPromptKind: "produce",
+        contextPromptKind: "scenario",
       }),
       makeReviewLog(2, "2026-04-07T12:00:00.000Z", {
         responseTimeMs: 1500,
@@ -140,6 +140,11 @@ describe("useRetrievalHealth", () => {
         rating: 2,
         retrievalKind: "assisted",
         contextPromptKind: "rewrite",
+      }),
+      makeReviewLog(3, "2026-04-07T12:00:00.000Z", {
+        rating: 2,
+        retrievalKind: "assisted",
+        contextPromptKind: "scenario",
       }),
     ];
 

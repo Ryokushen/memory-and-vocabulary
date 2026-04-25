@@ -302,7 +302,8 @@ export function normalizeContextPromptKind(value: string | null | undefined): Re
     value === "replace" ||
     value === "produce" ||
     value === "rewrite" ||
-    value === "collocation"
+    value === "collocation" ||
+    value === "scenario"
   ) {
     return value;
   }

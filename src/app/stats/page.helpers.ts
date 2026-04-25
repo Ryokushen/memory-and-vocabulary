@@ -66,7 +66,8 @@ export function getRecentRetrievalMetrics(logs: ReviewLog[]): RecentRetrievalMet
     (log) =>
       log.contextPromptKind !== "produce" &&
       log.contextPromptKind !== "rewrite" &&
-      log.contextPromptKind !== "collocation",
+      log.contextPromptKind !== "collocation" &&
+      log.contextPromptKind !== "scenario",
   );
 
   if (retrievalLogs.length === 0) {

@@ -475,6 +475,50 @@ describe("useSession", () => {
     );
   });
 
+  it("defaults scenario metadata from the active prompt when the UI omits it", async () => {
+    const words = [makeSessionWord(1)];
+    loadSessionWordsMock.mockResolvedValue(words);
+    pickModeMock.mockReturnValue("context");
+    buildContextPromptMock.mockReturnValue({
+      kind: "scenario",
+      answer: "meticulous",
+      scenario: "inspector, report, or audit",
+      anchors: ["inspector", "report", "audit"],
+      definition: "definition-1",
+      example: "example-1",
+    });
+    processAnswerMock.mockResolvedValue({
+      result: {
+        ...makeResult(1),
+        mode: "context",
+      },
+      updatedCard: words[0].reviewCard,
+    });
+
+    const { result } = renderHook(() => useSession());
+
+    await act(async () => {
+      await result.current.startSession("normal", 1);
+    });
+
+    await act(async () => {
+      await result.current.submitAnswer("The meticulous inspector revised the report.");
+    });
+
+    expect(processAnswerMock).toHaveBeenCalledWith(
+      words[0],
+      "The meticulous inspector revised the report.",
+      expect.any(Number),
+      "session-abc",
+      "context",
+      "meticulous",
+      {
+        contextPromptKind: "scenario",
+        contextScenarioAnchors: ["inspector", "report", "audit"],
+      },
+    );
+  });
+
   it("defaults production-context metadata from the active prompt when the UI omits it", async () => {
     const words = [makeSessionWord(1)];
     loadSessionWordsMock.mockResolvedValue(words);

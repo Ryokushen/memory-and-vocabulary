@@ -166,6 +166,8 @@ export interface AnswerMetadata {
   contextPromptKind?: ContextPromptKind;
   /** Source sentence for deterministic rewrite-context grading. Ephemeral; not persisted to review logs. */
   contextSourceSentence?: string;
+  /** Required scene anchors for deterministic scenario-context grading. Ephemeral; not persisted to review logs. */
+  contextScenarioAnchors?: string[];
 }
 
 export type SessionState =
@@ -177,7 +179,7 @@ export type SessionState =
 
 // ── Context Mode ────────────────────────────────────────────────────────
 
-export type ContextPromptKind = "replace" | "produce" | "rewrite" | "collocation";
+export type ContextPromptKind = "replace" | "produce" | "rewrite" | "collocation" | "scenario";
 
 export interface ContextSentence {
   kind?: "replace";
@@ -213,11 +215,21 @@ export interface ContextCollocationPrompt {
   example?: string;
 }
 
+export interface ContextScenarioPrompt {
+  kind: "scenario";
+  answer: string;
+  definition: string;
+  scenario: string;
+  anchors: string[];
+  example?: string;
+}
+
 export type ContextPrompt =
   | ContextSentence
   | ContextProductionPrompt
   | ContextRewritePrompt
-  | ContextCollocationPrompt;
+  | ContextCollocationPrompt
+  | ContextScenarioPrompt;
 
 export interface SessionSummary {
   results: SessionResult[];

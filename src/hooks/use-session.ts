@@ -168,16 +168,27 @@ export function useSession() {
 
     try {
       const resolvedAnswerMetadata = currentMode === "context" && currentContextPrompt
-        ? {
-          ...answerMetadata,
-          contextPromptKind: answerMetadata?.contextPromptKind ?? currentContextPrompt.kind,
-          contextSourceSentence: answerMetadata?.contextSourceSentence
+        ? (() => {
+          const contextSourceSentence = answerMetadata?.contextSourceSentence
             ?? (
               currentContextPrompt.kind === "rewrite" || currentContextPrompt.kind === "collocation"
                 ? currentContextPrompt.sentence
                 : undefined
-            ),
-        }
+            );
+          const contextScenarioAnchors = answerMetadata?.contextScenarioAnchors
+            ?? (
+              currentContextPrompt.kind === "scenario"
+                ? currentContextPrompt.anchors
+                : undefined
+            );
+
+          return {
+            ...answerMetadata,
+            contextPromptKind: answerMetadata?.contextPromptKind ?? currentContextPrompt.kind,
+            ...(contextSourceSentence ? { contextSourceSentence } : {}),
+            ...(contextScenarioAnchors ? { contextScenarioAnchors } : {}),
+          };
+        })()
         : answerMetadata;
       const responseTimeMs = resolvedAnswerMetadata?.retrievalTimeMs ?? (Date.now() - promptStartTime);
       const expectedAnswer = currentMode === "association" && associationPhase === "create"

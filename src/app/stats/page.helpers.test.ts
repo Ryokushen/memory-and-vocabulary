@@ -87,6 +87,11 @@ describe("getRecentRetrievalMetrics", () => {
         retrievalKind: "assisted",
         contextPromptKind: "collocation",
       }),
+      makeReviewLog("2026-04-07T11:45:00.000Z", {
+        rating: 2,
+        retrievalKind: "assisted",
+        contextPromptKind: "scenario",
+      }),
     ]);
 
     expect(metrics).toEqual({
@@ -115,6 +120,11 @@ describe("getRecentRetrievalMetrics", () => {
       }),
       makeReviewLog("2026-04-06T11:45:00.000Z", {
         contextPromptKind: "collocation",
+        rating: 2,
+        retrievalKind: "assisted",
+      }),
+      makeReviewLog("2026-04-05T11:45:00.000Z", {
+        contextPromptKind: "scenario",
         rating: 2,
         retrievalKind: "assisted",
       }),

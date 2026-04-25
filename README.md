@@ -36,7 +36,7 @@ What it does not currently claim:
 - Partial session progress now saves when you leave training early
 - Dashboard quest card now separates due reviews, eligible new words, and pending capture Inbox items
 - Session generation is now stat-aware across mode selection, retrieval drill timing, and prompt support: Recall / Perception / Creativity bias Recall / Rapid Retrieval / Association, live profile stats tune rapid-retrieval timeout pressure and rescue-cue timing, low Recall keeps Context work more scaffolded, and low Creativity can strengthen existing mnemonics before association recall
-- Context mode now has four typed-first variants: replacement prompts for rescue words, target-word sentence production for stabilize words, fluent rewrite prompts, and collocation rewrite prompts that preserve the original scenario with deterministic grading and cue-aware fallback
+- Context mode now has five typed-first variants: replacement prompts for rescue words, target-word sentence production for stabilize words, fluent rewrite prompts, scenario variation prompts for deeply fluent words, and collocation rewrite prompts with deterministic grading and cue-aware fallback
 - Automated test coverage across scheduler, session, sync, stats helpers, and hooks
 - PWA support with offline fallback via Serwist
 
@@ -45,7 +45,7 @@ What it does not currently claim:
 | Mode | Trains | Shipped behavior |
 |------|--------|------------------|
 | **Recall** | Clean definition-to-word retrieval | See a definition and type the word, with hints available only while the word is still in a support phase. |
-| **Context** | Word choice, transfer, and collocation in context | Rescue words still use typed replacement with assisted fallback; more stable words can ask for target-word production, fluent rewrites, or collocation rewrites that preserve the original scene; weak Recall keeps support in place longer. |
+| **Context** | Word choice, transfer, and collocation in context | Rescue words still use typed replacement with assisted fallback; more stable words can ask for target-word production, fluent rewrites, constrained scenario variation, or collocation rewrites; weak Recall keeps support in place longer. |
 | **Rapid Retrieval** | Fast verbal access | Read a definition at your own pace, then start a timed retrieval phase where you type the word under an adaptive timer. A rescue cue appears only when the drill profile still calls for it. |
 | **Association** | Elaborative encoding | Create or strengthen a vivid text association for a word, then later recall from that association. |
 
@@ -236,7 +236,7 @@ These foundations are already in `master` and should be treated as existing beha
 
 For the up-to-date "already shipped vs next" checklist, see [PROJECT_STATUS.md](PROJECT_STATUS.md).
 
-- deepen Context transfer beyond the new fluent rewrite and collocation slices into richer scenario variation only if deterministic grading can stay sane
 - broaden stat-aware support only where it can be tied to existing prompt quality signals
+- decide whether scenario variation should feed a separate coverage metric after real usage, rather than adding another manual drill control
 - targeted regression tests around newly introduced sync changes (without reworking shipped sync hardening)
 - evolve the vocabulary pipeline beyond the transitional `VocabularyItem` bridge only after a concrete persistence design exists
